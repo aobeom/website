@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block drama %}
+<div class="tools-head">
+    <span>
+        <i class="fa fa-cloud-download fa-5x" aria-hidden="true"></i>
+    </span>
+    <div>
+        <p id="update"></p>
+        <div>
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            <span id="drama_hour">0 : </span>
+            <span id="drama_minute">00 : </span>
+            <span id="drama_second">00</span>
+        </div>
+
+    </div>
+    <div class="tools-drama">
+        <div class="pure-menu pure-menu-horizontal">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover tools-select">
+                    <span class="pure-button pure-button-primary tools-button" id="menuLink1" class="pure-menu-link">
+                        <i class="fa fa-bars" aria-hidden="true"></i>&nbsp; SUBTITLE</span>
+                    <ul class="pure-menu-children">
+                        <li class="pure-menu-item">
+                            <input class="pure-button pure-button-primary tools-button" type="submit" id="tvbt" value="TVBT">
+                        </li>
+                        <li class="pure-menu-item">
+                            <input class="pure-button pure-button-primary tools-button" type="submit" id="subpig" value="SUBPIG">
+                        </li>
+                        <li class="pure-menu-item">
+                            <input class="pure-button pure-button-primary tools-button" type="submit" id="fixsub" value="FIXSUB">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="datas" class="tools-load"></div>
+    </div>
+</div>
+{% endblock %}

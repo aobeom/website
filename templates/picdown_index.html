@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block picdown %}
+<div class="tools-head">
+    <span>
+        <a href="https://mdpr.jp/" target="_blank"><img src="static/img/mdpr.png"></a>
+        <a href="https://www.oricon.co.jp" target="_blank"><img src="static/img/oricon.png"></a>
+        <a href="https://www.showroom-live.com/" target="_blank"><img src="static/img/sr.png"></a>
+        <a href="https://ameblo.jp" target="_blank"><img src="static/img/amb.png"></a>
+        <a href="#" target="_blank"><img src="static/img/46.png"></a>
+    </span>
+    <div class="tools-func">
+        <input class="tools-input" placeholder="URL" id="picURL" type="text">
+        <button class="pure-button pure-button-primary tools-submit" type="submit" id="picdown" value="submit">
+            <i class="fa fa-rocket" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="tools-load" id="datas">
+        <p class="button-span pure-button">
+            <i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Example </p>
+        <p>https://mdpr.jp/news/1727418</p>
+        <p>https://www.oricon.co.jp/photo/2450/</p>
+        <p>https://www.showroom-live.com/46_shiraishimai</p>
+        <p>https://ameblo.jp/officialpress/entry-12290839652.html</p>
+    </div>
+</div>
+{% endblock %}

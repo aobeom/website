@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block program %}
+<div class="tools-head">
+    <span>
+        <a href="https://tv.yahoo.co.jp/" target="_blank">
+            <img src="static/img/yahoo.png" style="width: 200px">
+        </a>
+    </span>
+    <div class="tools-func">
+        <input class="tools-input" placeholder="Keyword" id="proKW" type="text">
+        <button class="pure-button pure-button-primary tools-submit" type="submit" id="jprogram" value="submit">
+            <i class="fa fa-search" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="tools-load" id="datas">
+        <p class="button-span pure-button">
+            <i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Japan Program Information </p>
+    </div>
+</div>
+{% endblock %}

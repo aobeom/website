@@ -1,0 +1,46 @@
+<!--
+@author AoBeom
+@create date 2017-12-03 07:13:58
+@modify date 2017-12-25 02:13:48
+-->
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools</title>
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="static/js/ajax.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
+    <link rel="shortcut icon" href="static/img/favicon.ico">
+    <link href='https://fonts.cat.net/css?family=Varela+Round' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="https://cdn.staticfile.org/pure/1.0.0/pure-min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/tools.css" />
+</head>
+
+<body>
+    <div class="tools-content">
+        <div class="pure-g tools-guide">
+            <div class="pure-u-1-3">
+                <a class="button-guide pure-button" href="/">PICTURE</a>
+            </div>
+            <div class="pure-u-1-3">
+                <a class="button-guide pure-button" href="/drama">DRAMA</a>
+            </div>
+            <div class="pure-u-1-3">
+                <a class="button-guide pure-button" href="/program">PROGRAM</a>
+            </div>
+        </div>
+        {% block picdown %} {% endblock %} {% block drama %} {% endblock %} {% block program %} {% endblock %}
+    </div>
+
+    <div class="tools-footer">
+        <p>© 2017-2018 AoBeom v1.0</p>
+    </div>
+
+</body>
+
+</html>
