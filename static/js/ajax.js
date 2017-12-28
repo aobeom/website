@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2017-12-25 07:42:37
+ * @modify date 2017-12-28 09:51:49
  */
 
 
@@ -281,4 +281,32 @@ $(document).ready(function () {
             }
         })
     })
+})
+
+$(document).ready(function () {
+    var segmentWidth = 0;
+    $(".tools-banner .tools-banner-content li").each(function () {
+        segmentWidth += $(this).outerWidth(true);
+    });
+
+    $(".tools-banner .tools-banner-content li").clone().appendTo($(".tools-banner .tools-banner-content"));
+
+    run(6000);
+
+    function run(interval) {
+        $(".tools-banner .tools-banner-content").animate({
+            "left": -segmentWidth
+        }, interval, "linear", function () {
+            $(".tools-banner .tools-banner-content").css("left", 0);
+            run(6000);
+        });
+    }
+
+    $(".tools-banner").mouseenter(function () {
+        $(".tools-banner .tools-banner-content").stop();
+    }).mouseleave(function () {
+        var passedCourse = -parseInt($(".tools-banner .tools-banner-content").css("left"));
+        var time = 6000 * (1 - passedCourse / segmentWidth);
+        run(time);
+    });
 })

@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-06 12:13:50
- * @modify date 2017-12-25 02:14:20
+ * @modify date 2017-12-28 09:51:55
 */
 
 body {
@@ -117,6 +117,25 @@ a {
 
 .tools-a {
     width: 80%;
+}
+
+.tools-banner {
+    width: 300px;
+    height: 80px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+}
+
+.tools-banner ul {
+    list-style: none;
+    width: 3000px;
+    position: absolute;
+}
+
+.tools-banner ul li {
+    float: left;
+    margin-right: 20px;
 }
 
 .button-success,
