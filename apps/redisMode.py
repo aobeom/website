@@ -20,6 +20,7 @@ class redisMode(object):
             raise e
 
     def __hashMd5(self, value):
+        value = value.encode("utf-8")
         md5 = hashlib.md5(value).hexdigest()[8:-8]
         return md5
 

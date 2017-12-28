@@ -227,7 +227,8 @@ class pic46(object):
                 nogi_img_url = ''.join(nogi_img_url)
                 nogi_img_data = r.get(
                     nogi_img_url, timeout=30, headers=self.headers)
-                save_name = hashlib.md5(nogi_img_url).hexdigest()[8:-8] + ".jpg"
+                save_name = hashlib.md5(nogi_img_url).hexdigest()[
+                    8:-8] + ".jpg"
                 save_path = os.path.join(media_path, save_name)
                 save_uri = "/media/" + save_name
                 nogi_imgs.append(save_uri)
@@ -240,6 +241,49 @@ class pic46(object):
             return nogi_imgs
         else:
             return None
+
+
+class natalie(object):
+    def __init__(self):
+        self.natalie = "https://natalie.mu"
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36"
+        }
+
+    def natalieImgList(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        natalie_index = response.text
+        natalie_imglist_rule = r'<ul class="NA_imageList clearfix">(.*?)</div>'
+        natalie_imglist = re.findall(
+            natalie_imglist_rule, natalie_index, re.S | re.M)
+        natalie_img_index_rule = r'<a href="(.*?)" title=.*?>.*?</a>'
+        imglist = re.findall(natalie_img_index_rule,
+                             str(natalie_imglist), re.S | re.M)
+        return imglist
+
+    def __geturl(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        natalie_body_rule = r'<figure>(.*?)<figcaption>'
+        natalie_index = response.text
+        natalie_body = re.findall(
+            natalie_body_rule, natalie_index, re.S | re.M)
+        natalie_img_rule = r'<img src="(.*?)" alt=".*?">'
+        natalie_img = re.findall(
+            natalie_img_rule, str(natalie_body), re.S | re.M)
+        return natalie_img
+
+    def natalieImgUrl(self, imglist):
+        thread = len(imglist) / 4
+        if thread < 4:
+            thread = 4
+        if thread > 10:
+            thread = 8
+        pool = Pool()
+        imgurls = pool.map(self.__geturl, imglist)
+        pool.close()
+        pool.join()
+        imgurls = [''.join(i) for i in imgurls]
+        return imgurls
 
 
 class picdown(object):
@@ -257,6 +301,7 @@ class picdown(object):
         ameblo_host = "http[s]?://ameblo.jp/.*/entry-.*"
         keya_host = "http[s]?://*.*46.com/s/k46o/diary/detail/.*"
         nogi_host = "http[s]?://*.*46.com/.*.php"
+        natalie_host = "https://natalie.mu/.*"
         if len(re.findall(mdpr_host, url)) or len(re.findall(mdpr_host_other, url)):
             result = {"site": "mdpr", "url": url}
         elif len(re.findall(oricon_host, url)) or len(re.findall(oricon_host_news, url)):
@@ -265,6 +310,8 @@ class picdown(object):
             result = {"site": "ameblo", "url": url}
         elif len(re.findall(nogi_host, url)) or len(re.findall(keya_host, url)):
             result = {"site": "46", "url": url}
+        elif len(re.findall(natalie_host, url)):
+            result = {"site": "natalie", "url": url}
         else:
             result = None
         return result
@@ -287,6 +334,10 @@ class picdown(object):
             elif target_site == "46":
                 p = pic46()
                 result = p.urlAnalysis(target_url)
+            elif target_site == "natalie":
+                n = natalie()
+                imglist = n.natalieImgList(target_url)
+                result = n.natalieImgUrl(imglist)
         else:
             result = None
         return result
