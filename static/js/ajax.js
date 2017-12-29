@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2017-12-28 09:51:49
+ * @modify date 2017-12-29 09:50:15
  */
 
 
@@ -68,6 +68,9 @@ $(document).ready(function () {
 });
 
 $(document).ready(function () {
+    $('#tipsbtn').click(function () {
+        $('#tips').toggle();
+    })
     var clipboard = new Clipboard('.btn');
     clipboard.on('success', function() {
         var tips = '<i class="fa fa-smile-o" aria-hidden="true"></i>&nbsp; Copied!'

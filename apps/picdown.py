@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2017-12-26 01:46:05
+# @modify date 2017-12-29 09:38:15
 # @desc [原图链接获取]
 
 import datetime
@@ -286,6 +286,34 @@ class natalie(object):
         return imgurls
 
 
+class mantanweb(object):
+    def __init__(self):
+        self.mantan_host = "https://mantan-web.jp"
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36"
+        }
+
+    def mantanImgUrl(self, url):
+        if "photo" not in url:
+            mantan_code = url.split("/")[-1]
+            mantan_photo_url = "{host}/photo/{code}".format(
+                host=self.mantan_host, code=mantan_code)
+        else:
+            mantan_photo_url = url
+        response = requests.get(
+            mantan_photo_url, headers=self.headers, timeout=30)
+        mantan_index = response.text
+        mantan_imgbody_rule = r'<ul class="newsbody__thumblist">(.*?)</ul>'
+        mantan_imgbody = re.findall(
+            mantan_imgbody_rule, mantan_index, re.S | re.M)
+        mantan_img_rule = r'<img src="(.*?)" srcset=".*?" />'
+        mantan_imgs_thumb = re.findall(
+            mantan_img_rule, str(mantan_imgbody), re.S | re.M)
+        mantan_imgs = ["https:" + img.replace("thumb", "size6")
+                       for img in mantan_imgs_thumb]
+        return mantan_imgs
+
+
 class picdown(object):
     def __init__(self):
         self.headers = {
@@ -302,6 +330,7 @@ class picdown(object):
         keya_host = "http[s]?://*.*46.com/s/k46o/diary/detail/.*"
         nogi_host = "http[s]?://*.*46.com/.*.php"
         natalie_host = "https://natalie.mu/.*"
+        mantan_host = "https://mantan-web.jp/.*"
         if len(re.findall(mdpr_host, url)) or len(re.findall(mdpr_host_other, url)):
             result = {"site": "mdpr", "url": url}
         elif len(re.findall(oricon_host, url)) or len(re.findall(oricon_host_news, url)):
@@ -312,6 +341,8 @@ class picdown(object):
             result = {"site": "46", "url": url}
         elif len(re.findall(natalie_host, url)):
             result = {"site": "natalie", "url": url}
+        elif len(re.findall(mantan_host, url)):
+            result = {"site": "mantan", "url": url}
         else:
             result = None
         return result
@@ -338,6 +369,9 @@ class picdown(object):
                 n = natalie()
                 imglist = n.natalieImgList(target_url)
                 result = n.natalieImgUrl(imglist)
+            elif target_site == "mantan":
+                m = mantanweb()
+                result = m.mantanImgUrl(target_url)
         else:
             result = None
         return result

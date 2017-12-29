@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-06 12:13:50
- * @modify date 2017-12-28 09:51:55
+ * @modify date 2017-12-29 09:38:02
 */
 
 body {
@@ -129,7 +129,7 @@ a {
 
 .tools-banner ul {
     list-style: none;
-    width: 3000px;
+    width: 10000px;
     position: absolute;
 }
 
