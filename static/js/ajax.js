@@ -14,8 +14,8 @@ $(document).ready(function () {
         var data = {
             "url": $("#picURL").val()
         };
-        var error_null = '<span class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</span>';
-        var error_system = '<span class="button-error pure-button" onclick="location.reload();">SYSTEM error</span>';
+        var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         if (data["url"].length == 0) {
             $("#datas").append(error_null);
             $('#picdown').removeAttr("disabled");
@@ -40,13 +40,13 @@ $(document).ready(function () {
                         var urls = msg["urls"];
                         $("#datas").empty();
                         for (u in urls) {
-                            $('#datas').append('<p><img src="' + urls[u] + '" style="width:300px"></p>');
+                            $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
                         }
                     }
                     if (msg["type"] == "m3u8") {
                         var urls = msg["urls"];
                         $("#datas").empty();
-                        $('#datas').append('<button id="copied" class="button-success pure-button btn" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button>');
+                        $('#datas').append('<p><button id="copied" class="button-success pure-button btn" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
                     }
                     $('#picdown').removeAttr("disabled");
                 } else {
@@ -56,7 +56,7 @@ $(document).ready(function () {
                 }
             },
             beforeSend: function (XMLHttpRequest) {
-                $("#datas").append('<i class="fa fa-cog fa-spin fa-3x fa-fw"></i>');
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
                 $("#datas").empty();
@@ -124,8 +124,8 @@ $(document).ready(function () {
         var data = {
             "id": id
         };
-        var error_system = '<span class="button-error pure-button" onclick="location.reload();">SYSTEM error</span>';
-        var error_system = '<span class="button-error pure-button" onclick="location.reload();">SYSTEM error</span>';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
             type: "POST",
             url: "/dramaget/",
@@ -209,7 +209,7 @@ $(document).ready(function () {
                 $('.tools-drama input').removeAttr("disabled");
             },
             beforeSend: function (XMLHttpRequest) {
-                $("#datas").append('<i class="fa fa-cog fa-spin fa-3x fa-fw"></i>');
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 $('.tools-drama input').attr({
                     disabled: "disabled"
                 });
@@ -231,8 +231,8 @@ $(document).ready(function () {
         var data = {
             "kw": $("#proKW").val()
         };
-        var error_null = '<span class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</span>';
-        var error_system = '<span class="button-error pure-button" onclick="location.reload();">SYSTEM error</span>';
+        var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p><';
         if (data["kw"].length == 0) {
             $("#datas").append(error_null);
             $('#jprogram').removeAttr("disabled");
@@ -249,7 +249,7 @@ $(document).ready(function () {
                     $("#datas").empty();
                     var purl = msg["url"]
                     var pdatas = msg["datas"]
-                    var pdatas_head = '<a class="pure-button pure-button-primary" href="' + purl + '" target="_blank">Yahoo Results</a>'
+                    var pdatas_head = '<p><a class="pure-button pure-button-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
                     var pdatas_body = ""
                     for (i in pdatas) {
                         var pgram = pdatas[i];
@@ -277,7 +277,7 @@ $(document).ready(function () {
                 }
             },
             beforeSend: function (XMLHttpRequest) {
-                $("#datas").append('<i class="fa fa-cog fa-spin fa-3x fa-fw"></i>');
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
                 $("#datas").empty();

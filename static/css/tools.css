@@ -4,12 +4,32 @@
  * @modify date 2017-12-29 09:38:02
 */
 
+
+/* base */
+
+html,
 body {
-    margin: 0 auto;
-    padding: 0 auto;
-    text-align: center;
     height: 100%;
+    text-align: center;
+    background: rgb(245, 245, 245);
     font-family: 'Varela Round', sans-serif;
+}
+
+header {
+    flex: 0 0 auto;
+    overflow-x: hidden;
+}
+
+.tools-main {
+    flex: 1 0 auto;
+    height: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+footer {
+    flex: 0 0 auto;
 }
 
 a {
@@ -17,39 +37,31 @@ a {
 }
 
 .tools-content {
-    min-height: 90%;
-}
-
-.tools-footer {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
 }
 
 .tools-guide {
-    position: relative;
-    margin: 0 auto;
-    width: 100%;
-    background-color: rgb(231, 231, 231);
+    background-color: rgb(75, 155, 221);
 }
 
 .tools-guide a {
+    color: white;
     font-family: 'Varela Round', sans-serif;
 }
 
+
+/* template common */
+
 .tools-head {
     position: relative;
-    top: 30px;
+    top: 50px;
 }
 
-.tools-span {
-    width: 100%;
-    padding: 2px;
-    margin: 2px;
-}
-
-.tools-func {
-    padding: 15px 5px 0px;
+.tools-bar {
+    padding: 10px 0px 10px;
     word-spacing: -6px;
 }
 
@@ -69,19 +81,58 @@ a {
     border-bottom-left-radius: 3px;
 }
 
-.tools-drama {
-    position: relative;
-    margin: 0 auto;
-    padding: 10px;
-}
-
 .tools-load {
-    padding: 10px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .tools-load p {
     word-break: break-word;
+}
+
+
+/* picdown */
+
+.tools-banner {
+    width: 300px;
+    height: 70px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+}
+
+.tools-banner ul {
+    list-style: none;
+    width: 10000px;
+    position: absolute;
+}
+
+.tools-banner ul li {
+    float: left;
+    margin-right: 20px;
+}
+
+.tools-img {
+    margin: 2px;
+}
+
+.tools-hr {
+    width: 320px;
+    height: 2px;
+    border: none;
+    border-top: 2px double rgb(75, 155, 221);
+}
+
+#tipsbtn {
+    margin: 5px;
+}
+
+
+/* drama */
+
+.tools-drama {
+    position: relative;
+    margin: 0 auto;
+    padding: 10px;
 }
 
 .tools-div {
@@ -98,10 +149,20 @@ a {
     height: 40px;
 }
 
+.tools-span {
+    width: 100%;
+    padding: 2px;
+    margin: 2px;
+}
+
 .tools-button {
     padding: 10px;
     width: 114px;
     margin: 2px;
+}
+
+.tools-select {
+    height: 30px;
 }
 
 .custom-restricted {
@@ -111,32 +172,18 @@ a {
     border-radius: 4px;
 }
 
-.tools-select {
-    height: 30px;
+
+/* program */
+
+.tools-tv {
+    padding: 15px;
 }
 
-.tools-a {
-    width: 80%;
+#tips {
+    margin: 5px;
 }
 
-.tools-banner {
-    width: 300px;
-    height: 80px;
-    overflow: hidden;
-    margin: 0 auto;
-    position: relative;
-}
-
-.tools-banner ul {
-    list-style: none;
-    width: 10000px;
-    position: absolute;
-}
-
-.tools-banner ul li {
-    float: left;
-    margin-right: 20px;
-}
+/* common */
 
 .button-success,
 .button-error,
@@ -166,7 +213,7 @@ a {
 }
 
 .button-guide {
-    background: rgb(231, 231, 231);
+    background: rgb(75, 155, 221);
 }
 
 .button-link {
@@ -174,7 +221,7 @@ a {
 }
 
 .button-span {
-    background: rgb(153, 182, 199)
+    background: rgb(146, 200, 245)
 }
 
 .button-div {
