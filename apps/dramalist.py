@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2017-12-25 01:08:39
+# @modify date 2018-01-04 12:45:06
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -261,8 +261,10 @@ class subpig(object):
         subpig_index = self.subpig_host + "/forum.php?mod=forumdisplay&fid=306"
         response = self.__request(subpig_index)
         subpig_url = response.text
-        subpig_rules = '<a href="[^"]+"><font color=[^"]+><b>SUBPIG</b></font></a>]</em> <a href="(.*)" style="font-weight: bold;color: #EE1B2E" onclick="[^"]+" class="[^"]+" >(.*)</a>'
+        # subpig_rules = '<a href="[^"]+"><font color=[^"]+><b>SUBPIG</b></font></a>]</em> <a href="(.*)" style="font-weight: bold;color: #EE1B2E" onclick="[^"]+" class="[^"]+" >(.*)</a>'
+        subpig_rules = r'</em>.*?<a href="(.*?)".*?style="font-weight: bold;color: #EE1B2E".*?>(.*?)</a>'
         subpig_update_info = re.findall(subpig_rules, subpig_url)
+        subpig_update_info.pop(0)
         for info in subpig_update_info:
             subpig_info = []
             subpig_title = info[1]
@@ -328,15 +330,15 @@ class subpig(object):
 
 def main():
     r = redisMode.redisMode()
-    tvbt_key = "tvbt"
+    tvbt_key = "drama:tvbt"
     t = tvbtsub()
     tvbt_update_info = t.tvbtIndexInfo()
     tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r.redisSave("utime", times)
+    r.redisSave("drama:utime", times)
     r.redisSave(tvbt_key, tvbt_urls)
 
-    subpig_key = "subpig"
+    subpig_key = "drama:subpig"
     p = subpig()
     index_subpig = p.subpigIndexInfo()
     pool = Pool(10)
@@ -346,7 +348,7 @@ def main():
     r.redisSave(subpig_key, subpig_urls)
 
     pages = 1
-    fix_key = "fixsub"
+    fix_key = "drama:fixsub"
     f = fixsub()
     # pages = f.fixPageNum()
     for page in range(1, pages + 1):
@@ -357,7 +359,7 @@ def main():
 
 
 def tvbt_process(redis):
-    tvbt_key = "tvbt"
+    tvbt_key = "drama:tvbt"
     t = tvbtsub()
     tvbt_update_info = t.tvbtIndexInfo()
     tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
@@ -365,7 +367,7 @@ def tvbt_process(redis):
 
 
 def subpig_process(redis):
-    subpig_key = "subpig"
+    subpig_key = "drama:subpig"
     p = subpig()
     subpig_update_info = p.subpigIndexInfo()
     pool = Pool(4)
@@ -377,7 +379,7 @@ def subpig_process(redis):
 
 def fixsub_process(redis):
     pages = 1
-    fix_key = "fixsub"
+    fix_key = "drama:fixsub"
     f = fixsub()
     # pages = f.fixPageNum()
     for page in range(1, pages + 1):
@@ -390,7 +392,7 @@ def fixsub_process(redis):
 def main2():
     r = redisMode.redisMode()
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r.redisSave("utime", times)
+    r.redisSave("drama:utime", times)
     p1 = multiprocessing.Process(target=tvbt_process, args=(r,), name="TVBT")
     p2 = multiprocessing.Process(
         target=subpig_process, args=(r,), name="SUBPIG")

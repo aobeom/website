@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2017-12-29 09:50:15
+ * @modify date 2018-01-04 12:54:59
  */
 
 
@@ -165,7 +165,9 @@ $(document).ready(function () {
                             var subpig_title = '<p><a class="button-secondary pure-button" href="' + subpigs["url"] + '" target="_blank">' + subpigs["date"] + ' - ' + subpigs["title"] + '</a></p>';
                             var subpig_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><span class="button-span pure-button tools-span">LINK#PASSWD</span><ul class="pure-menu-list">';
                             var subpig_info = "";
-                            var subpig_info = subpig_info + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + eps[0] + '#' + eps[1] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a></li>';
+                            if (typeof(eps) != "undefined"){
+                                var subpig_info = subpig_info + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + eps[0] + '#' + eps[1] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a></li>';
+                            }
                             var subpig_body = subpig_body + subpig_title + subpig_ul + subpig_info + '</ul></div>';
                         }
                         $("#datas").append(subpig_body)

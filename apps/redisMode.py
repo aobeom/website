@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:50
-# @modify date 2017-12-22 09:48:50
+# @modify date 2018-01-04 12:45:11
 # @desc [py-redis简单封装]
 
 import hashlib
@@ -20,12 +20,16 @@ class redisMode(object):
             raise e
 
     def __hashMd5(self, value):
-        value = value.encode("utf-8")
         md5 = hashlib.md5(value).hexdigest()[8:-8]
         return md5
 
-    def redisCheck(self, keyname, md5value=False):
+    def redisCheck(self, keyname, md5value=False, subkey=False):
         self.__status()
+        if subkey:
+            main_key = keyname.split(":")[0]
+            sub_key = keyname.split(":")[-1]
+            sub_key = self.__hashMd5(sub_key)
+            keyname = "{}:{}".format(main_key, sub_key)
         if md5value:
             keyname = self.__hashMd5(keyname)
         keys = self.conn.keys()
@@ -43,8 +47,13 @@ class redisMode(object):
         value = dict(eval(value))
         return value
 
-    def redisSave(self, keyname, value, ex=2592000, md5value=False):
+    def redisSave(self, keyname, value, ex=2592000, md5value=False, subkey=False):
         self.__status()
+        if subkey:
+            main_key = keyname.split(":")[0]
+            sub_key = keyname.split(":")[-1]
+            sub_key = self.__hashMd5(sub_key)
+            keyname = "{}:{}".format(main_key, sub_key)
         if md5value:
             keyname = self.__hashMd5(keyname)
         self.conn.set(keyname, value, ex=ex)
