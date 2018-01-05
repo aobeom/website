@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:50
-# @modify date 2018-01-04 12:45:11
+# @modify date 2018-01-05 10:52:28
 # @desc [py-redis简单封装]
 
 import hashlib
@@ -20,6 +20,10 @@ class redisMode(object):
             raise e
 
     def __hashMd5(self, value):
+        try:
+            value = bytes(value, encoding="utf-8")
+        except TypeError:
+            value = value
         md5 = hashlib.md5(value).hexdigest()[8:-8]
         return md5
 
@@ -33,8 +37,16 @@ class redisMode(object):
         if md5value:
             keyname = self.__hashMd5(keyname)
         keys = self.conn.keys()
+        try:
+            keys = [str(k, encoding="utf-8") for k in keys]
+        except TypeError:
+            keys = keys
         if keyname in keys:
             value = self.conn.get(keyname)
+            try:
+                value = str(value, encoding="utf-8")
+            except TypeError:
+                value = value
             return value
         else:
             return None

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:47:38
-# @modify date 2017-12-22 09:47:38
+# @modify date 2018-01-05 10:52:23
 # @desc [雅虎节目表关键词搜索]
 
 import re
@@ -72,22 +72,3 @@ class yahooTV(object):
                 titles.append(uts[1])
                 station.append(uts[2])
         return urls, titles, station
-
-
-def main():
-    y = yahooTV()
-    keyword = "浜辺美波"
-    tvinfo = y.tvInfos(keyword)
-    # tvurl = tvinfo[0]
-    # print tvurl
-    tvdatas = tvinfo[1]
-    if tvdatas:
-        for tv in tvdatas:
-            print "{date} {time} {tv}".format(date=tv["date"], time=tv["time"].encode("utf-8"), tv=tv["station"].encode("utf-8"))
-            print "{title}".format(title=tv["title"].encode("utf-8"))
-    else:
-        print "No Schedule"
-
-
-if __name__ == "__main__":
-    main()

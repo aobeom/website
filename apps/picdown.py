@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2017-12-29 09:38:15
+# @modify date 2018-01-05 10:52:26
 # @desc [原图链接获取]
 
 import datetime
@@ -196,7 +196,7 @@ class pic46(object):
 
     def keyaBlog(self, url):
         response = requests.get(url, timeout=30, headers=self.headers)
-        keya_blog_index = response.content
+        keya_blog_index = response.text
         keya_box_rule = r'<div class="box-article">(.*?)<div class="box-bottom">'
         keya_blog_box = re.findall(keya_box_rule, keya_blog_index, re.S | re.M)
         keya_img_rule = r'<.*?src="(.*?)".*?>'
@@ -209,7 +209,7 @@ class pic46(object):
     def nogiBlog(self, url):
         nogi_imgs = []
         response = requests.get(url, timeout=30, headers=self.headers)
-        nogi_blog_index = response.content
+        nogi_blog_index = response.text
         nogi_box_rule = r'<div class="entrybody">(.*?)<div class="entrybottom">'
         nogi_blog_box = re.findall(nogi_box_rule, nogi_blog_index, re.S | re.M)
         nogi_img_rule = r'<a.*?href="(.*?)".*?>'
@@ -221,7 +221,7 @@ class pic46(object):
             r = requests.Session()
             try:
                 response = r.get(dcimg, timeout=30, headers=self.headers)
-                dcimg_index = response.content
+                dcimg_index = response.text
                 dcimg_rule = r'<img.*?src="(.*?)".*?>'
                 nogi_img_url = re.findall(dcimg_rule, dcimg_index)
                 nogi_img_url = ''.join(nogi_img_url)
@@ -408,21 +408,3 @@ class picdown(object):
         s = int(end - start)
         formats = str(datetime.timedelta(seconds=s))
         return formats
-
-
-def main():
-    p = picdown()
-    url = raw_input("Enter a link or file:")
-    folder = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
-    print "[1]Checking links..."
-    urldict = p.urlCheck(url)
-    print "[2]Getting image links..."
-    urls = p.photoUrlGet(urldict)
-    print "[3]Downloading..."
-    thread = len(urls)
-    sec = p.photoDownload(urls, folder, thread)
-    print "Lasted {} seconds".format(sec)
-
-
-if __name__ == '__main__':
-    main()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-01-04 12:45:16
+# @modify date 2018-01-05 10:52:34
 # @desc [Flask view main]
 
 import time
@@ -171,6 +171,10 @@ def program_request():
         rediskeyword = redisKeyword
         rediskeyword = r.redisList(rediskeyword)
         datas["status"] = 0
+        try:
+            keyword = str(keyword, encoding="utf-8")
+        except TypeError:
+            keyword = keyword
         datas["url"] = keyword
         datas["datas"] = rediskeyword
     else:
@@ -192,9 +196,13 @@ def program_request():
 def drama_utime():
     r = redisMode.redisMode()
     utime = r.conn.get("drama:utime")
+    try:
+        utime = str(utime, encoding="utf-8")
+    except TypeError:
+        utime = utime
     if utime:
         utime_timestamp = int(time.mktime(
-            time.strptime(utime, '%Y-%m-%d %H:%M:%S')))
+            time.strptime(str(utime), '%Y-%m-%d %H:%M:%S')))
         ntime_timestamp = int(time.time())
         ltime_timestamp = utime_timestamp + 14400
         countdown_sec = ltime_timestamp - ntime_timestamp

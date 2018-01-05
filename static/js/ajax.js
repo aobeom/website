@@ -125,7 +125,6 @@ $(document).ready(function () {
             "id": id
         };
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
-        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
             type: "POST",
             url: "/dramaget/",
@@ -232,7 +231,7 @@ $(document).ready(function () {
             "kw": $("#proKW").val()
         };
         var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
-        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p><';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         if (data["kw"].length == 0) {
             $("#datas").append(error_null);
             $('#jprogram').removeAttr("disabled");

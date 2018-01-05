@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-01-04 12:45:06
+# @modify date 2018-01-05 10:52:17
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -11,7 +11,10 @@ from multiprocessing.dummy import Pool
 
 import requests
 
-import redisMode
+try:
+    from apps import redisMode
+except ImportError:
+    import redisMode
 
 
 class fixsub(object):
@@ -184,7 +187,7 @@ class tvbtsub(object):
         tvbt_updates = []
         tvbt_index = self.tvbt_host + "/forumdisplay.php?fid=6"
         response = self.__request(tvbt_index)
-        tvbt_index_info = response.content
+        tvbt_index_info = response.text
         tvbt_rule = '<a href="(.*)" style="font-weight: bold;color: #EE1B2E">(.*)</a>'
         tvbt_update_info = re.findall(tvbt_rule, tvbt_index_info)
         # top 2 remove
@@ -194,7 +197,7 @@ class tvbtsub(object):
             tvbt_info = []
             tvbt_uptime = tvbt_update[1][1:6].replace(".", "")
             tvbt_mainurl = self.tvbt_host + "/" + tvbt_update[0]
-            tvbt_title = tvbt_update[1][6:]
+            tvbt_title = tvbt_update[1][6:].encode("ISO-8859-1").decode("utf-8")
             tvbt_info.append(tvbt_uptime)
             tvbt_info.append(tvbt_mainurl)
             tvbt_info.append(tvbt_title)
@@ -220,7 +223,7 @@ class tvbtsub(object):
             tvbt_dict["url"] = tvbt_url
             tvbt_dict["title"] = tvbt_title
             response = self.__request(tvbt_url)
-            tvbt_single_index = response.content
+            tvbt_single_index = response.text
             tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
             tvbt_dl_urls = []
             if len(tvbt_single_info) == 0:
@@ -297,9 +300,9 @@ class subpig(object):
         subpig_dict["url"] = subpig_url
         subpig_rule = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)<font'
         subpig_rule2 = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)<br />'
-        subpig_pwd_rule = r'\w+'
+        subpig_pwd_rule = r'[0-9A-Za-z]+'
         response = self.__request(subpig_url)
-        subpig_single_index = response.content
+        subpig_single_index = response.text
         subpig_dl_urls = re.findall(subpig_rule, subpig_single_index)
         if len(subpig_dl_urls) == 0:
             subpig_dl_urls = re.findall(subpig_rule2, subpig_single_index)
@@ -368,10 +371,10 @@ def tvbt_process(redis):
 
 def subpig_process(redis):
     subpig_key = "drama:subpig"
-    p = subpig()
-    subpig_update_info = p.subpigIndexInfo()
+    s = subpig()
+    subpig_update_info = s.subpigIndexInfo()
     pool = Pool(4)
-    subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
+    subpig_urls = pool.map(s.subpigGetUrl, subpig_update_info)
     pool.close()
     pool.join
     redis.redisSave(subpig_key, subpig_urls)
@@ -404,8 +407,8 @@ def main2():
     p3.start()
 
     for p in multiprocessing.active_children():
-        print "ChildProcess: {pname} ChildPID: {pid}".format(pname=p.name, pid=p.pid)
-    print "Loading Complete"
+        print("ChildProcess: {pname} ChildPID: {pid}".format(pname=p.name, pid=p.pid))
+    print("Loading Complete")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:49:14
-# @modify date 2017-12-22 09:49:14
+# @modify date 2018-01-05 10:52:31
 # @desc [showroom-live直播地址获取]
 
 import re
@@ -26,17 +26,6 @@ class SRPlayList(object):
             playlist_results = rule.findall(index_code)
             playlist = playlist_results[0]
         except BaseException:
-            print "Room: {}".format(url)
+            print("Room: {}".format(url))
             return None
         return playlist
-
-
-def main():
-    sr = SRPlayList()
-    url = raw_input("Room url: ")
-    playlist = sr.getUrl(url)
-    print playlist
-
-
-if __name__ == '__main__':
-    main()
