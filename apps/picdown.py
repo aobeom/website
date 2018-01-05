@@ -9,10 +9,16 @@ import hashlib
 import json
 import os
 import re
+import sys
 import time
 from multiprocessing.dummy import Pool
 
 import requests
+
+if sys.version > '3':
+    py3 = True
+else:
+    py3 = False
 
 
 class mdpr(object):
@@ -219,24 +225,25 @@ class pic46(object):
             os.mkdir(media_path)
         for dcimg in nogi_imgs_dcimg:
             r = requests.Session()
-            try:
-                response = r.get(dcimg, timeout=30, headers=self.headers)
-                dcimg_index = response.text
-                dcimg_rule = r'<img.*?src="(.*?)".*?>'
-                nogi_img_url = re.findall(dcimg_rule, dcimg_index)
-                nogi_img_url = ''.join(nogi_img_url)
-                nogi_img_data = r.get(
-                    nogi_img_url, timeout=30, headers=self.headers)
-                save_name = hashlib.md5(nogi_img_url).hexdigest()[
-                    8:-8] + ".jpg"
-                save_path = os.path.join(media_path, save_name)
-                save_uri = "/media/" + save_name
-                nogi_imgs.append(save_uri)
-                with open(save_path, "wb") as code:
-                    for chunk in nogi_img_data.iter_content(chunk_size=1024):
-                        code.write(chunk)
-            except BaseException:
-                pass
+            response = r.get(dcimg, timeout=30, headers=self.headers)
+            dcimg_index = response.text
+            dcimg_rule = r'<img.*?src="(.*?)".*?>'
+            nogi_img_url = re.findall(dcimg_rule, dcimg_index)
+            nogi_img_url = ''.join(nogi_img_url)
+            if "expired.gif" in nogi_img_url:
+                nogi_img_url = "http://dcimg.awalker.jp/img/expired.gif"
+            nogi_img_data = r.get(
+                nogi_img_url, timeout=30, headers=self.headers)
+            if py3:
+                nogi_img_url = bytes(nogi_img_url, encoding="utf-8")
+            hash_name = hashlib.md5(nogi_img_url).hexdigest()[8:-8]
+            save_name = hash_name + ".jpg"
+            save_path = os.path.join(media_path, save_name)
+            save_uri = "/media/" + save_name
+            nogi_imgs.append(save_uri)
+            with open(save_path, "wb") as code:
+                for chunk in nogi_img_data.iter_content(chunk_size=1024):
+                    code.write(chunk)
         if nogi_imgs:
             return nogi_imgs
         else:
