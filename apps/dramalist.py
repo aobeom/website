@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-01-05 10:52:17
+# @modify date 2018-01-07 13:17:45
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -187,7 +187,7 @@ class tvbtsub(object):
         tvbt_updates = []
         tvbt_index = self.tvbt_host + "/forumdisplay.php?fid=6"
         response = self.__request(tvbt_index)
-        tvbt_index_info = response.text
+        tvbt_index_info = response.text.encode("ISO-8859-1").decode("utf-8")
         tvbt_rule = '<a href="(.*)" style="font-weight: bold;color: #EE1B2E">(.*)</a>'
         tvbt_update_info = re.findall(tvbt_rule, tvbt_index_info)
         # top 2 remove
@@ -197,7 +197,7 @@ class tvbtsub(object):
             tvbt_info = []
             tvbt_uptime = tvbt_update[1][1:6].replace(".", "")
             tvbt_mainurl = self.tvbt_host + "/" + tvbt_update[0]
-            tvbt_title = tvbt_update[1][6:].encode("ISO-8859-1").decode("utf-8")
+            tvbt_title = tvbt_update[1][6:]
             tvbt_info.append(tvbt_uptime)
             tvbt_info.append(tvbt_mainurl)
             tvbt_info.append(tvbt_title)
@@ -211,7 +211,7 @@ class tvbtsub(object):
             tvbt_dict = {}
             count = 0
             tvbt_title_rule = r'\](.*?)\['
-            tvbt_dl_rule = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)<br />'
+            tvbt_dl_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
             tvbt_uptime = updates[0]
             tvbt_url = updates[1]
             tvbt_title = updates[2]
@@ -223,18 +223,15 @@ class tvbtsub(object):
             tvbt_dict["url"] = tvbt_url
             tvbt_dict["title"] = tvbt_title
             response = self.__request(tvbt_url)
-            tvbt_single_index = response.text
+            tvbt_single_index = response.text.encode("ISO-8859-1").decode("utf-8")
             tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
             tvbt_dl_urls = []
-            if len(tvbt_single_info) == 0:
-                tvbt_dl_rule2 = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)</td>'
-                tvbt_single_info = re.findall(tvbt_dl_rule2, tvbt_single_index)
             for info in tvbt_single_info:
                 dl_urls = []
                 count = count + 1
                 ep_num = str(count).zfill(2)
-                baidu_url = info[2]
-                baidu_passwd = info[3][-4:]
+                baidu_url = info[0]
+                baidu_passwd = info[1]
                 dl_urls.append(ep_num)
                 dl_urls.append(baidu_url)
                 dl_urls.append(baidu_passwd)
@@ -264,7 +261,6 @@ class subpig(object):
         subpig_index = self.subpig_host + "/forum.php?mod=forumdisplay&fid=306"
         response = self.__request(subpig_index)
         subpig_url = response.text
-        # subpig_rules = '<a href="[^"]+"><font color=[^"]+><b>SUBPIG</b></font></a>]</em> <a href="(.*)" style="font-weight: bold;color: #EE1B2E" onclick="[^"]+" class="[^"]+" >(.*)</a>'
         subpig_rules = r'</em>.*?<a href="(.*?)".*?style="font-weight: bold;color: #EE1B2E".*?>(.*?)</a>'
         subpig_update_info = re.findall(subpig_rules, subpig_url)
         subpig_update_info.pop(0)
@@ -298,37 +294,21 @@ class subpig(object):
         subpig_dict["date"] = subpig_date
         subpig_dict["title"] = subpig_title
         subpig_dict["url"] = subpig_url
-        subpig_rule = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)<font'
-        subpig_rule2 = r'<a href="(.*?)pan.baidu.com(.*?)" target="_blank">(.*?)</a>(.*?)<br />'
-        subpig_pwd_rule = r'[0-9A-Za-z]+'
+        subpig_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
         response = self.__request(subpig_url)
         subpig_single_index = response.text
         subpig_dl_urls = re.findall(subpig_rule, subpig_single_index)
-        if len(subpig_dl_urls) == 0:
-            subpig_dl_urls = re.findall(subpig_rule2, subpig_single_index)
-            for urls in subpig_dl_urls:
-                dl_urls = []
-                baidu_url = urls[2]
-                baidu_passwd = re.findall(subpig_pwd_rule, urls[3])[0]
-                dl_urls.append(baidu_url)
-                dl_urls.append(baidu_passwd)
-                subpig_dict["dlurls"] = dl_urls
+        for urls in subpig_dl_urls:
+            dl_urls = []
+            baidu_url = urls[0]
+            baidu_passwd = urls[1]
+            dl_urls.append(baidu_url)
+            dl_urls.append(baidu_passwd)
+            subpig_dict["dlurls"] = dl_urls
             # no thread
             # subpig_infos.append(subpig_dict)
             # -- thread mode --
-            return subpig_dict
-        else:
-            for urls in subpig_dl_urls:
-                dl_urls = []
-                baidu_url = urls[2]
-                baidu_passwd = re.findall(subpig_pwd_rule, urls[3])[0]
-                dl_urls.append(baidu_url)
-                dl_urls.append(baidu_passwd)
-                subpig_dict["dlurls"] = dl_urls
-            # no thread
-            # subpig_infos.append(subpig_dict)
-            # -- thread mode --
-            return subpig_dict
+        return subpig_dict
 
 
 def main():
