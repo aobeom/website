@@ -75,7 +75,7 @@ class mdpr(object):
     def mdprOriginUrl(self, photourls):
         photo_urls = photourls
         thread = len(photo_urls) / 4
-        if thread < 4:
+        if 0 < thread < 9:
             thread = 4
         if thread > 10:
             thread = 8
@@ -118,7 +118,7 @@ class oricon(object):
         photo_body_rule = r'<a.*?href="(.*?)".*?>.*?</a>'
         photo_url = re.findall(photo_body_rule, str(photo_body), re.S | re.M)
         thread = len(photo_url) / 4
-        if thread <= 4:
+        if 0 < thread <= 9:
             thread = 4
         if thread >= 10:
             thread = 8
@@ -281,7 +281,7 @@ class natalie(object):
 
     def natalieImgUrl(self, imglist):
         thread = len(imglist) / 4
-        if thread < 4:
+        if 0 < thread <= 9:
             thread = 4
         if thread > 10:
             thread = 8
@@ -327,60 +327,63 @@ class picdown(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
         }
 
+    def __urlInvalid(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        return response.status_code
+
     def urlCheck(self, url):
-        url = url
-        mdpr_host = "http[s]?://mdpr.jp/photo.*"
-        mdpr_host_other = "http[s]?://mdpr.jp/.*"
-        oricon_host = "http[s]?://www.oricon.co.jp/photo.*"
-        oricon_host_news = "http[s]?://www.oricon.co.jp/news.*"
-        ameblo_host = "http[s]?://ameblo.jp/.*/entry-.*"
-        keya_host = "http[s]?://*.*46.com/s/k46o/diary/detail/.*"
-        nogi_host = "http[s]?://*.*46.com/.*.php"
-        natalie_host = "https://natalie.mu/.*"
-        mantan_host = "https://mantan-web.jp/.*"
-        if len(re.findall(mdpr_host, url)) or len(re.findall(mdpr_host_other, url)):
-            result = {"site": "mdpr", "url": url}
-        elif len(re.findall(oricon_host, url)) or len(re.findall(oricon_host_news, url)):
-            result = {"site": "oricon", "url": url}
-        elif len(re.findall(ameblo_host, url)):
-            result = {"site": "ameblo", "url": url}
-        elif len(re.findall(nogi_host, url)) or len(re.findall(keya_host, url)):
-            result = {"site": "46", "url": url}
-        elif len(re.findall(natalie_host, url)):
-            result = {"site": "natalie", "url": url}
-        elif len(re.findall(mantan_host, url)):
-            result = {"site": "mantan", "url": url}
+        url_code = self.__urlInvalid(url)
+        if url_code == 200:
+            mdpr_host = "http[s]?://mdpr.jp/photo.*"
+            mdpr_host_other = "http[s]?://mdpr.jp/.*"
+            oricon_host = "http[s]?://www.oricon.co.jp/photo.*"
+            oricon_host_news = "http[s]?://www.oricon.co.jp/news.*"
+            ameblo_host = "http[s]?://ameblo.jp/.*/entry-.*"
+            keya_host = "http[s]?://*.*46.com/s/k46o/diary/detail/.*"
+            nogi_host = "http[s]?://*.*46.com/.*.php"
+            natalie_host = "https://natalie.mu/.*"
+            mantan_host = "https://mantan-web.jp/.*"
+            site = url.split("/")[2]
+            if len(re.findall(mdpr_host, url)) or len(re.findall(mdpr_host_other, url)):
+                result = {"status": 0, "site": site, "url": url}
+            elif len(re.findall(oricon_host, url)) or len(re.findall(oricon_host_news, url)):
+                result = {"status": 0, "site": site, "url": url}
+            elif len(re.findall(ameblo_host, url)):
+                result = {"status": 0, "site": site, "url": url}
+            elif len(re.findall(nogi_host, url)) or len(re.findall(keya_host, url)):
+                result = {"status": 0, "site": site, "url": url}
+            elif len(re.findall(natalie_host, url)):
+                result = {"status": 0, "site": site, "url": url}
+            elif len(re.findall(mantan_host, url)):
+                result = {"status": 0, "site": site, "url": url}
         else:
-            result = None
+            result = {"status": 1, "url": "mismatching", "code": url_code, "site": None}
         return result
 
     def photoUrlGet(self, urldict):
         urldict = urldict
-        if urldict:
-            target_site = urldict["site"]
-            target_url = urldict["url"]
-            if target_site == "mdpr":
-                m = mdpr()
-                photo_urls = m.mdprPhotoUrls(target_url)
-                result = m.mdprOriginUrl(photo_urls)
-            elif target_site == "oricon":
-                o = oricon()
-                result = o.oriconPhotoMode(target_url)
-            elif target_site == "ameblo":
-                a = ameblo()
-                result = a.amebloImgUrl(target_url)
-            elif target_site == "46":
-                p = pic46()
-                result = p.urlAnalysis(target_url)
-            elif target_site == "natalie":
-                n = natalie()
-                imglist = n.natalieImgList(target_url)
-                result = n.natalieImgUrl(imglist)
-            elif target_site == "mantan":
-                m = mantanweb()
-                result = m.mantanImgUrl(target_url)
-        else:
-            result = None
+        target_site = urldict["site"]
+        target_url = urldict["url"]
+        if "mdpr" in target_site:
+            m = mdpr()
+            photo_urls = m.mdprPhotoUrls(target_url)
+            result = m.mdprOriginUrl(photo_urls)
+        elif "oricon" in target_site:
+            o = oricon()
+            result = o.oriconPhotoMode(target_url)
+        elif "ameblo" in target_site:
+            a = ameblo()
+            result = a.amebloImgUrl(target_url)
+        elif "zaka46" in target_site:
+            p = pic46()
+            result = p.urlAnalysis(target_url)
+        elif "natalie" in target_site:
+            n = natalie()
+            imglist = n.natalieImgList(target_url)
+            result = n.natalieImgUrl(imglist)
+        elif "mantan" in target_site:
+            m = mantanweb()
+            result = m.mantanImgUrl(target_url)
         return result
 
     def __download(self, para):
@@ -401,7 +404,7 @@ class picdown(object):
         nums = range(1, len(urls) + 1)
         t = [folder for i in range(0, len(urls))]
         thread = thread / 4
-        if thread < 4:
+        if 0 < thread <= 9:
             thread = 4
         if thread > 10:
             thread = 8

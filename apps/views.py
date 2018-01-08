@@ -53,6 +53,7 @@ def pic_request():
                 r.redisSave(redis_key, hlsurl, ex=300, subkey=True)
             else:
                 datas["status"] = 1
+                datas["result"] = "mismatching"
     else:
         delType = "picture"
         p = picdown.picdown()
@@ -68,14 +69,15 @@ def pic_request():
             datas["type"] = delType
             datas["urls"] = urls
         else:
-            imgurl = p.photoUrlGet(urldict)
-            if imgurl:
+            if urldict["status"] == 0:
+                imgurl = p.photoUrlGet(urldict)
                 datas["status"] = 0
                 datas["type"] = delType
                 datas["urls"] = imgurl
                 r.redisSave(redis_key, imgurl, ex=259200, subkey=True)
             else:
                 datas["status"] = 1
+                datas["code"] = urldict["code"]
     return jsonify(datas)
 
 
@@ -106,6 +108,7 @@ def drama_request():
                 r.redisSave(redis_key, dramaContent)
             else:
                 datas["status"] = 1
+                datas["result"] = "mismatching"
     if id_type["id"] == "subpig":
         sitename = "subpig"
         redis_key = "drama:{}".format(sitename)
@@ -131,6 +134,7 @@ def drama_request():
                 r.redisSave(redis_key, dramaContent)
             else:
                 datas["status"] = 1
+                datas["result"] = "mismatching"
     if id_type["id"] == "fixsub":
         sitename = "fixsub"
         redis_key = "drama:{}".format(sitename)
@@ -156,6 +160,7 @@ def drama_request():
                 r.redisSave(redis_key, dramaContent)
             else:
                 datas["status"] = 1
+                datas["result"] = "mismatching"
     return jsonify(datas)
 
 
@@ -189,6 +194,7 @@ def program_request():
             r.redisSave(reids_key, tvdatas, ex=14400, subkey=True)
         else:
             datas["status"] = 1
+            datas["result"] = "mismatching"
     return jsonify(datas)
 
 
