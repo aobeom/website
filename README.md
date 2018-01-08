@@ -29,7 +29,7 @@ A simple Flask demo.
 
 *Example Request*
 
-POST https://yourdomain/v1/api/picdown
+GET https://yourdomain/v1/api/picdown?url=https://mdpr.jp/news/1727418
 
 ### drama
 
@@ -45,7 +45,7 @@ POST https://yourdomain/v1/api/picdown
 
 *Example Request*
 
-POST https://yourdomain/v1/api/dramaget
+GET https://yourdomain/v1/api/dramaget?id=tvbt
 
 ### program
 
@@ -57,8 +57,8 @@ POST https://yourdomain/v1/api/dramaget
 
 | Name | Required | Formats | Example |
 |:-----:|:----:|:----:|:-----:|
-| kw | required | JSON | a keyword |
+| kw | required | JSON | nhk |
 
 *Example Request*
 
-POST https://yourdomain/v1/api/programget
+GET https://yourdomain/v1/api/programget?kw=nhk

@@ -34,13 +34,11 @@ def programindex():
     return render_template("program_index.html")
 
 
-@app.route(API_PICDOWN, methods=['POST'], strict_slashes=False)
+@app.route(API_PICDOWN, methods=['GET'])
 def pic_request():
-    url_json = request.get_json()
+    url = request.args.get("url")
     r = redisMode.redisMode()
-    datas = {}
-    if "url" in url_json:
-        url = url_json["url"]
+    if url:
         if "showroom-live" in url:
             delType = "m3u8"
             redis_key = "{}:{}".format("showroom", url)
@@ -89,13 +87,12 @@ def pic_request():
     return jsonify(datas)
 
 
-@app.route(API_DRAMA, methods=['POST'], strict_slashes=False)
+@app.route(API_DRAMA, methods=['GET'])
 def drama_request():
-    id_type = request.get_json()
+    id_type = request.args.get("id")
     r = redisMode.redisMode()
-    datas = {}
-    if "id" in id_type:
-        if id_type["id"] == "tvbt":
+    if id_type:
+        if id_type == "tvbt":
             sitename = "tvbt"
             redis_key = "drama:{}".format(sitename)
             redisResult = r.redisCheck(redis_key)
@@ -112,7 +109,7 @@ def drama_request():
                     r.redisSave(redis_key, dramaContent)
                 else:
                     datas = statusHandler.handler(1, None, "No datas")
-        elif id_type["id"] == "subpig":
+        elif id_type == "subpig":
             sitename = "subpig"
             redis_key = "drama:{}".format(sitename)
             redisResult = r.redisCheck(redis_key)
@@ -132,7 +129,7 @@ def drama_request():
                     r.redisSave(redis_key, dramaContent)
                 else:
                     datas = statusHandler.handler(1, None, "No datas")
-        elif id_type["id"] == "fixsub":
+        elif id_type == "fixsub":
             sitename = "fixsub"
             redis_key = "drama:{}".format(sitename)
             redisResult = r.redisCheck(redis_key)
@@ -153,18 +150,17 @@ def drama_request():
                 else:
                     datas = statusHandler.handler(1, None, "No datas")
     else:
-        datas = statusHandler.handler(1, None, message="Params Error")
+        datas = statusHandler.handler(1, None, "Params Error")
     return jsonify(datas)
 
 
-@app.route(API_PROGRAM, methods=['POST'], strict_slashes=False)
+@app.route(API_PROGRAM, methods=['GET'])
 def program_request():
-    kw_json = request.get_json()
-    if "kw" in kw_json:
-        keyword = kw_json["kw"].encode("utf-8")
+    kw = request.args.get("kw")
+    if kw:
+        keyword = kw.encode("utf-8")
         reids_key = "program:{}".format(keyword)
         r = redisMode.redisMode()
-        datas = {}
         redisKeyword = r.redisCheck(reids_key, subkey=True)
         if redisKeyword:
             rediskeyword = redisKeyword
@@ -192,7 +188,7 @@ def program_request():
     return jsonify(datas)
 
 
-@app.route(API_UTIME, methods=['GET'])
+@app.route(API_UTIME, methods=['GET'], strict_slashes=False)
 def drama_utime():
     r = redisMode.redisMode()
     utime = r.conn.get("drama:utime")

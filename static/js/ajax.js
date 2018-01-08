@@ -11,28 +11,25 @@ $(document).ready(function () {
             disabled: 'disabled'
         });
         $("#datas").empty();
-        var data = {
-            "url": $("#picURL").val()
-        };
+        var url = $("#picURL").val()
         var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
-        if (data["url"].length == 0) {
+        if (url.length == 0) {
             $("#datas").append(error_null);
             $('#picdown').removeAttr("disabled");
             return false;
         }
         var patrn = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
         var regex = new RegExp(patrn);
-        if (regex.test(data["url"]) != true) {
+        if (regex.test(url) != true) {
             $("#datas").append(error_null);
             $('#picdown').removeAttr("disabled");
             return false;
         }
         $.ajax({
-            type: "POST",
-            url: "/v1/api/picdown/",
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify(data),
+            type: "GET",
+            url: "/v1/api/picdown",
+            data: "url=" + url,
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
@@ -72,7 +69,7 @@ $(document).ready(function () {
         $('#tips').toggle();
     })
     var clipboard = new Clipboard('.btn');
-    clipboard.on('success', function() {
+    clipboard.on('success', function () {
         var tips = '<i class="fa fa-smile-o" aria-hidden="true"></i>&nbsp; Copied!'
         $("#copied").html(tips)
     })
@@ -86,7 +83,6 @@ $(document).ready(function () {
                 var date = msg["message"]
                 var countdown = msg["datas"]
                 var sectotal = parseInt(countdown);
-
                 function timer(sectotal) {
                     window.setInterval(function () {
                         var day = 0,
@@ -121,15 +117,11 @@ $(document).ready(function () {
         $("#datas").empty();
         var data = {};
         var id = $(this).attr("id");
-        var data = {
-            "id": id
-        };
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
-            type: "POST",
-            url: "/v1/api/dramaget/",
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify(data),
+            type: "GET",
+            url: "/v1/api/dramaget",
+            data: "id=" + id,
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
@@ -164,7 +156,7 @@ $(document).ready(function () {
                             var subpig_title = '<p><a class="button-secondary pure-button" href="' + subpigs["url"] + '" target="_blank">' + subpigs["date"] + ' - ' + subpigs["title"] + '</a></p>';
                             var subpig_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><span class="button-span pure-button tools-span">LINK#PASSWD</span><ul class="pure-menu-list">';
                             var subpig_info = "";
-                            if (typeof(eps) != "undefined"){
+                            if (typeof (eps) != "undefined") {
                                 var subpig_info = subpig_info + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + eps[0] + '#' + eps[1] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a></li>';
                             }
                             var subpig_body = subpig_body + subpig_title + subpig_ul + subpig_info + '</ul></div>';
@@ -223,25 +215,22 @@ $(document).ready(function () {
 });
 $(document).ready(function () {
     $('#jprogram').click(function () {
+        var keyword = $("#proKW").val()
         $('#jprogram').attr({
             disabled: 'disabled'
         });
         $("#datas").empty();
-        var data = {
-            "kw": $("#proKW").val()
-        };
         var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
-        if (data["kw"].length == 0) {
+        if (keyword.length == 0) {
             $("#datas").append(error_null);
             $('#jprogram').removeAttr("disabled");
             return false;
         }
         $.ajax({
-            type: "POST",
-            url: "/v1/api/programget/",
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify(data),
+            type: "GET",
+            url: "/v1/api/programget",
+            data: "kw=" + keyword,
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
