@@ -30,21 +30,21 @@ $(document).ready(function () {
         }
         $.ajax({
             type: "POST",
-            url: "/picdown/",
+            url: "/v1/api/picdown/",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify(data),
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
                     if (msg["type"] == "picture") {
-                        var urls = msg["urls"];
+                        var urls = msg["datas"];
                         $("#datas").empty();
                         for (u in urls) {
                             $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
                         }
                     }
                     if (msg["type"] == "m3u8") {
-                        var urls = msg["urls"];
+                        var urls = msg["datas"];
                         $("#datas").empty();
                         $('#datas').append('<p><button id="copied" class="button-success pure-button btn" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
                     }
@@ -80,11 +80,11 @@ $(document).ready(function () {
     if (uri[uri.length - 1] == "drama") {
         $.ajax({
             type: "GET",
-            url: "/utime/",
+            url: "/v1/api/utime/",
             dataType: "json",
             success: function (msg) {
-                var date = msg["date"]
-                var countdown = msg["countdown"]
+                var date = msg["message"]
+                var countdown = msg["datas"]
                 var sectotal = parseInt(countdown);
 
                 function timer(sectotal) {
@@ -127,7 +127,7 @@ $(document).ready(function () {
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
             type: "POST",
-            url: "/dramaget/",
+            url: "/v1/api/dramaget/",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify(data),
             dataType: "json",
@@ -239,14 +239,14 @@ $(document).ready(function () {
         }
         $.ajax({
             type: "POST",
-            url: "/programget/",
+            url: "/v1/api/programget/",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify(data),
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
                     $("#datas").empty();
-                    var purl = msg["url"]
+                    var purl = msg["message"]
                     var pdatas = msg["datas"]
                     var pdatas_head = '<p><a class="pure-button pure-button-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
                     var pdatas_body = ""

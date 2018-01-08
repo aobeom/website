@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2018-01-05 10:52:26
+# @modify date 2018-01-08 13:04:32
 # @desc [原图链接获取]
 
 import datetime
@@ -14,6 +14,9 @@ import time
 from multiprocessing.dummy import Pool
 
 import requests
+
+from apps import statusHandler
+
 
 if sys.version > '3':
     py3 = True
@@ -75,7 +78,7 @@ class mdpr(object):
     def mdprOriginUrl(self, photourls):
         photo_urls = photourls
         thread = len(photo_urls) / 4
-        if 0 < thread < 9:
+        if 0 < thread <= 9:
             thread = 4
         if thread > 10:
             thread = 8
@@ -332,58 +335,60 @@ class picdown(object):
         return response.status_code
 
     def urlCheck(self, url):
-        url_code = self.__urlInvalid(url)
-        if url_code == 200:
-            mdpr_host = "http[s]?://mdpr.jp/photo.*"
-            mdpr_host_other = "http[s]?://mdpr.jp/.*"
-            oricon_host = "http[s]?://www.oricon.co.jp/photo.*"
-            oricon_host_news = "http[s]?://www.oricon.co.jp/news.*"
-            ameblo_host = "http[s]?://ameblo.jp/.*/entry-.*"
-            keya_host = "http[s]?://*.*46.com/s/k46o/diary/detail/.*"
-            nogi_host = "http[s]?://*.*46.com/.*.php"
-            natalie_host = "https://natalie.mu/.*"
-            mantan_host = "https://mantan-web.jp/.*"
-            site = url.split("/")[2]
-            if len(re.findall(mdpr_host, url)) or len(re.findall(mdpr_host_other, url)):
-                result = {"status": 0, "site": site, "url": url}
-            elif len(re.findall(oricon_host, url)) or len(re.findall(oricon_host_news, url)):
-                result = {"status": 0, "site": site, "url": url}
-            elif len(re.findall(ameblo_host, url)):
-                result = {"status": 0, "site": site, "url": url}
-            elif len(re.findall(nogi_host, url)) or len(re.findall(keya_host, url)):
-                result = {"status": 0, "site": site, "url": url}
-            elif len(re.findall(natalie_host, url)):
-                result = {"status": 0, "site": site, "url": url}
-            elif len(re.findall(mantan_host, url)):
-                result = {"status": 0, "site": site, "url": url}
+        http_code = self.__urlInvalid(url)
+        site = url.split("/")[2]
+        if http_code == 200:
+            host_rule = [
+                "http[s]?://mdpr.jp/photo.*",
+                "http[s]?://mdpr.jp/.*",
+                "http[s]?://www.oricon.co.jp/photo.*",
+                "http[s]?://www.oricon.co.jp/news.*",
+                "http[s]?://ameblo.jp/.*/entry-.*",
+                "http[s]?://*.*46.com/s/k46o/diary/detail/.*",
+                "http[s]?://*.*46.com/.*.php",
+                "http[s]?://natalie.mu/.*",
+                "http[s]?://mantan-web.jp/.*"
+            ]
+            for rule in host_rule:
+                if len(re.findall(rule, url)):
+                    result = statusHandler.handler(0, url, site, http_code)
+                    return result
+            else:
+                result = statusHandler.handler(
+                    1, None, site, http_code, "This website is not supported")
         else:
-            result = {"status": 1, "url": "mismatching", "code": url_code, "site": None}
+            result = statusHandler.handler(
+                1, None, site, http_code, "Url is error")
         return result
 
     def photoUrlGet(self, urldict):
         urldict = urldict
-        target_site = urldict["site"]
-        target_url = urldict["url"]
-        if "mdpr" in target_site:
+        target_type = urldict["type"]
+        target_url = urldict["datas"]
+        if "mdpr" in target_type:
             m = mdpr()
             photo_urls = m.mdprPhotoUrls(target_url)
             result = m.mdprOriginUrl(photo_urls)
-        elif "oricon" in target_site:
+        elif "oricon" in target_type:
             o = oricon()
             result = o.oriconPhotoMode(target_url)
-        elif "ameblo" in target_site:
+        elif "ameblo" in target_type:
             a = ameblo()
             result = a.amebloImgUrl(target_url)
-        elif "zaka46" in target_site:
+        elif "zaka46" in target_type:
             p = pic46()
             result = p.urlAnalysis(target_url)
-        elif "natalie" in target_site:
+        elif "natalie" in target_type:
             n = natalie()
             imglist = n.natalieImgList(target_url)
             result = n.natalieImgUrl(imglist)
-        elif "mantan" in target_site:
+        elif "mantan" in target_type:
             m = mantanweb()
             result = m.mantanImgUrl(target_url)
+        if result:
+            result = statusHandler.handler(0, result, target_type)
+        else:
+            result = statusHandler.handler(1, None, target_type)
         return result
 
     def __download(self, para):

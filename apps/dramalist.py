@@ -11,10 +11,7 @@ from multiprocessing.dummy import Pool
 
 import requests
 
-try:
-    from apps import redisMode
-except ImportError:
-    import redisMode
+from apps import redisMode
 
 
 class fixsub(object):

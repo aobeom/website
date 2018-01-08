@@ -9,6 +9,8 @@ import re
 
 import requests
 
+from apps import statusHandler
+
 
 class yahooTV(object):
     def __init__(self):
@@ -31,16 +33,20 @@ class yahooTV(object):
         url_title_station = self.__tvRightInfo(tv_index)
         tv_all_info = zip(date_time[0], date_time[1],
                           url_title_station[0], url_title_station[1], url_title_station[2])
-        tv_infos = []
-        for t in tv_all_info:
-            tv_dict = {}
-            tv_dict["date"] = t[0]
-            tv_dict["time"] = t[1]
-            tv_dict["url"] = t[2]
-            tv_dict["title"] = t[3]
-            tv_dict["station"] = t[4]
-            tv_infos.append(tv_dict)
-        return tv_url, tv_infos
+        if tv_all_info:
+            tv_infos = []
+            for t in tv_all_info:
+                tv_dict = {}
+                tv_dict["date"] = t[0]
+                tv_dict["time"] = t[1]
+                tv_dict["url"] = t[2]
+                tv_dict["title"] = t[3]
+                tv_dict["station"] = t[4]
+                tv_infos.append(tv_dict)
+            datas = statusHandler.handler(0, tv_infos, message=tv_url)
+        else:
+            datas = statusHandler.handler(1, None, message="No Program Found")
+        return datas
 
     def __tvLeftInfo(self, index):
         tv_index = index
@@ -54,7 +60,6 @@ class yahooTV(object):
             for dt in date_time:
                 dates.append(dt[0])
                 times.append(dt[1])
-
         return dates, times
 
     def __tvRightInfo(self, index):
