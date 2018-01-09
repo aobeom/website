@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:50
-# @modify date 2018-01-05 10:52:28
+# @modify date 2018-01-09 10:17:50
 # @desc [py-redis简单封装]
 
 import hashlib
@@ -36,12 +36,7 @@ class redisMode(object):
             keyname = "{}:{}".format(main_key, sub_key)
         if md5value:
             keyname = self.__hashMd5(keyname)
-        keys = self.conn.keys()
-        try:
-            keys = [str(k, encoding="utf-8") for k in keys]
-        except TypeError:
-            keys = keys
-        if keyname in keys:
+        if self.conn.exists(keyname):
             value = self.conn.get(keyname)
             try:
                 value = str(value, encoding="utf-8")
@@ -69,3 +64,8 @@ class redisMode(object):
         if md5value:
             keyname = self.__hashMd5(keyname)
         self.conn.set(keyname, value, ex=ex)
+
+    def redisCounter(self, keyname, ex=10):
+        self.__status()
+        self.conn.incr(keyname)
+        self.conn.expire(keyname, ex)

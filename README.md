@@ -62,3 +62,7 @@ GET https://yourdomain/v1/api/dramaget?id=tvbt
 *Example Request*
 
 GET https://yourdomain/v1/api/programget?kw=nhk
+
+## Limit
+
+Default 10 requests per second
