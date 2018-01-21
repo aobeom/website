@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-01-07 13:17:45
+# @modify date 2018-01-21 15:35:58
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -11,7 +11,10 @@ from multiprocessing.dummy import Pool
 
 import requests
 
-from apps import redisMode
+try:
+    from apps import redisMode
+except BaseException:
+    import redisMode
 
 
 class fixsub(object):
@@ -71,12 +74,14 @@ class fixsub(object):
             for i in fixsub_url:
                 episode = []
                 baidu_url = i[0]
-                magnet_url = i[3]
-                ed2k_url = i[6]
-                ep_rule = r'\.(E[0-9]+)\.'
-                ep_num = ''.join(re.findall(ep_rule, magnet_url))
-                if ep_num == "":
-                    ep_num = ''.join(re.findall(ep_rule, ed2k_url))
+                magnet_url = i[1]
+                ed2k_url = i[2]
+                ep_rule = r'\.([SE0-9]+)\.'
+                result = re.findall(ep_rule, magnet_url)
+                if len(result) == 0:
+                    ep_num = re.findall(ep_rule, ed2k_url)[0]
+                else:
+                    ep_num = result[0]
                 episode.append(ep_num)
                 episode.append(baidu_url)
                 episode.append(magnet_url)
@@ -85,12 +90,15 @@ class fixsub(object):
         elif tag == "b_m_rule":
             for i in fixsub_url:
                 episode = []
+                count = count + 1
                 baidu_url = i[0]
-                magnet_url = i[3]
-                ep_rule = r'\.(E[0-9]+)\.'
-                ep_num = ''.join(re.findall(ep_rule, magnet_url))
-                if ep_num == "":
-                    ep_num = ''.join(re.findall(ep_rule, ed2k_url))
+                magnet_url = i[1]
+                ep_rule = r'\.([SE0-9]+)\.'
+                result = re.findall(ep_rule, magnet_url)
+                if len(result) == 0:
+                    ep_num = str(count).zfill(2)
+                else:
+                    ep_num = result[0]
                 episode.append(ep_num)
                 episode.append(baidu_url)
                 episode.append(magnet_url)
@@ -116,13 +124,13 @@ class fixsub(object):
         fixsub_infos = urls
         # baidu,magnet,ed2k,_blank
         b_m_e_rule = re.compile(
-            r'<a href="(.*?)" target="_blank">(.*?)</a>(.*?)<a href="(.*?)" target="_blank">(.*?)</a>(.*?)<a href="(.*?)" target="_blank">(.*?)</a>')
+            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>.*?<a href="(ed2k.*?)".*?>.*?</a>')
         # baidu,magnet,_blank
         b_m_rule = re.compile(
-            r'<a href="(.*?)" target="_blank">(.*?)</a>(.*?)<a href="(.*?)" target="_blank">(.*?)</a>')
+            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>')
         # baidu,_blank
         b_rule = re.compile(
-            r'<a href="<a href="(.*?)" target="_blank">(.*?)</a>')
+            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>')
         for title, url in fixsub_infos.items():
             fix_dict = {}
             info_list = []
@@ -220,7 +228,8 @@ class tvbtsub(object):
             tvbt_dict["url"] = tvbt_url
             tvbt_dict["title"] = tvbt_title
             response = self.__request(tvbt_url)
-            tvbt_single_index = response.text.encode("ISO-8859-1").decode("utf-8")
+            tvbt_single_index = response.text.encode(
+                "ISO-8859-1").decode("utf-8")
             tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
             tvbt_dl_urls = []
             for info in tvbt_single_info:
@@ -384,7 +393,8 @@ def main2():
     p3.start()
 
     for p in multiprocessing.active_children():
-        print("ChildProcess: {pname} ChildPID: {pid}".format(pname=p.name, pid=p.pid))
+        print("ChildProcess: {pname} ChildPID: {pid}".format(
+            pname=p.name, pid=p.pid))
     print("Loading Complete")
 
 
