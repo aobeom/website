@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-01-04 12:54:59
+ * @modify date 2018-01-23 15:21:51
  */
 
 
@@ -115,6 +115,8 @@ $(document).ready(function () {
 $(document).ready(function () {
     $('.tools-drama input').click(function () {
         $("#datas").empty();
+        var subname = $(this).val()
+        $("#menuLink1").html(subname)
         var data = {};
         var id = $(this).attr("id");
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
