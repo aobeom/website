@@ -46,6 +46,11 @@ class redisMode(object):
         else:
             return None
 
+    def redisDel(self, keyname):
+        self.__status()
+        self.conn.delete(keyname)
+        return None
+
     def redisList(self, value):
         value = list(eval(value))
         return value

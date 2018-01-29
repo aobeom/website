@@ -83,6 +83,7 @@ $(document).ready(function () {
                 var date = msg["message"]
                 var countdown = msg["datas"]
                 var sectotal = parseInt(countdown);
+
                 function timer(sectotal) {
                     window.setInterval(function () {
                         var day = 0,
@@ -304,4 +305,70 @@ $(document).ready(function () {
         var time = 6000 * (1 - passedCourse / segmentWidth);
         run(time);
     });
+})
+
+$(document).ready(function () {
+    var uri = window.location.href.split("/")
+    if (uri[uri.length - 1] == "stchannel") {
+        $("#datas").empty();
+        var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+        $.ajax({
+            type: "GET",
+            url: "/v1/api/stinfo",
+            dataType: "json",
+            success: function (msg) {
+                $("#datas").empty();
+                var st_body = ""
+                for (i in msg) {
+                    var data = msg[i];
+                    var s_date = data["date"];
+                    var s_title = data["title"];
+                    var s_murl = data["murl"];
+                    var s_purl = data["purl"];
+                    var s_id = "dlink" + i
+                    var st_info = '<hr class="tools-hr"><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p><img src="' + s_purl + '" style="width:300px"></p><button id="' + s_id + '" class="pure-button pure-button-primary tools-button" value="' + s_murl + '">Resources</button>'
+                    var st_body = st_body + st_info;
+                }
+                $('#datas').append(st_body);
+                $('button').click(function () {
+                    var sid = $(this).attr("id")
+                    var murl = {
+                        "url": $(this).val()
+                    }
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json;charset=utf-8",
+                        url: "/v1/api/stdl",
+                        data: JSON.stringify(murl),
+                        dataType: "json",
+                        success: function (msg) {
+                            var dl = '<a class="button-success pure-button tools-button" href="' + msg["url"] + '" target="_blank">Download</a>'
+                            $("#" + sid).replaceWith(dl)
+                            $(".tools-button").removeAttr("disabled");
+                        },
+                        beforeSend: function (XMLHttpRequest) {
+                            $("#" + sid).text("Loading...")
+                            $("#" + sid).attr({
+                                disabled: "disabled"
+                            });
+                            $(".tools-button").attr({
+                                disabled: "disabled"
+                            });
+                        },
+                        error: function () {
+                            $("#" + sid).replaceWith(error_system);
+                        }
+                    })
+                })
+            },
+            beforeSend: function (XMLHttpRequest) {
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+            },
+            error: function () {
+                $("#datas").empty();
+                $("#datas").append(error_system);
+            }
+        })
+    }
 })

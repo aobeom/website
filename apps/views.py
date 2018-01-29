@@ -9,13 +9,15 @@ from multiprocessing.dummy import Pool
 
 from flask import jsonify, render_template, request
 
-from apps import app, dramalist, jprogram, picdown, redisMode, srurl, statusHandler, limitrate
+from apps import app, dramalist, jprogram, picdown, redisMode, srurl, statusHandler, limitrate, dlcore
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
 API_DRAMA = API_VERSION + "/api/dramaget"
 API_PROGRAM = API_VERSION + "/api/programget"
 API_UTIME = API_VERSION + "/api/utime"
+API_ST = API_VERSION + "/api/stinfo"
+API_STDL = API_VERSION + "/api/stdl"
 
 
 @app.route('/')
@@ -32,6 +34,11 @@ def dramaindex():
 @app.route('/program')
 def programindex():
     return render_template("program_index.html")
+
+
+@app.route('/stchannel')
+def stindex():
+    return render_template("st_index.html")
 
 
 @app.route(API_PICDOWN, methods=['GET'])
@@ -79,7 +86,8 @@ def pic_request():
                         if result["status"] == 0:
                             imgurls = result["datas"]
                             datas = statusHandler.handler(0, imgurls, delType)
-                            r.redisSave(redis_key, datas, ex=259200, subkey=True)
+                            r.redisSave(redis_key, datas,
+                                        ex=259200, subkey=True)
                         else:
                             datas = statusHandler.handler(
                                 1, None, imgtype, message="Images Not Found")
@@ -113,7 +121,8 @@ def drama_request():
                     tvbt_update_info = t.tvbtIndexInfo()
                     dramaContent = t.tvbtGetUrl(tvbt_update_info)
                     if dramaContent:
-                        datas = statusHandler.handler(0, dramaContent, sitename)
+                        datas = statusHandler.handler(
+                            0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
                         datas = statusHandler.handler(1, None, "No datas")
@@ -133,7 +142,8 @@ def drama_request():
                     pool.close()
                     pool.join
                     if dramaContent:
-                        datas = statusHandler.handler(0, dramaContent, sitename)
+                        datas = statusHandler.handler(
+                            0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
                         datas = statusHandler.handler(1, None, "No datas")
@@ -153,7 +163,8 @@ def drama_request():
                         fix_single_page = f.fixSinglePageInfo(fix_page_info)
                         dramaContent = f.fixInfoGet(fix_single_page)
                     if dramaContent:
-                        datas = statusHandler.handler(0, dramaContent, sitename)
+                        datas = statusHandler.handler(
+                            0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
                         datas = statusHandler.handler(1, None, "No datas")
@@ -221,6 +232,26 @@ def drama_utime():
     else:
         datas = statusHandler.handler(1, None, message="No datas")
     return jsonify(datas)
+
+
+@app.route(API_ST, methods=['GET'], strict_slashes=False)
+def stmovie_get():
+    r = redisMode.redisMode()
+    d = r.redisCheck("stinfo")
+    d = r.redisList(d)
+    return jsonify(d)
+
+
+@app.route(API_STDL, methods=['POST'], strict_slashes=False)
+def stmovie_dl():
+    h = dlcore.HLSVideo()
+    murl = request.get_json()
+    playlist = murl["url"]
+    site = h.hlsSite(playlist)
+    keyvideo = h.hlsInfo(site)
+    uri = h.hlsDL(keyvideo)
+    dlurl = {"url": uri}
+    return jsonify(dlurl)
 
 
 @app.errorhandler(500)

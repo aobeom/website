@@ -4,7 +4,6 @@
  * @modify date 2017-12-29 09:38:02
 */
 
-
 /* base */
 
 html,
@@ -52,7 +51,6 @@ a {
     font-family: 'Varela Round', sans-serif;
 }
 
-
 /* template common */
 
 .tools-head {
@@ -89,7 +87,6 @@ a {
     word-break: break-word;
 }
 
-
 /* picdown */
 
 .tools-banner {
@@ -125,7 +122,6 @@ a {
 #tipsbtn {
     margin: 5px;
 }
-
 
 /* drama */
 
@@ -176,7 +172,6 @@ a {
     border-radius: 4px;
 }
 
-
 /* program */
 
 .tools-tv {
@@ -185,6 +180,14 @@ a {
 
 #tips {
     margin: 5px;
+}
+
+/* stchannel */
+
+.stdiv {
+    word-break: break-all;
+    width: 300px;
+    margin: 0 auto;
 }
 
 /* common */
