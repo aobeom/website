@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-01-09 10:18:59
+# @modify date 2018-01-29 23:36:42
 # @desc [Flask view main]
 
 import time
@@ -241,8 +241,10 @@ def stmovie_get():
     stinfo = r.redisCheck("stinfo")
     stinfo = r.redisList(stinfo)
     stutime = r.redisCheck("st:utime")
-    datas["datas"] = stinfo
-    datas["utime"] = stutime
+    if stutime:
+        datas = statusHandler.handler(0, stinfo, message=stutime)
+    else:
+        datas = statusHandler.handler(1, None, message="No datas")
     return jsonify(datas)
 
 
@@ -251,11 +253,13 @@ def stmovie_dl():
     h = dlcore.HLSVideo()
     murl = request.get_json()
     playlist = murl["url"]
-    site = h.hlsSite(playlist)
-    keyvideo = h.hlsInfo(site)
+    keyvideo = h.hlsInfo(playlist)
     uri = h.hlsDL(keyvideo)
-    dlurl = {"url": uri}
-    return jsonify(dlurl)
+    if uri:
+        datas = statusHandler.handler(0, uri)
+    else:
+        datas = statusHandler.handler(1, None, message="No datas")
+    return jsonify(datas)
 
 
 @app.errorhandler(500)

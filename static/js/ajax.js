@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-01-23 15:21:51
+ * @modify date 2018-01-29 23:36:23
  */
 
 
@@ -318,7 +318,7 @@ $(document).ready(function () {
             url: "/v1/api/stinfo",
             dataType: "json",
             success: function (msg) {
-                var ut = msg["utime"]
+                var ut = msg["message"]
                 var dt = msg["datas"]
                 $("#datas").empty();
                 var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + ' JST</span>'
@@ -345,7 +345,7 @@ $(document).ready(function () {
                         data: JSON.stringify(murl),
                         dataType: "json",
                         success: function (msg) {
-                            var dl = '<a class="button-success pure-button tools-button" href="' + msg["url"] + '" target="_blank">Download</a>'
+                            var dl = '<a class="button-success pure-button tools-button" href="' + msg["datas"] + '" target="_blank">Download</a>'
                             $("#" + sid).replaceWith(dl)
                             $(".tools-button").removeAttr("disabled");
                         },
