@@ -82,11 +82,13 @@ class stMovies(object):
 
 
 def main():
+    times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     st = stMovies()
     st_info = st.stMovieInfos()
     infos = st.stGetUrl(st_info)
     r = redisMode.redisMode()
     r.redisSave("stinfo", infos)
+    r.redisSave("st:utime", times)
 
 
 if __name__ == "__main__":

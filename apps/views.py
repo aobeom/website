@@ -237,9 +237,13 @@ def drama_utime():
 @app.route(API_ST, methods=['GET'], strict_slashes=False)
 def stmovie_get():
     r = redisMode.redisMode()
-    d = r.redisCheck("stinfo")
-    d = r.redisList(d)
-    return jsonify(d)
+    datas = {}
+    stinfo = r.redisCheck("stinfo")
+    stinfo = r.redisList(stinfo)
+    stutime = r.redisCheck("st:utime")
+    datas["datas"] = stinfo
+    datas["utime"] = stutime
+    return jsonify(datas)
 
 
 @app.route(API_STDL, methods=['POST'], strict_slashes=False)

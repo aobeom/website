@@ -318,10 +318,12 @@ $(document).ready(function () {
             url: "/v1/api/stinfo",
             dataType: "json",
             success: function (msg) {
+                var ut = msg["utime"]
+                var dt = msg["datas"]
                 $("#datas").empty();
-                var st_body = ""
-                for (i in msg) {
-                    var data = msg[i];
+                var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + ' JST</span>'
+                for (i in dt) {
+                    var data = dt[i];
                     var s_date = data["date"];
                     var s_title = data["title"];
                     var s_murl = data["murl"];
