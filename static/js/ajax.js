@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-01-29 23:36:23
+ * @modify date 2018-02-11 09:49:03
  */
 
 
@@ -107,7 +107,7 @@ $(document).ready(function () {
                 $(function () {
                     timer(sectotal);
                 });
-                $('#update').append('<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + date + ' JST');
+                $('#update').append('<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + date);
             },
         })
     }
@@ -318,18 +318,22 @@ $(document).ready(function () {
             url: "/v1/api/stinfo",
             dataType: "json",
             success: function (msg) {
-                var ut = msg["message"]
-                var dt = msg["datas"]
+                var ut = msg["message"];
+                var dt = msg["datas"];
                 $("#datas").empty();
-                var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + ' JST</span>'
+                if (msg["status"] == 0) {
+                    var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</span>'
+                } else {
+                    var st_body = '<span class="button-error pure-button">Too many requests per second</span>'
+                }
                 for (i in dt) {
                     var data = dt[i];
                     var s_date = data["date"];
                     var s_title = data["title"];
                     var s_murl = data["murl"];
                     var s_purl = data["purl"];
-                    var s_id = "dlink" + i
-                    var st_info = '<hr class="tools-hr"><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p><img src="' + s_purl + '" style="width:300px"></p><button id="' + s_id + '" class="pure-button pure-button-primary tools-button" value="' + s_murl + '">Resources</button>'
+                    var s_id = "dlink" + i;
+                    var st_info = '<hr class="tools-hr"><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p><img src="' + s_purl + '" style="width:300px"></p><button id="' + s_id + '" class="pure-button pure-button-primary tools-button" value="' + s_murl + '">Resources</button>';
                     var st_body = st_body + st_info;
                 }
                 $('#datas').append(st_body);

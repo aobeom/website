@@ -12,6 +12,7 @@ A simple Flask demo.
 + picture download
 + showroom-live hls url
 + program information
++ st movie info / download
 
 ## API
 
@@ -62,6 +63,38 @@ GET https://yourdomain/v1/api/dramaget?id=tvbt
 *Example Request*
 
 GET https://yourdomain/v1/api/programget?kw=nhk
+
+### STinfo
+
+*Resource URL*
+
+/v1/api/stinfo
+
+*Parameters*
+
+| Name | Required | Formats | Example |
+|:-----:|:----:|:----:|:-----:|
+| / | / | JSON | / |
+
+*Example Request*
+
+GET https://yourdomain/v1/api/stinfo
+
+### STdownload
+
+*Resource URL*
+
+/v1/api/stdl
+
+*Parameters*
+
+| Name | Required | Formats | Example |
+|:-----:|:----:|:----:|:-----:|
+| url | required | JSON | {"url":"playlist"} |
+
+*Example Request*
+
+POST https://yourdomain/v1/api/stdl
 
 ## Limit
 

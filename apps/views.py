@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-01-29 23:36:42
+# @modify date 2018-02-11 09:48:25
 # @desc [Flask view main]
 
 import time
@@ -241,8 +241,13 @@ def stmovie_get():
     stinfo = r.redisCheck("stinfo")
     stinfo = r.redisList(stinfo)
     stutime = r.redisCheck("st:utime")
-    if stutime:
-        datas = statusHandler.handler(0, stinfo, message=stutime)
+    clientip = request.remote_addr
+    limitinfo = limitrate.limitIP(clientip)
+    if stinfo:
+        if limitinfo is None:
+            datas = statusHandler.handler(0, stinfo, message=stutime)
+        else:
+            datas = limitinfo
     else:
         datas = statusHandler.handler(1, None, message="No datas")
     return jsonify(datas)
@@ -255,8 +260,13 @@ def stmovie_dl():
     playlist = murl["url"]
     keyvideo = h.hlsInfo(playlist)
     uri = h.hlsDL(keyvideo)
+    clientip = request.remote_addr
+    limitinfo = limitrate.limitIP(clientip)
     if uri:
-        datas = statusHandler.handler(0, uri)
+        if limitinfo is None:
+            datas = statusHandler.handler(0, uri)
+        else:
+            datas = limitinfo
     else:
         datas = statusHandler.handler(1, None, message="No datas")
     return jsonify(datas)
