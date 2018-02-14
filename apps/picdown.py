@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2018-01-08 13:04:32
+# @modify date 2018-02-14 14:23:04
 # @desc [原图链接获取]
 
 import datetime
@@ -288,7 +288,7 @@ class natalie(object):
             thread = 4
         if thread > 10:
             thread = 8
-        pool = Pool()
+        pool = Pool(thread)
         imgurls = pool.map(self.__geturl, imglist)
         pool.close()
         pool.join()
@@ -324,6 +324,39 @@ class mantanweb(object):
         return mantan_imgs
 
 
+class thetv(object):
+    def __init__(self):
+        self.thetv_host = "https://thetv.jp"
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36"
+        }
+
+    def thetvPicUrl(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        thetv_body = response.text
+        thetv_picrule = '<li class="list_thumbnail__item"><a href="(.*?)" data-echo-background=".*?" alt=".*?" onContextmenu="return false"></a></li>'
+        thetv_uri = re.findall(thetv_picrule, thetv_body, re.S | re.M)
+        thetv_picurl = [self.thetv_host + p for p in thetv_uri]
+        thread = len(thetv_picurl) / 4
+        if 0 < thread <= 9:
+            thread = 4
+        if thread > 10:
+            thread = 8
+        pool = Pool(thread)
+        thetv_imgurl = pool.map(self.__geturl, thetv_picurl)
+        pool.close()
+        pool.join()
+        thetv_imgurls = [''.join(i) for i in thetv_imgurl]
+        return thetv_imgurls
+
+    def __geturl(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        thetv_imgbody = response.text
+        thetv_imgrule = '<figure>.*?<img src="(.*?)".*?>.*?</figure>'
+        thetv_imgurl = re.findall(thetv_imgrule, thetv_imgbody, re.S | re.M)
+        return thetv_imgurl
+
+
 class picdown(object):
     def __init__(self):
         self.headers = {
@@ -347,7 +380,8 @@ class picdown(object):
                 "http[s]?://*.*46.com/s/k46o/diary/detail/.*",
                 "http[s]?://*.*46.com/.*.php",
                 "http[s]?://natalie.mu/.*",
-                "http[s]?://mantan-web.jp/.*"
+                "http[s]?://mantan-web.jp/.*",
+                "http[s]?://thetv.jp/news/.*"
             ]
             for rule in host_rule:
                 if len(re.findall(rule, url)):
@@ -385,6 +419,9 @@ class picdown(object):
         elif "mantan" in target_type:
             m = mantanweb()
             result = m.mantanImgUrl(target_url)
+        elif "thetv" in target_type:
+            t = thetv()
+            result = t.thetvPicUrl(target_url)
         if result:
             result = statusHandler.handler(0, result, target_type)
         else:
