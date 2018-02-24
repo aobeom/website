@@ -81,7 +81,7 @@ def pic_request():
                         imgtype = redisUrls["type"]
                         datas = statusHandler.handler(0, imgurls, delType)
                     else:
-                        result = p.photoUrlGet(urldict)
+                        result = p.picRouter(urldict)
                         imgtype = result["type"]
                         if result["status"] == 0:
                             imgurls = result["datas"]
