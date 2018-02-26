@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-02-11 09:49:03
+ * @modify date 2018-02-26 18:09:54
  */
 
 
@@ -37,7 +37,11 @@ $(document).ready(function () {
                         var urls = msg["datas"];
                         $("#datas").empty();
                         for (u in urls) {
-                            $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
+                            if ( urls[u].indexOf(".mp4") > 0){
+                                $('#datas').append('<hr class="tools-hr"><p class="tools-img"><video src="' + urls[u] + '" controls="controls" width="300"></p>');
+                            } else{
+                                $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
+                            }
                         }
                     }
                     if (msg["type"] == "m3u8") {

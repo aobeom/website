@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2018-02-24 20:42:35
+# @modify date 2018-02-26 18:10:11
 # @desc [原图链接获取]
 
 import hashlib
@@ -60,6 +60,39 @@ class picExtra(object):
         else:
             picurl = url
         return picurl
+
+
+class instapic(object):
+    def __init__(self):
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36"
+        }
+
+    def instaPicUrl(self, url):
+        response = requests.get(url, headers=self.headers, timeout=30)
+        insta_body = response.text
+        insta_pics = []
+        insta_rule = r'<script type="text/javascript">window._sharedData = (.*?);</script>'
+        insta_str = re.findall(insta_rule, insta_body, re.S | re.M)
+        insta_json = json.loads(''.join(insta_str))
+        insta_core = insta_json["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]
+        if "edge_sidecar_to_children" in insta_core:
+            insta_content = insta_core["edge_sidecar_to_children"]["edges"]
+            for i in insta_content:
+                insta_node = i["node"]
+                if insta_node["__typename"] == "GraphImage":
+                    insta_pics.append(insta_node["display_url"])
+                elif insta_node["__typename"] == "GraphVideo":
+                    insta_pics.append(insta_node["video_url"])
+        else:
+            insta_type = insta_core["is_video"]
+            if insta_type:
+                insta_node = insta_core["video_url"]
+                insta_pics.append(insta_node)
+            else:
+                insta_node = insta_core["display_url"]
+                insta_pics.append(insta_node)
+        return insta_pics
 
 
 class ameblo(object):
@@ -171,7 +204,8 @@ class picdown(object):
                 "http[s]?://*.*46.com/.*.php",
                 "http[s]?://natalie.mu/.*",
                 "http[s]?://mantan-web.jp/.*",
-                "http[s]?://thetv.jp/news/.*"
+                "http[s]?://thetv.jp/news/.*",
+                "http[s]?://www.instagram.com/p/.*"
             ]
             for rule in host_rule:
                 if len(re.findall(rule, url)):
@@ -230,6 +264,9 @@ class picdown(object):
             pic_rule = r'<figure>.*?<img src="(.*?)".*?>.*?</figure>'
             piclist = self.picRules(url, site, fil_rule)
             pics = self.picUrlsGet(piclist, pic_rule)
+        elif "instagram" in site:
+            i = instapic()
+            pics = i.instaPicUrl(url)
         if pics:
             result = statusHandler.handler(0, pics, site)
         else:
