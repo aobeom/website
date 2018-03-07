@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:47:38
-# @modify date 2018-01-05 10:52:23
+# @modify date 2018-03-07 13:51:23
 # @desc [雅虎节目表关键词搜索]
 
 import re
@@ -19,12 +19,13 @@ class yahooTV(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
         }
 
-    def tvInfos(self, keyword):
+    def tvInfos(self, keyword, code):
         apihost = self.host + "/search/?"
         params = {
             "q": keyword,
             "Submit.x": 0,
-            "Submit.y": 0
+            "Submit.y": 0,
+            "a": code
         }
         response = requests.get(apihost, headers=self.headers, params=params)
         tv_index = response.text

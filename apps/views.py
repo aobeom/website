@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-02-11 09:48:25
+# @modify date 2018-03-07 13:50:54
 # @desc [Flask view main]
 
 import time
@@ -178,14 +178,15 @@ def drama_request():
 @app.route(API_PROGRAM, methods=['GET'])
 def program_request():
     kw = request.args.get("kw")
+    code = request.args.get("ac")
     if kw:
         clientip = request.remote_addr
         limitinfo = limitrate.limitIP(clientip)
         if limitinfo is None:
             keyword = kw.encode("utf-8")
-            reids_key = "program:{}".format(keyword)
+            redis_key = "{}:{}".format(code, keyword)
             r = redisMode.redisMode()
-            redisKeyword = r.redisCheck(reids_key, subkey=True)
+            redisKeyword = r.redisCheck(redis_key, subkey=True)
             if redisKeyword:
                 rediskeyword = redisKeyword
                 rediskeyword = r.redisDict(rediskeyword)
@@ -199,12 +200,12 @@ def program_request():
                 datas = statusHandler.handler(0, tvdatas, message=tvurl)
             else:
                 y = jprogram.yahooTV()
-                tvinfo = y.tvInfos(keyword)
+                tvinfo = y.tvInfos(keyword, code)
                 if tvinfo["status"] == 0:
                     tvdatas = tvinfo["datas"]
                     tvurl = tvinfo["message"]
                     datas = statusHandler.handler(0, tvdatas, message=tvurl)
-                    r.redisSave(reids_key, datas, ex=14400, subkey=True)
+                    r.redisSave(redis_key, datas, ex=14400, subkey=True)
                 else:
                     datas = tvinfo
         else:

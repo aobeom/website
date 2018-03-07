@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-02-26 18:09:54
+ * @modify date 2018-03-07 13:50:23
  */
 
 
@@ -226,6 +226,7 @@ $(document).ready(function () {
         $('#jprogram').attr({
             disabled: 'disabled'
         });
+        var code = $("#area").val()
         $("#datas").empty();
         var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
         var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
@@ -237,7 +238,7 @@ $(document).ready(function () {
         $.ajax({
             type: "GET",
             url: "/v1/api/programget",
-            data: "kw=" + keyword,
+            data: {"kw": keyword, "ac": code},
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {

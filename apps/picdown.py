@@ -205,7 +205,7 @@ class picdown(object):
                 "http[s]?://natalie.mu/.*",
                 "http[s]?://mantan-web.jp/.*",
                 "http[s]?://thetv.jp/news/.*",
-                "http[s]?://www.instagram.com/p/.*"
+                "http[s]?://(www.)?instagram.com/p/.*"
             ]
             for rule in host_rule:
                 if len(re.findall(rule, url)):
@@ -296,7 +296,7 @@ class picdown(object):
         pic_rule = [rule1] * len(piclist)
         if 0 <= thread <= 9:
             thread = 4
-        if thread > 10:
+        if thread > 9:
             thread = 8
         pool = Pool(thread)
         picurls = pool.map(self.__get_core, zip(piclist, pic_rule))
