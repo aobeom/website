@@ -201,6 +201,19 @@ a {
     margin: 0 auto;
 }
 
+/* hls */
+
+.tools-up {
+    margin: 0 auto;
+    padding: 20px;
+    width: 300px;
+}
+
+.tools-up input {
+    padding: 15px;
+    width: 250px;
+}
+
 /* common */
 
 .button-success,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:50
-# @modify date 2018-01-09 10:17:50
+# @modify date 2018-03-09 21:18:59
 # @desc [py-redis简单封装]
 
 import hashlib
@@ -57,6 +57,11 @@ class redisMode(object):
 
     def redisDict(self, value):
         value = dict(eval(value))
+        return value
+
+    def redisKeys(self, prekey):
+        self.__status()
+        value = self.conn.keys(prekey)
         return value
 
     def redisSave(self, keyname, value, ex=2592000, md5value=False, subkey=False):

@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-03-07 13:50:23
+ * @modify date 2018-03-09 21:19:20
  */
 
 
@@ -37,9 +37,9 @@ $(document).ready(function () {
                         var urls = msg["datas"];
                         $("#datas").empty();
                         for (u in urls) {
-                            if ( urls[u].indexOf(".mp4") > 0){
+                            if (urls[u].indexOf(".mp4") > 0) {
                                 $('#datas').append('<hr class="tools-hr"><p class="tools-img"><video src="' + urls[u] + '" controls="controls" width="300"></p>');
-                            } else{
+                            } else {
                                 $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
                             }
                         }
@@ -238,7 +238,10 @@ $(document).ready(function () {
         $.ajax({
             type: "GET",
             url: "/v1/api/programget",
-            data: {"kw": keyword, "ac": code},
+            data: {
+                "kw": keyword,
+                "ac": code
+            },
             dataType: "json",
             success: function (msg) {
                 if (msg["status"] == 0) {
@@ -382,4 +385,66 @@ $(document).ready(function () {
             }
         })
     }
+})
+
+$(document).ready(function () {
+    var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+    var error_size = '<p class="button-error pure-button" onclick="location.reload();">Must be less than 100M</p>';
+    var error_type = '<p class="button-error pure-button" onclick="location.reload();">Only .mp4</p>';
+    var success = '<p class="button-success pure-button" onclick="location.reload();">Uploaded</p>';
+    var uri = window.location.href.split("/")
+    if (uri[uri.length - 1] == "hls") {
+        $.ajax({
+            type: "GET",
+            url: "/v1/api/upload",
+            dataType: "json",
+            success: function (msg) {
+                $("#datas").empty();
+                for (i = 1; i < msg + 1; i++) {
+                    $("#datas").append('<p><a href="/hls/' + i + '">video ' + i + "</a></p>")
+                }
+            },
+            beforeSend: function (XMLHttpRequest) {
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+            },
+            error: function () {
+                $("#datas").append(error_system);
+            }
+        })
+    }
+    $('#upload').click(function () {
+        var formData = new FormData();
+        var filebody = $('#file')[0].files[0]
+        formData.append('file', filebody);
+        var filepath = $('#file').val().toLowerCase().split(".")
+        var filesize = filebody.size
+        var filetype = filepath[filepath.length - 1];
+        if (filesize > 1024000000) {
+            $("#datas").append(error_size);
+            return false;
+        }
+        if (filetype != "mp4") {
+            $("#datas").append(error_type);
+            return false;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/v1/api/upload",
+            data: formData,
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: "json",
+            success: function (msg) {
+                $("#datas").empty();
+                $("#datas").append(success)
+            },
+            beforeSend: function (XMLHttpRequest) {
+                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+            },
+            error: function () {
+                $("#datas").append(error_system);
+            }
+        })
+    })
 })

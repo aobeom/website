@@ -5,11 +5,12 @@
 # @desc [Flask view main]
 
 import time
+import os
 from multiprocessing.dummy import Pool
 
 from flask import jsonify, render_template, request
-
-from apps import app, dramalist, jprogram, picdown, redisMode, srurl, statusHandler, limitrate, dlcore
+from werkzeug import secure_filename
+from apps import app, dramalist, jprogram, picdown, redisMode, srurl, statusHandler, limitrate, dlcore, hlstream
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -18,6 +19,8 @@ API_PROGRAM = API_VERSION + "/api/programget"
 API_UTIME = API_VERSION + "/api/utime"
 API_ST = API_VERSION + "/api/stinfo"
 API_STDL = API_VERSION + "/api/stdl"
+API_UP = API_VERSION + "/api/upload"
+API_VIDEOS = API_VERSION + "/api/vlist"
 
 
 @app.route('/')
@@ -39,6 +42,16 @@ def programindex():
 @app.route('/stchannel')
 def stindex():
     return render_template("st_index.html")
+
+
+@app.route('/upload')
+def upload():
+    return render_template("player.html")
+
+
+@app.route('/hls')
+def hls():
+    return render_template("hlslist.html")
 
 
 @app.route(API_PICDOWN, methods=['GET'])
@@ -283,3 +296,35 @@ def server_error(error):
 def method_error(error):
     datas = statusHandler.handler(1, None, code=405, message="Method Error")
     return jsonify(datas)
+
+
+@app.route(API_UP, methods=['GET', 'POST'], strict_slashes=False)
+def upload_file():
+    if request.method == 'POST':
+        r = redisMode.redisMode()
+        h = hlstream.hlsegment()
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        video = os.path.join(os.getcwd(), "videos", filename)
+        file.save(video)
+        playlist = h.segment(video, "media")
+        redis_key = "playlist:{}".format(playlist)
+        datas = statusHandler.handler(0, playlist)
+        r.redisSave(redis_key, datas, subkey=True)
+        return jsonify(datas)
+    if request.method == 'GET':
+        r = redisMode.redisMode()
+        playlists = r.redisKeys("playlist:*")
+        totals = str(len(playlists))
+        return totals
+
+
+@app.route('/hls/<code>')
+def subhls(code):
+    code = int(code) - 1
+    r = redisMode.redisMode()
+    playlists = r.redisKeys("playlist:*")
+    playlist = playlists[code]
+    url = r.redisCheck(playlist)
+    url = r.redisDict(url)
+    return render_template("vpage.html", url=url)
