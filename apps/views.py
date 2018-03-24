@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-03-07 13:50:54
+# @modify date 2018-03-24 13:38:53
 # @desc [Flask view main]
 
 import time
@@ -62,17 +62,19 @@ def pic_request():
         clientip = request.remote_addr
         limitinfo = limitrate.limitIP(clientip)
         if limitinfo is None:
-            if "showroom-live" in url:
+            sites = ["www.showroom-live.com", "live.line.me"]
+            sitetype = url.split("/")[2]
+            if sitetype in sites:
                 delType = "m3u8"
-                redis_key = "{}:{}".format("showroom", url)
+                redis_key = "{}:{}".format("hlsmeu8", url)
                 redisSR = r.redisCheck(redis_key, subkey=True)
                 if redisSR:
                     urlinfo = r.redisDict(redisSR)
                     hlsurl = urlinfo["datas"]
                     datas = statusHandler.handler(0, hlsurl, delType)
                 else:
-                    sr = srurl.SRPlayList()
-                    urlinfo = sr.getUrl(url)
+                    sr = srurl.HLSPlayList()
+                    urlinfo = sr.urlRouter(url)
                     if urlinfo["status"] == 0:
                         hlsurl = urlinfo["datas"]
                         datas = statusHandler.handler(0, hlsurl, delType)
@@ -310,7 +312,7 @@ def upload_file():
         playlist = h.segment(video, "media")
         redis_key = "playlist:{}".format(playlist)
         datas = statusHandler.handler(0, playlist)
-        r.redisSave(redis_key, datas, subkey=True)
+        r.redisSave(redis_key, datas, ex=604800, subkey=True)
         return jsonify(datas)
     if request.method == 'GET':
         r = redisMode.redisMode()

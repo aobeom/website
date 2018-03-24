@@ -413,6 +413,7 @@ $(document).ready(function () {
         })
     }
     $('#upload').click(function () {
+        $("#datas").empty();
         var formData = new FormData();
         var filebody = $('#file')[0].files[0]
         formData.append('file', filebody);
@@ -436,7 +437,6 @@ $(document).ready(function () {
             cache: false,
             dataType: "json",
             success: function (msg) {
-                $("#datas").empty();
                 $("#datas").append(success)
             },
             beforeSend: function (XMLHttpRequest) {
