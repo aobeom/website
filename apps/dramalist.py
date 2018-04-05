@@ -270,6 +270,7 @@ class subpig(object):
         subpig_rules = r'</em>.*?<a href="(.*?)".*?style="font-weight: bold;color: #EE1B2E".*?>(.*?)</a>'
         subpig_update_info = re.findall(subpig_rules, subpig_url)
         subpig_update_info.pop(0)
+        subpig_update_info.pop(0)
         for info in subpig_update_info:
             subpig_info = []
             subpig_title = info[1]
@@ -294,7 +295,11 @@ class subpig(object):
         # subpig_title = re.findall(subpig_title_rule, updates[1])[1]
         # subpig_url = updates[2].replace("amp;", "")
         # -- thread mode --
-        subpig_date = re.findall(subpig_date_rule, subpig_updates[0])[0]
+        subpig_date = re.findall(subpig_date_rule, subpig_updates[0])
+        if subpig_date:
+            subpig_date = subpig_date[0]
+        else:
+            subpig_date = "0/0"
         subpig_title = re.findall(subpig_title_rule, subpig_updates[1])[1]
         subpig_url = subpig_updates[2].replace("amp;", "")
         subpig_dict["date"] = subpig_date
