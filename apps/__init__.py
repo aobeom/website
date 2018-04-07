@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/usr/local/lib/python2.7/site-packages")
 from flask import Flask
 from flask_login import LoginManager, login_manager
 from flask_sqlalchemy import SQLAlchemy
