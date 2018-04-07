@@ -36,6 +36,12 @@
         <section class="tools-main">
             {% block player %} {% endblock %} {% block hlslist %} {% endblock %} 
         </section>
+        <form method="POST" action='/v1/api/logout' class="pure-form pure-form-stacked">
+            <button type="submit" class="pure-button pure-button-primary">
+                注销&nbsp;
+                <i class="fa fa-sign-out " aria-hidden="true"></i>
+            </button>
+        </form>
         <footer>
             <hr />
             <p>© 2017-2018 AoBeom v1.1</p>

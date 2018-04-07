@@ -51,6 +51,18 @@ a {
     font-family: 'Varela Round', sans-serif;
 }
 
+
+.tools-form {
+    position: relative;
+    top: 150px;
+}
+
+.tools-form p {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
 /* template common */
 
 .tools-head {

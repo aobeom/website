@@ -3,14 +3,15 @@
 # @create date 2017-12-22 09:45:25
 # @modify date 2018-03-24 13:38:53
 # @desc [Flask view main]
-
-import time
 import os
+import time
 from multiprocessing.dummy import Pool
 
-from flask import jsonify, render_template, request
+from flask import jsonify, redirect, render_template, request
+from flask_login import login_required
 from werkzeug import secure_filename
-from apps import app, dramalist, jprogram, picdown, redisMode, srurl, statusHandler, limitrate, dlcore, hlstream
+
+from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -24,8 +25,12 @@ API_VIDEOS = API_VERSION + "/api/vlist"
 
 
 @app.route('/')
-@app.route('/picture')
 def index():
+    return redirect("/picture")
+
+
+@app.route('/picture')
+def picture():
     return render_template("picdown_index.html")
 
 
@@ -45,11 +50,13 @@ def stindex():
 
 
 @app.route('/upload')
+@login_required
 def upload():
     return render_template("player.html")
 
 
 @app.route('/hls')
+@login_required
 def hls():
     return render_template("hlslist.html")
 
@@ -301,6 +308,7 @@ def method_error(error):
 
 
 @app.route(API_UP, methods=['GET', 'POST'], strict_slashes=False)
+@login_required
 def upload_file():
     if request.method == 'POST':
         r = redisMode.redisMode()
@@ -322,6 +330,7 @@ def upload_file():
 
 
 @app.route('/hls/<code>')
+@login_required
 def subhls(code):
     code = int(code) - 1
     r = redisMode.redisMode()

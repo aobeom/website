@@ -437,12 +437,15 @@ $(document).ready(function () {
             cache: false,
             dataType: "json",
             success: function (msg) {
+                $("#datas").empty();
                 $("#datas").append(success)
             },
             beforeSend: function (XMLHttpRequest) {
+                $("#datas").empty();
                 $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
+                $("#datas").empty();
                 $("#datas").append(error_system);
             }
         })
