@@ -1,5 +1,7 @@
 import sys
+import os
 sys.path.append("/usr/local/lib/python2.7/site-packages")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask
 from flask_login import LoginManager, login_manager
 from flask_sqlalchemy import SQLAlchemy
@@ -16,7 +18,7 @@ secret_key = conf["secret_key"]
 app = Flask(__name__, template_folder="../templates",
             static_folder='../static',)
 app.config['SECRET_KEY'] = secret_key
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{dbuser}:{dbpasswd}@{dbhost}:{dbport}/{dbname}'.format(
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{dbuser}:{dbpasswd}@{dbhost}:{dbport}/{dbname}'.format(
     dbuser=dbuser, dbpasswd=dbpasswd, dbhost=dbhost, dbport=dbport, dbname=dbname)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy()

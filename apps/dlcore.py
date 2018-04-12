@@ -7,7 +7,6 @@ import binascii
 import os
 import re
 import shutil
-import sys
 import time
 from multiprocessing.dummy import Pool
 
@@ -24,8 +23,7 @@ class HLSVideo(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)"
         }
         if cookies:
-            r = requests.get(url, headers=headers,
-                             cookies=cookies, timeout=timeout)
+            r = requests.get(url, headers=headers, cookies=cookies, timeout=timeout)
         else:
             r = requests.get(url, headers=headers, timeout=timeout)
         return r
@@ -36,8 +34,8 @@ class HLSVideo(object):
             "total_error": "Video is not complete, please download again [Total: {} Present: {}]".format(para1, para2),
         }
         available = "key_error, total_error"
-        print infos.get(value, "Keyword: " + available)
-        sys.exit()
+        print(infos.get(value, "Keyword: " + available))
+        return False
 
     def __isFolder(self, filename):
         try:
@@ -49,7 +47,7 @@ class HLSVideo(object):
                 return video_path
             else:
                 return video_path
-        except BaseException, e:
+        except BaseException as e:
             raise e
 
     def hlsInfo(self, playlist):
@@ -72,7 +70,7 @@ class HLSVideo(object):
 
         keyfolder = self.__isFolder("keys")
         keynum = len(keyurl)
-        # print "(1)GET KEY [{}]".format(keynum)
+        # print("(1)GET KEY [{}]".format(keynum))
         keyname = str(keynum).zfill(4) + "_key"
         keypath = os.path.join(keyfolder, keyname)
         kurl = ''.join(keyurl)
@@ -90,13 +88,13 @@ class HLSVideo(object):
 
     def __retry(self, urls, files):
         try:
-            print "Retrying..."
+            # print("Retrying...")
             r = self.__requests(urls)
             with open(files, "wb") as code:
                 for chunk in r.iter_content(chunk_size=1024):
                     code.write(chunk)
         except BaseException:
-            print "[{}] is failed.".format(urls)
+            print("[{}] is failed.".format(urls))
 
     def __download(self, para):
         urls = para[0]
@@ -120,8 +118,8 @@ class HLSVideo(object):
             video_encrypt = os.path.join(video_folder, video_name)
             videos.append(video_encrypt)
         total = len(video_urls)
-        # print "(2)GET Videos...[{}]".format(total)
-        # print "Please wait..."
+        # print("(2)GET Videos...[{}]".format(total))
+        # print("Please wait...")
         thread = total / 4
         if thread > 20:
             thread = 8
@@ -142,7 +140,7 @@ class HLSVideo(object):
         folder = os.path.join(mediapath, "decrypt_" + self.datename)
         video_name = os.path.join(folder, self.datename + ".ts")
         if os.path.exists(video_name):
-            # print "(3)Please check [ {}.ts ]".format(self.datename)
+            # print("(3)Please check [ {}.ts ]".format(self.datename))
             enpath = os.path.join(mediapath, "encrypt_" + self.datename)
             kpath = os.path.join(mediapath, "keys_" + self.datename)
             os.chmod(folder, 128)

@@ -174,7 +174,8 @@ class picdown(object):
             "www.keyakizaka46.com": "http://www.keyakizaka46.com",
             "natalie.mu": "https://natalie.mu",
             "mantan-web.jp": "https://mantan-web.jp",
-            "thetv.jp": "https://thetv.jp"
+            "thetv.jp": "https://thetv.jp",
+            "tokyopopline.com": "https://tokyopopline.com"
         }
         self.picExtra = picExtra()
 
@@ -205,7 +206,8 @@ class picdown(object):
                 "http[s]?://natalie.mu/.*",
                 "http[s]?://mantan-web.jp/.*",
                 "http[s]?://thetv.jp/news/.*",
-                "http[s]?://(www.)?instagram.com/p/.*"
+                "http[s]?://(www.)?instagram.com/p/.*",
+                "http[s]?://tokyopopline.com/archives/.*"
             ]
             for rule in host_rule:
                 if len(re.findall(rule, url)):
@@ -268,6 +270,11 @@ class picdown(object):
         elif "instagram" in site:
             i = instapic()
             pics = i.instaPicUrl(url)
+        elif "tokyopopline" in site:
+            fil_rule = r'<div id="gallery-[0-9]+".*?>(.*?)</div>'
+            fil_rule_add = r'<a.*?href="(.*?)".*?>.*?</a>'
+            piclist = self.picRules(url, site, fil_rule, addrule=fil_rule_add)
+            pics = piclist
         if pics:
             result = statusHandler.handler(0, pics, site)
         else:

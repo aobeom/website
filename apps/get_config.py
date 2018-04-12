@@ -6,6 +6,6 @@ dbconf = os.path.join(work_dir, "db.conf")
 
 
 def getconf():
-    f = open(dbconf, "rb")
-    conf = json.loads(f.read())
+    f = open(dbconf, "rb").read()
+    conf = json.loads(f.decode("utf-8"))
     return conf
