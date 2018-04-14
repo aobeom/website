@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-04-07 21:18:01
+ * @modify date 2018-04-14 13:46:44
  */
 
 
@@ -80,6 +80,11 @@ $(document).ready(function () {
                             var urls = msg["datas"];
                             $("#datas").empty();
                             $('#datas').append('<p><button id="copied" class="button-success pure-button btn" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
+                        }
+                        if (msg["type"] == "twitter") {
+                            var urls = msg["datas"];
+                            $("#datas").empty();
+                            $('#datas').append('<a class="button-success pure-button tools-button" href="' + urls + '" target="_blank">Download</a>')
                         }
                         $('#picdown').removeAttr("disabled");
                     } else {

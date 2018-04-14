@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-03-24 13:38:53
+# @modify date 2018-04-14 13:46:34
 # @desc [Flask view main]
 import os
 import time
@@ -11,7 +11,7 @@ from flask import jsonify, redirect, render_template, request
 from flask_login import login_required
 from werkzeug import secure_filename
 
-from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler
+from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -88,6 +88,25 @@ def pic_request():
                         r.redisSave(redis_key, datas, ex=300, subkey=True)
                     else:
                         datas = urlinfo
+            elif "twitter.com" in sitetype:
+                delType = "twitter"
+                redis_key = "{}:{}".format("twv", url)
+                redistw = r.redisCheck(redis_key, subkey=True)
+                if redistw:
+                    urlinfo = r.redisDict(redistw)
+                    twvurl = urlinfo["datas"]
+                    datas = statusHandler.handler(0, twvurl, delType)
+                else:
+                    t = twittervideo.tweetimg()
+                    token = t.getToken()
+                    tweets = t.getTweets(token, url)
+                    vurl = t.getVurl(tweets)
+                    if vurl["status"] == 0:
+                        twvurl = vurl["datas"]
+                        datas = statusHandler.handler(0, twvurl, delType)
+                        r.redisSave(redis_key, datas, ex=300, subkey=True)
+                    else:
+                        datas = vurl
             else:
                 delType = "picture"
                 p = picdown.picdown()
