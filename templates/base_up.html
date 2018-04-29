@@ -11,30 +11,35 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Tools</title>
+    <link href="static/img/favicon.ico" rel="shortcut icon" >
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
-    <script src="static/js/ajax.js"></script>
+    <script src="https://cdn.bootcss.com/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
-    <link rel="shortcut icon" href="static/img/favicon.ico">
+    <script src="static/js/ajax.js"></script>
     <link href='https://fonts.cat.net/css?family=Varela+Round' rel='stylesheet'>
-    <link rel="stylesheet" type="text/css" href="https://cdn.staticfile.org/pure/1.0.0/pure-min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="static/css/tools.css" />
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/pure/1.0.0/pure-min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="static/css/tools.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="tools-content">
         <header>
             <div class="pure-g tools-guide">
-                <div class="pure-u-1-2">
+                <div class="pure-u-1-3">
                     <a class="button-guide pure-button" href="/hls">VIDEOS</a>
                 </div>
-                <div class="pure-u-1-2">
+                <div class="pure-u-1-3">
                     <a class="button-guide pure-button" href="/upload">UPLOAD</a>
+                </div>
+                <div class="pure-u-1-3">
+                    <a class="button-guide pure-button" href="/rika">Rika Message</a>
                 </div>
             </div>
         </header>
         <section class="tools-main">
-            {% block player %} {% endblock %} {% block hlslist %} {% endblock %} 
+            {% block player %} {% endblock %} {% block hlslist %} {% endblock %} {% block rika %} {% endblock %} 
         </section>
         <form method="POST" action='/v1/api/logout' class="pure-form pure-form-stacked">
             <button type="submit" class="pure-button pure-button-primary">

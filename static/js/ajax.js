@@ -320,7 +320,7 @@ $(document).ready(function () {
                 if (msg["status"] == 0) {
                     var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</span>'
                 } else {
-                    var st_body = '<span class="button-error pure-button">Too many requests per second</span>'
+                    var st_body = '<span class="button-error pure-button">NO DATA</span>'
                 }
                 for (i in dt) {
                     var data = dt[i];
@@ -370,6 +370,70 @@ $(document).ready(function () {
             error: function () {
                 $("#datas").empty();
                 $("#datas").append(error_system);
+            }
+        })
+    } else if (uri[uri.length - 1] == "rika") {
+        $.ajax({
+            type: "GET",
+            url: "/v1/api/msg",
+            dataType: "json",
+            success: function (pages) {
+                $("#pages").empty();
+                $('#pages').twbsPagination({
+                    totalPages: pages,
+                    visiblePages: 5,
+                    first: '',
+                    last: '',
+                    prev: '<span aria-hidden="true">&laquo;</span>',
+                    next: '<span aria-hidden="true">&raquo;</span>',
+                    last: "Total " + pages,
+                    onPageClick: function (event, page) {
+                        $("#datas").empty();
+                        $.ajax({
+                            type: "GET",
+                            url: "/v1/api/msg",
+                            data: {
+                                "page": page,
+                            },
+                            dataType: "json",
+                            success: function (msg) {
+                                $("#datas").empty();
+                                var body = '<ul>'
+                                for (i in msg) {
+                                    message = msg[i]
+                                    type = message["type"]
+                                    date = message["date"]
+                                    text = message["text"]
+                                    media = message["media"]
+                                    if (type == 1) {
+                                        media_ele = '<dd><div style="text-align:center;"><img src="/media'+ media +'" width="260px"></div></dd></dl></li>'
+                                    } else if (type > 1) {
+                                        media_ele = '<dd><div style="text-align:center;"><video src="/media' + media + '" width="260px" controls="controls"></video></div></dd></dl></li>'
+                                    } else {
+                                        media_ele = '</dl></li>'
+                                    }
+                                    var title = '<li><dl><dt><span>' + date + '</span></dt>'
+                                    var content = '<hr><dd><span>' + text + '</dd>'
+                                    var media = media_ele
+                                    var body = body + title + content + media
+                                }
+                                $("#datas").append(body + '</ul>')
+                            },
+                            beforeSend: function (XMLHttpRequest) {
+                                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                            },
+                            error: function () {
+                                $("#datas").append(error_system);
+                            }
+                        })
+                    }
+                });
+            },
+            beforeSend: function (XMLHttpRequest) {
+                $("#pages").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+            },
+            error: function () {
+                $("#pages").append(error_system);
             }
         })
     } else {

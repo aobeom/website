@@ -6,12 +6,16 @@
 
 import hashlib
 
+import get_config
 import redis
 
 
 class redisMode(object):
     def __init__(self):
-        self.conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+        redisconf = get_config.get_redis_conf()
+        redis_host = redisconf["redis_host"]
+        redis_port = redisconf["redis_port"]
+        self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 
     def __status(self):
         try:

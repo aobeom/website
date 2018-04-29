@@ -51,7 +51,6 @@ a {
     font-family: 'Varela Round', sans-serif;
 }
 
-
 .tools-form {
     position: relative;
     top: 150px;
@@ -269,4 +268,78 @@ a {
 
 .button-div {
     background: rgb(235, 217, 119)
+}
+
+.msgcss {
+    width: 300px;
+    margin: 0 auto;
+    
+    z-index: 100;
+}
+
+.msgcss ul {
+    text-align: center;
+    list-style-type: none;
+    padding: 0;
+}
+
+.msgcss ul li {
+    display:inline;
+}
+
+.msgcss li {
+    display: block;
+    position: relative;
+    z-index: 100;
+}
+
+.msgcss hr {
+    padding: 0;
+    margin: 0;
+}
+
+.msgcss li a,
+.msgcss li a:visited {
+    display: block;
+    text-decoration: none;
+}
+
+.msgcss li dd {
+    display: none;
+}
+
+.msgcss li:hover,
+.msgcss li a:hover {
+    border: 0;
+}
+
+.msgcss li:hover dt a,
+.msgcss li a:hover dt a {
+    color: rgb(75, 155, 221);
+}
+
+.msgcss li:hover dd,
+.msgcss li a:hover dd {
+    display: block;
+}
+
+.msgcss li:hover dl,
+.msgcss li a:hover dl {
+    height: auto;
+}
+
+.msgcss dl {
+    background: rgb(75, 155, 221);
+    cursor: pointer;
+}
+
+.msgcss dt {
+    padding: 5px;
+    color: white;
+}
+
+.msgcss dd {
+    padding: 10px;
+    text-align: left;
+    color: white;
 }

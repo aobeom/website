@@ -11,7 +11,7 @@ from flask import jsonify, redirect, render_template, request
 from flask_login import login_required
 from werkzeug import secure_filename
 
-from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo
+from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikaMsg
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -22,6 +22,7 @@ API_ST = API_VERSION + "/api/stinfo"
 API_STDL = API_VERSION + "/api/stdl"
 API_UP = API_VERSION + "/api/upload"
 API_VIDEOS = API_VERSION + "/api/vlist"
+API_MSG = API_VERSION + "/api/msg"
 
 
 @app.route('/')
@@ -59,6 +60,12 @@ def upload():
 @login_required
 def hls():
     return render_template("hlslist.html")
+
+
+@app.route('/rika')
+@login_required
+def rika():
+    return render_template("rika.html")
 
 
 @app.route(API_PICDOWN, methods=['GET'])
@@ -281,7 +288,11 @@ def stmovie_get():
     r = redisMode.redisMode()
     datas = {}
     stinfo = r.redisCheck("stinfo")
-    stinfo = r.redisList(stinfo)
+    if stinfo:
+        stinfo = r.redisList(stinfo)
+    else:
+        datas = statusHandler.handler(1, None, message="No datas")
+        return jsonify(datas)
     stutime = r.redisCheck("st:utime")
     clientip = request.remote_addr
     limitinfo = limitrate.limitIP(clientip)
@@ -358,3 +369,15 @@ def subhls(code):
     url = r.redisCheck(playlist)
     url = r.redisDict(url)
     return render_template("vpage.html", url=url)
+
+
+@app.route(API_MSG, methods=['GET'], strict_slashes=False)
+@login_required
+def rika_msg():
+    msg = rikaMsg.rikaMsg()
+    pages = msg.keya_pages_query()
+    page = request.args.get("page")
+    if page:
+        allinfo = msg.keya_allinfo_query(page)
+        return jsonify(allinfo)
+    return jsonify(pages)

@@ -7,8 +7,13 @@ import hashlib
 from flask import redirect, render_template, session, request
 from flask_login import login_user, logout_user
 
-from apps import app
+# mysql
+# from model import User
+# from apps import app, db
+
+# mongodb
 from model import User
+from apps import app, mongo
 
 
 API_VERSION = "/v1"
@@ -31,14 +36,28 @@ def login():
         return render_template("login.html")
 
 
+# mysql
+# @app.route(API_LOGIN, methods=['POST'], strict_slashes=False)
+# def login_api():
+#     user = request.form['user']
+#     password = request.form['password']
+#     un_vaild = User.query.filter_by(user=user).first()
+#     pd_vaild = User.query.filter_by(password=md5(password)).first()
+#     if un_vaild and pd_vaild:
+#         login_user(un_vaild, True)
+#         session['username'] = user
+#         return redirect("/upload")
+#     return redirect("/ulogin")
+
+# mongodb
 @app.route(API_LOGIN, methods=['POST'], strict_slashes=False)
 def login_api():
     user = request.form['user']
     password = request.form['password']
-    un_vaild = User.query.filter_by(user=user).first()
-    pd_vaild = User.query.filter_by(password=md5(password)).first()
-    if un_vaild and pd_vaild:
-        login_user(un_vaild, True)
+    pd_vaild = mongo.db.users.find_one({"user": user, "password": md5(password)})
+    if pd_vaild:
+        user_obj = User(pd_vaild['user'])
+        login_user(user_obj, True)
         session['username'] = user
         return redirect("/upload")
     return redirect("/ulogin")
