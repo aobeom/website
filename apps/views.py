@@ -11,7 +11,7 @@ from flask import jsonify, redirect, render_template, request
 from flask_login import login_required
 from werkzeug import secure_filename
 
-from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikaMsg
+from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikamsg
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -374,7 +374,7 @@ def subhls(code):
 @app.route(API_MSG, methods=['GET'], strict_slashes=False)
 @login_required
 def rika_msg():
-    msg = rikaMsg.rikaMsg()
+    msg = rikamsg.rikaMsg()
     pages = msg.keya_pages_query()
     page = request.args.get("page")
     if page:

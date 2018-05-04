@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-06 12:13:50
- * @modify date 2018-03-07 13:50:08
+ * @modify date 2018-04-30 20:52:30
 */
 
 /* base */
@@ -135,7 +135,7 @@ a {
 }
 
 .tools-hr {
-    width: 320px;
+    width: 280px;
     height: 2px;
     border: none;
     border-top: 2px double rgb(75, 155, 221);
@@ -225,6 +225,11 @@ a {
     width: 250px;
 }
 
+.tool-logout {
+    position: relative;
+    top: 25px;
+}
+
 /* common */
 
 .button-success,
@@ -273,7 +278,6 @@ a {
 .msgcss {
     width: 300px;
     margin: 0 auto;
-    
     z-index: 100;
 }
 
@@ -284,7 +288,7 @@ a {
 }
 
 .msgcss ul li {
-    display:inline;
+    display: inline;
 }
 
 .msgcss li {

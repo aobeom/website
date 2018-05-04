@@ -4,8 +4,8 @@
 # @modify date 2018-04-07 19:35:33
 # @desc [auth]
 import hashlib
-from flask import redirect, render_template, session, request
-from flask_login import login_user, logout_user
+from flask import redirect, render_template, request, g
+from flask_login import login_user, logout_user, current_user
 
 # mysql
 # from model import User
@@ -28,9 +28,14 @@ def md5(text):
     return m.hexdigest()
 
 
+@app.before_request
+def before_request():
+    g.user = current_user
+
+
 @app.route('/ulogin')
 def login():
-    if session.get('username'):
+    if g.user is not None and g.user.is_authenticated:
         return redirect('/upload')
     else:
         return render_template("login.html")
@@ -45,7 +50,6 @@ def login():
 #     pd_vaild = User.query.filter_by(password=md5(password)).first()
 #     if un_vaild and pd_vaild:
 #         login_user(un_vaild, True)
-#         session['username'] = user
 #         return redirect("/upload")
 #     return redirect("/ulogin")
 
@@ -54,11 +58,11 @@ def login():
 def login_api():
     user = request.form['user']
     password = request.form['password']
-    pd_vaild = mongo.db.users.find_one({"user": user, "password": md5(password)})
+    pd_vaild = mongo.db.users.find_one(
+        {"user": user, "password": md5(password)})
     if pd_vaild:
         user_obj = User(pd_vaild['user'])
         login_user(user_obj, True)
-        session['username'] = user
         return redirect("/upload")
     return redirect("/ulogin")
 
@@ -66,5 +70,4 @@ def login_api():
 @app.route(API_LOGOUT, methods=['POST'], strict_slashes=False)
 def logout_api():
     logout_user()
-    session.clear()
     return redirect("/ulogin")

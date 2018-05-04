@@ -381,12 +381,12 @@ $(document).ready(function () {
                 $("#pages").empty();
                 $('#pages').twbsPagination({
                     totalPages: pages,
-                    visiblePages: 5,
+                    visiblePages: 3,
                     first: '',
                     last: '',
                     prev: '<span aria-hidden="true">&laquo;</span>',
                     next: '<span aria-hidden="true">&raquo;</span>',
-                    last: "Total " + pages,
+                    last: "Last " + pages,
                     onPageClick: function (event, page) {
                         $("#datas").empty();
                         $.ajax({
