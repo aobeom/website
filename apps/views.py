@@ -183,7 +183,7 @@ def drama_request():
                     dramaContent = redisResult
                     datas = statusHandler.handler(0, dramaContent, sitename)
                 else:
-                    p = dramalist.subpig()
+                    p = dramalist.subpig_rbl()
                     subpig_update_info = p.subpigIndexInfo()
                     pool = Pool(10)
                     dramaContent = pool.map(p.subpigGetUrl, subpig_update_info)

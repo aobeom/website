@@ -181,7 +181,7 @@ $(document).ready(function () {
                                 subpigs = subpig_datas[i];
                                 var subpig_title = "";
                                 eps = subpigs["dlurls"];
-                                var subpig_title = '<p><a class="button-secondary pure-button" href="' + subpigs["url"] + '" target="_blank">' + subpigs["date"] + ' - ' + subpigs["title"] + '</a></p>';
+                                var subpig_title = '<p><a class="button-secondary pure-button" href="' + subpigs["murl"] + '" target="_blank">' + subpigs["utime"] + ' - ' + subpigs["title"] + '</a></p>';
                                 var subpig_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><span class="button-span pure-button tools-span">LINK#PASSWD</span><ul class="pure-menu-list">';
                                 var subpig_info = "";
                                 if (typeof (eps) != "undefined") {
