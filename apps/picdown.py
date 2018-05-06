@@ -223,7 +223,7 @@ class picdown(object):
 
     def picRouter(self, result):
         site = result["type"]
-        url = result["datas"]
+        url = result["data"]
         if "mdpr" in site:
             url = self.picExtra.mdprImgCenter(
                 url, self.host[site], self.headers)

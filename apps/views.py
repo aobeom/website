@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-04-14 13:46:34
+# @modify date 2018-05-06 20:11:29
 # @desc [Flask view main]
 import os
 import time
@@ -32,40 +32,40 @@ def index():
 
 @app.route('/picture')
 def picture():
-    return render_template("picdown_index.html")
+    return render_template("base_picdown.html")
 
 
 @app.route('/drama')
 def dramaindex():
-    return render_template("drama_index.html")
+    return render_template("base_drama.html")
 
 
 @app.route('/program')
 def programindex():
-    return render_template("program_index.html")
+    return render_template("base_program.html")
 
 
 @app.route('/stchannel')
 def stindex():
-    return render_template("st_index.html")
+    return render_template("base_st.html")
 
 
 @app.route('/upload')
 @login_required
 def upload():
-    return render_template("player.html")
+    return render_template("auth_upload.html")
 
 
 @app.route('/hls')
 @login_required
 def hls():
-    return render_template("hlslist.html")
+    return render_template("auth_videolist.html")
 
 
 @app.route('/rika')
 @login_required
 def rika():
-    return render_template("rika.html")
+    return render_template("auth_rika.html")
 
 
 @app.route(API_PICDOWN, methods=['GET'])
@@ -84,68 +84,68 @@ def pic_request():
                 redisSR = r.redisCheck(redis_key, subkey=True)
                 if redisSR:
                     urlinfo = r.redisDict(redisSR)
-                    hlsurl = urlinfo["datas"]
-                    datas = statusHandler.handler(0, hlsurl, delType)
+                    hlsurl = urlinfo["data"]
+                    data = statusHandler.handler(0, hlsurl, delType)
                 else:
                     sr = srurl.HLSPlayList()
                     urlinfo = sr.urlRouter(url)
                     if urlinfo["status"] == 0:
-                        hlsurl = urlinfo["datas"]
-                        datas = statusHandler.handler(0, hlsurl, delType)
-                        r.redisSave(redis_key, datas, ex=300, subkey=True)
+                        hlsurl = urlinfo["data"]
+                        data = statusHandler.handler(0, hlsurl, delType)
+                        r.redisSave(redis_key, data, ex=300, subkey=True)
                     else:
-                        datas = urlinfo
+                        data = urlinfo
             elif "twitter.com" in sitetype:
                 delType = "twitter"
                 redis_key = "{}:{}".format("twv", url)
                 redistw = r.redisCheck(redis_key, subkey=True)
                 if redistw:
                     urlinfo = r.redisDict(redistw)
-                    twvurl = urlinfo["datas"]
-                    datas = statusHandler.handler(0, twvurl, delType)
+                    twvurl = urlinfo["data"]
+                    data = statusHandler.handler(0, twvurl, delType)
                 else:
                     t = twittervideo.tweetimg()
                     token = t.getToken()
                     tweets = t.getTweets(token, url)
                     vurl = t.getVurl(tweets)
                     if vurl["status"] == 0:
-                        twvurl = vurl["datas"]
-                        datas = statusHandler.handler(0, twvurl, delType)
-                        r.redisSave(redis_key, datas, ex=300, subkey=True)
+                        twvurl = vurl["data"]
+                        data = statusHandler.handler(0, twvurl, delType)
+                        r.redisSave(redis_key, data, ex=300, subkey=True)
                     else:
-                        datas = vurl
+                        data = vurl
             else:
                 delType = "picture"
                 p = picdown.picdown()
                 urldict = p.urlCheck(url)
                 if urldict["status"] == 0:
                     sitename = urldict["type"]
-                    siteurl = urldict["datas"]
+                    siteurl = urldict["data"]
                     redis_key = "{}:{}".format(sitename, siteurl)
                     redisUrls = r.redisCheck(redis_key, subkey=True)
                     if redisUrls:
                         redisUrls = r.redisDict(redisUrls)
-                        imgurls = redisUrls["datas"]
+                        imgurls = redisUrls["data"]
                         imgtype = redisUrls["type"]
-                        datas = statusHandler.handler(0, imgurls, delType)
+                        data = statusHandler.handler(0, imgurls, delType)
                     else:
                         result = p.picRouter(urldict)
                         imgtype = result["type"]
                         if result["status"] == 0:
-                            imgurls = result["datas"]
-                            datas = statusHandler.handler(0, imgurls, delType)
-                            r.redisSave(redis_key, datas,
+                            imgurls = result["data"]
+                            data = statusHandler.handler(0, imgurls, delType)
+                            r.redisSave(redis_key, data,
                                         ex=259200, subkey=True)
                         else:
-                            datas = statusHandler.handler(
+                            data = statusHandler.handler(
                                 1, None, imgtype, message="Images Not Found")
                 else:
-                    datas = urldict
+                    data = urldict
         else:
-            datas = limitinfo
+            data = limitinfo
     else:
-        datas = statusHandler.handler(1, None, message="Params Error")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, message="Params Error")
+    return jsonify(data)
 
 
 @app.route(API_DRAMA, methods=['GET'])
@@ -163,17 +163,17 @@ def drama_request():
                 if redisResult:
                     redisResult = r.redisList(redisResult)
                     dramaContent = redisResult
-                    datas = statusHandler.handler(0, dramaContent, sitename)
+                    data = statusHandler.handler(0, dramaContent, sitename)
                 else:
                     t = dramalist.tvbtsub()
                     tvbt_update_info = t.tvbtIndexInfo()
                     dramaContent = t.tvbtGetUrl(tvbt_update_info)
                     if dramaContent:
-                        datas = statusHandler.handler(
+                        data = statusHandler.handler(
                             0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
-                        datas = statusHandler.handler(1, None, "No datas")
+                        data = statusHandler.handler(1, None, "No data")
             elif id_type == "subpig":
                 sitename = "subpig"
                 redis_key = "drama:{}".format(sitename)
@@ -181,7 +181,7 @@ def drama_request():
                 if redisResult:
                     redisResult = r.redisList(redisResult)
                     dramaContent = redisResult
-                    datas = statusHandler.handler(0, dramaContent, sitename)
+                    data = statusHandler.handler(0, dramaContent, sitename)
                 else:
                     p = dramalist.subpig_rbl()
                     subpig_update_info = p.subpigIndexInfo()
@@ -190,11 +190,11 @@ def drama_request():
                     pool.close()
                     pool.join
                     if dramaContent:
-                        datas = statusHandler.handler(
+                        data = statusHandler.handler(
                             0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
-                        datas = statusHandler.handler(1, None, "No datas")
+                        data = statusHandler.handler(1, None, "No data")
             elif id_type == "fixsub":
                 sitename = "fixsub"
                 redis_key = "drama:{}".format(sitename)
@@ -202,7 +202,7 @@ def drama_request():
                 if redisResult:
                     redisResult = r.redisList(redisResult)
                     dramaContent = redisResult
-                    datas = statusHandler.handler(0, dramaContent, sitename)
+                    data = statusHandler.handler(0, dramaContent, sitename)
                 else:
                     f = dramalist.fixsub()
                     pages = 1
@@ -211,16 +211,16 @@ def drama_request():
                         fix_single_page = f.fixSinglePageInfo(fix_page_info)
                         dramaContent = f.fixInfoGet(fix_single_page)
                     if dramaContent:
-                        datas = statusHandler.handler(
+                        data = statusHandler.handler(
                             0, dramaContent, sitename)
                         r.redisSave(redis_key, dramaContent)
                     else:
-                        datas = statusHandler.handler(1, None, "No datas")
+                        data = statusHandler.handler(1, None, "No data")
         else:
-            datas = limitinfo
+            data = limitinfo
     else:
-        datas = statusHandler.handler(1, None, "Params Error")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, "Params Error")
+    return jsonify(data)
 
 
 @app.route(API_PROGRAM, methods=['GET'])
@@ -243,24 +243,24 @@ def program_request():
                 except TypeError:
                     keyword = keyword
                 tvinfo = rediskeyword
-                tvdatas = tvinfo["datas"]
+                tvdata = tvinfo["data"]
                 tvurl = tvinfo["message"]
-                datas = statusHandler.handler(0, tvdatas, message=tvurl)
+                data = statusHandler.handler(0, tvdata, message=tvurl)
             else:
                 y = jprogram.yahooTV()
                 tvinfo = y.tvInfos(keyword, code)
                 if tvinfo["status"] == 0:
-                    tvdatas = tvinfo["datas"]
+                    tvdata = tvinfo["data"]
                     tvurl = tvinfo["message"]
-                    datas = statusHandler.handler(0, tvdatas, message=tvurl)
-                    r.redisSave(redis_key, datas, ex=14400, subkey=True)
+                    data = statusHandler.handler(0, tvdata, message=tvurl)
+                    r.redisSave(redis_key, data, ex=14400, subkey=True)
                 else:
-                    datas = tvinfo
+                    data = tvinfo
         else:
-            datas = limitinfo
+            data = limitinfo
     else:
-        datas = statusHandler.handler(1, None, message="Params Error")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, message="Params Error")
+    return jsonify(data)
 
 
 @app.route(API_UTIME, methods=['GET'], strict_slashes=False)
@@ -277,33 +277,33 @@ def drama_utime():
         ntime_timestamp = int(time.time())
         ltime_timestamp = utime_timestamp + 14400
         countdown_sec = ltime_timestamp - ntime_timestamp
-        datas = statusHandler.handler(0, countdown_sec, message=utime)
+        data = statusHandler.handler(0, countdown_sec, message=utime)
     else:
-        datas = statusHandler.handler(1, None, message="No datas")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, message="No data")
+    return jsonify(data)
 
 
 @app.route(API_ST, methods=['GET'], strict_slashes=False)
 def stmovie_get():
     r = redisMode.redisMode()
-    datas = {}
+    data = {}
     stinfo = r.redisCheck("stinfo")
     if stinfo:
         stinfo = r.redisList(stinfo)
     else:
-        datas = statusHandler.handler(1, None, message="No datas")
-        return jsonify(datas)
+        data = statusHandler.handler(1, None, message="No data")
+        return jsonify(data)
     stutime = r.redisCheck("st:utime")
     clientip = request.remote_addr
     limitinfo = limitrate.limitIP(clientip)
     if stinfo:
         if limitinfo is None:
-            datas = statusHandler.handler(0, stinfo, message=stutime)
+            data = statusHandler.handler(0, stinfo, message=stutime)
         else:
-            datas = limitinfo
+            data = limitinfo
     else:
-        datas = statusHandler.handler(1, None, message="No datas")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, message="No data")
+    return jsonify(data)
 
 
 @app.route(API_STDL, methods=['POST'], strict_slashes=False)
@@ -317,24 +317,24 @@ def stmovie_dl():
     limitinfo = limitrate.limitIP(clientip)
     if uri:
         if limitinfo is None:
-            datas = statusHandler.handler(0, uri)
+            data = statusHandler.handler(0, uri)
         else:
-            datas = limitinfo
+            data = limitinfo
     else:
-        datas = statusHandler.handler(1, None, message="No datas")
-    return jsonify(datas)
+        data = statusHandler.handler(1, None, message="No data")
+    return jsonify(data)
 
 
 @app.errorhandler(500)
 def server_error(error):
-    datas = statusHandler.handler(1, None, code=500, message="Server Error")
-    return jsonify(datas)
+    data = statusHandler.handler(1, None, code=500, message="Server Error")
+    return jsonify(data)
 
 
 @app.errorhandler(405)
 def method_error(error):
-    datas = statusHandler.handler(1, None, code=405, message="Method Error")
-    return jsonify(datas)
+    data = statusHandler.handler(1, None, code=405, message="Method Error")
+    return jsonify(data)
 
 
 @app.route(API_UP, methods=['GET', 'POST'], strict_slashes=False)
@@ -349,9 +349,9 @@ def upload_file():
         file.save(video)
         playlist = h.segment(video, "media")
         redis_key = "playlist:{}".format(playlist)
-        datas = statusHandler.handler(0, playlist)
-        r.redisSave(redis_key, datas, ex=604800, subkey=True)
-        return jsonify(datas)
+        data = statusHandler.handler(0, playlist)
+        r.redisSave(redis_key, data, ex=604800, subkey=True)
+        return jsonify(data)
     if request.method == 'GET':
         r = redisMode.redisMode()
         playlists = r.redisKeys("playlist:*")
@@ -368,7 +368,7 @@ def subhls(code):
     playlist = playlists[code]
     url = r.redisCheck(playlist)
     url = r.redisDict(url)
-    return render_template("vpage.html", url=url)
+    return render_template("single_player.html", url=url)
 
 
 @app.route(API_MSG, methods=['GET'], strict_slashes=False)

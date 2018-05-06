@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-06 12:13:50
- * @modify date 2018-04-30 20:52:30
+ * @modify date 2018-05-06 20:11:23
 */
 
 /* base */
@@ -11,108 +11,105 @@ body {
     height: 100%;
     text-align: center;
     background: rgb(245, 245, 245);
+}
+
+body,
+button,
+input,
+select,
+textarea,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Varela Round', sans-serif;
 }
 
-header {
-    flex: 0 0 auto;
-    overflow-x: hidden;
+.cover-container {
+    max-width: 36em;
 }
 
-.tools-main {
-    flex: 1 0 auto;
-    height: 0;
-    flex-grow: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+.masthead {
+    margin-bottom: 2em;
 }
 
-footer {
-    flex: 0 0 auto;
+.masthead-brand {
+    margin-bottom: 0;
+    color: #800080;
+    padding: 4px;
+    font-weight: 1000;
 }
 
-a {
-    margin: 2px;
+.nav-masthead .nav-link {
+    padding: 0.3em;
+    font-weight: 600;
+    color: #9370DB;
+    background-color: transparent;
+    border-bottom: .25rem solid transparent;
 }
 
-.tools-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: auto;
+.nav-masthead a:hover {
+    color: #800080;
 }
 
-.tools-guide {
-    background-color: rgb(75, 155, 221);
+.nav-masthead .active {
+    color: #800080;
+    border-bottom-color: #800080;
 }
 
-.tools-guide a {
-    color: white;
-    font-family: 'Varela Round', sans-serif;
+@media (min-width: 36em) {
+    .masthead-brand {
+        padding: 0;
+        float: left;
+    }
+    .nav-masthead {
+        float: right;
+    }
 }
 
-.tools-form {
-    position: relative;
-    top: 150px;
+/* common */
+
+#tipsbtn {
+    margin: 5px;
 }
 
-.tools-form p {
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-
-/* template common */
-
-.tools-head {
-    position: relative;
-    top: 15px;
-}
-
-.tools-bar {
-    padding: 10px 0px 10px;
-    word-spacing: -6px;
-}
-
-.tools-submit {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
-.tools-input {
-    padding: 4px 5px 6px;
-    text-decoration: none;
-    white-space: nowrap;
-    vertical-align: middle;
-    border: 1px ridge;
-    border-color: #0078e7;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-}
-
-.tools-sel {
-    padding: 4px 5px 6px;
-    text-decoration: none;
-    font-size: 14px;
-    white-space: nowrap;
-    vertical-align: middle;
-    border: 1px ridge;
-    border-color: #0078e7;
-    border-radius: 3px;
+#tips {
+    margin: 5px;
 }
 
 .tools-load {
+    padding-top: 10px;
+    widows: auto;
     overflow: auto;
 }
 
-.tools-load p {
+.tools-load span {
     word-break: break-word;
+}
+
+.tools-load li {
+    background: none;
+}
+
+.tools-main {
+    max-width: 500px;
+}
+
+.tools-logout {
+    float: right;
+}
+
+.tools-logout button {
+    position: relative;
+    top: 6px;
 }
 
 /* picdown */
 
 .tools-banner {
-    width: 300px;
+    width: auto;
     height: 80px;
     overflow: hidden;
     margin: 0 auto;
@@ -131,219 +128,58 @@ a {
 }
 
 .tools-img {
-    margin: 2px;
+    padding: 4px;
 }
 
-.tools-hr {
-    width: 280px;
-    height: 2px;
-    border: none;
-    border-top: 2px double rgb(75, 155, 221);
+.tools-img video {
+    height: 100%;
+    width: 100%;
+    display: block;
 }
 
-#tipsbtn {
-    margin: 5px;
+.tools-img img {
+    width: 100%;
 }
 
 /* drama */
 
-.tools-drama {
-    position: relative;
-    margin: 0 auto;
+.tools-btngroup {
     padding: 10px;
 }
 
-.tools-div {
-    margin: 0 auto;
-    height: 88px;
+.tools-card {
+    background-color: #fff;
+    margin: 10px;
 }
 
-.tools-div ul {
-    text-align: center;
-    height: 88px;
+.tools-card-body {
+    padding: 0;
 }
 
-.tools-div li {
-    height: 40px;
-}
+/* program*/
 
-.tools-span {
-    width: 100%;
-    padding: 2px;
-    margin: 2px;
-}
-
-.tools-button {
+.tools-log {
     padding: 10px;
-    width: 114px;
-    margin: 2px;
-}
-
-.tools-sub {
-    margin: 0 0 20px 0;
-}
-
-.tools-select {
-    height: 30px;
-}
-
-.custom-restricted {
-    height: 88px;
-    width: 150px;
-    border: 1px solid gray;
-    border-radius: 4px;
-}
-
-/* program */
-
-.tools-tv {
-    padding: 15px;
-}
-
-#tips {
-    margin: 5px;
 }
 
 /* stchannel */
 
-.stdiv {
+.tools-st {
     word-break: break-all;
-    width: 300px;
-    margin: 0 auto;
+    width: 100%px;
 }
 
-/* hls */
+/* rika page */
 
-.tools-up {
-    margin: 0 auto;
-    padding: 20px;
-    width: 300px;
+.tools-pages {
+    display: inline-block;
 }
 
-.tools-up input {
-    padding: 15px;
-    width: 250px;
-}
-
-.tool-logout {
-    position: relative;
-    top: 25px;
-}
-
-/* common */
-
-.button-success,
-.button-error,
-.button-warning,
-.button-link,
-.button-span,
-.button-secondary {
-    color: white;
-    border-radius: 4px;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.button-success {
-    background: rgb(28, 184, 65);
-}
-
-.button-error {
-    background: rgb(202, 60, 60);
-}
-
-.button-warning {
-    background: rgb(223, 117, 20);
-}
-
-.button-secondary {
-    background: rgb(9, 104, 133);
-}
-
-.button-guide {
-    background: rgb(75, 155, 221);
-}
-
-.button-link {
-    background: rgb(62, 171, 184);
-}
-
-.button-span {
-    background: rgb(146, 200, 245)
-}
-
-.button-div {
-    background: rgb(235, 217, 119)
-}
-
-.msgcss {
-    width: 300px;
-    margin: 0 auto;
-    z-index: 100;
-}
-
-.msgcss ul {
-    text-align: center;
-    list-style-type: none;
-    padding: 0;
-}
-
-.msgcss ul li {
-    display: inline;
-}
-
-.msgcss li {
-    display: block;
-    position: relative;
-    z-index: 100;
-}
-
-.msgcss hr {
-    padding: 0;
-    margin: 0;
-}
-
-.msgcss li a,
-.msgcss li a:visited {
-    display: block;
-    text-decoration: none;
-}
-
-.msgcss li dd {
-    display: none;
-}
-
-.msgcss li:hover,
-.msgcss li a:hover {
-    border: 0;
-}
-
-.msgcss li:hover dt a,
-.msgcss li a:hover dt a {
-    color: rgb(75, 155, 221);
-}
-
-.msgcss li:hover dd,
-.msgcss li a:hover dd {
-    display: block;
-}
-
-.msgcss li:hover dl,
-.msgcss li a:hover dl {
-    height: auto;
-}
-
-.msgcss dl {
-    background: rgb(75, 155, 221);
-    cursor: pointer;
-}
-
-.msgcss dt {
-    padding: 5px;
-    color: white;
-}
-
-.msgcss dd {
-    padding: 10px;
+.tools-msg {
     text-align: left;
-    color: white;
+}
+
+.tools-media {
+    text-align: center;
+    margin-top: 20px;
 }

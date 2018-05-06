@@ -1,20 +1,22 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-04-14 13:46:44
+ * @modify date 2018-05-06 20:34:24
  */
 
 
 $(document).ready(function () {
+    var uri = window.location.href.split("/")
+    var aid = uri[uri.length - 1]
+    $("#" + aid).addClass("active");
     $('#tipsbtn').click(function () {
         $('#tips').toggle();
     })
     var clipboard = new Clipboard('.btn');
     clipboard.on('success', function () {
-        var tips = '<i class="fa fa-smile-o" aria-hidden="true"></i>&nbsp; Copied!'
+        var tips = '<i class="fa fa-smile-o" aria-hidden="true"></i>&nbsp; Copied'
         $("#copied").html(tips)
     })
-    var uri = window.location.href.split("/")
     if (uri[uri.length - 1] == "picture") {
         var segmentWidth = 0;
         $(".tools-banner .tools-banner-content li").each(function () {
@@ -42,19 +44,19 @@ $(document).ready(function () {
             $('#picdown').attr({
                 disabled: 'disabled'
             });
-            $("#datas").empty();
+            $("#data").empty();
             var url = $("#picURL").val()
-            var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
-            var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+            var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+            var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
             if (url.length == 0) {
-                $("#datas").append(error_null);
+                $("#data").append(error_null);
                 $('#picdown').removeAttr("disabled");
                 return false;
             }
             var patrn = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
             var regex = new RegExp(patrn);
             if (regex.test(url) != true) {
-                $("#datas").append(error_null);
+                $("#data").append(error_null);
                 $('#picdown').removeAttr("disabled");
                 return false;
             }
@@ -66,39 +68,39 @@ $(document).ready(function () {
                 success: function (msg) {
                     if (msg["status"] == 0) {
                         if (msg["type"] == "picture") {
-                            var urls = msg["datas"];
-                            $("#datas").empty();
+                            var urls = msg["data"];
+                            $("#data").empty();
                             for (u in urls) {
                                 if (urls[u].indexOf(".mp4") > 0) {
-                                    $('#datas').append('<hr class="tools-hr"><p class="tools-img"><video src="' + urls[u] + '" controls="controls" width="300"></p>');
+                                    $('#data').append('<hr><p class="tools-img"><video src="' + urls[u] + '" controls="controls"></p>');
                                 } else {
-                                    $('#datas').append('<hr class="tools-hr"><p class="tools-img"><img src="' + urls[u] + '" style="width:300px"></p>');
+                                    $('#data').append('<hr><p class="tools-img"><img src="' + urls[u] + '"></p>');
                                 }
                             }
                         }
                         if (msg["type"] == "m3u8") {
-                            var urls = msg["datas"];
-                            $("#datas").empty();
-                            $('#datas').append('<p><button id="copied" class="button-success pure-button btn" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
+                            var urls = msg["data"];
+                            $("#data").empty();
+                            $('#data').append('<p><button id="copied" class="btn btn-success" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
                         }
                         if (msg["type"] == "twitter") {
-                            var urls = msg["datas"];
-                            $("#datas").empty();
-                            $('#datas').append('<a class="button-success pure-button tools-button" href="' + urls + '" target="_blank">Download</a>')
+                            var urls = msg["data"];
+                            $("#data").empty();
+                            $('#data').append('<a class="btn btn-success" href="' + urls + '" target="_blank">Download</a>')
                         }
                         $('#picdown').removeAttr("disabled");
                     } else {
-                        $("#datas").empty();
-                        $('#datas').append(error_null);
+                        $("#data").empty();
+                        $('#data').append(error_null);
                         $('#picdown').removeAttr("disabled");
                     }
                 },
                 beforeSend: function (XMLHttpRequest) {
-                    $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                    $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
-                    $("#datas").empty();
-                    $("#datas").append(error_system);
+                    $("#data").empty();
+                    $("#data").append(error_system);
                     $('#picdown').removeAttr("disabled");
                 }
             });
@@ -110,7 +112,7 @@ $(document).ready(function () {
             dataType: "json",
             success: function (msg) {
                 var date = msg["message"]
-                var countdown = msg["datas"]
+                var countdown = msg["data"]
                 var sectotal = parseInt(countdown);
 
                 function timer(sectotal) {
@@ -136,16 +138,14 @@ $(document).ready(function () {
                 $(function () {
                     timer(sectotal);
                 });
-                $('#update').append('<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + date);
+                $('#update').append('<span class="btn btn-info"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + date);
             },
         })
-        $('.tools-drama input').click(function () {
-            $("#datas").empty();
-            var subname = $(this).val()
-            $("#menuLink1").html(subname)
+        $('.tools-btngroup button').click(function () {
+            $("#data").empty();
             var data = {};
             var id = $(this).attr("id");
-            var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+            var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
             $.ajax({
                 type: "GET",
                 url: "/v1/api/dramaget",
@@ -154,66 +154,61 @@ $(document).ready(function () {
                 success: function (msg) {
                     if (msg["status"] == 0) {
                         if (msg["type"] == "tvbt") {
-                            var tvbt_datas = msg["datas"];
-                            $("#datas").empty();
-                            var tvbt_body = ""
-                            for (i in tvbt_datas) {
-                                tvbts = tvbt_datas[i];
-                                var tvbt_title = "";
-                                tvbt_data = tvbt_datas[i];
-                                eps = tvbts["dlurls"];
-                                var tvbt_title = '<p><a class="button-secondary pure-button" href="' + tvbts["url"] + '" target="_blank">' + tvbts["date"] + ' - ' + tvbts["title"] + '</a></p>';
-                                var tvbt_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><span class="button-span pure-button tools-span">LINK#PASSWD</span><ul class="pure-menu-list">';
+                            var tvbt_data = msg["data"];
+                            $("#data").empty();
+                            var tvbt_body = '<div class="accordion" id="dramapa">'
+                            for (i in tvbt_data) {
+                                var tvbts = tvbt_data[i];
+                                var eps = tvbts["dlurls"];
+                                var tvbt_title = '<div class="card tools-card"><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + tvbts["date"] + " - " + '</span><a href="' + tvbts["url"] + '" target="_blank">' + tvbts["title"] + '</a></div>';
+                                var tvbt_ul = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#dramapa"><div class="card-body tools-card-body"><div class="list-group"><a class="list-group-item list-group-item-action list-group-item-info">LINK#PASSWD</a>'
                                 var tvbt_info = ""
                                 for (j in eps) {
                                     var ep = eps[j];
-                                    var tvbt_info = tvbt_info + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + ep[1] + '#' + ep[2] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; EP' + ep[0] + '</a></li>'
+                                    var tvbt_info = tvbt_info + '<a href="' + ep[1] + '#' + ep[2] + '" class="list-group-item list-group-item-action list-group-item-success" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; EP' + ep[0] + '</a>'
                                 }
-                                var tvbt_body = tvbt_body + tvbt_title + tvbt_ul + tvbt_info + '</ul></div>'
+                                var tvbt_body = tvbt_body + tvbt_title + tvbt_ul + tvbt_info + '</div></div></div></div>';
                             }
-                            $("#datas").append(tvbt_body);
+                            $("#data").append(tvbt_body);
                         }
                         if (msg["type"] == "subpig") {
-                            $("#datas").empty();
-                            var subpig_datas = msg["datas"];
-                            var subpig_body = "";
-                            for (i in subpig_datas) {
-                                subpigs = subpig_datas[i];
-                                var subpig_title = "";
-                                eps = subpigs["dlurls"];
-                                var subpig_title = '<p><a class="button-secondary pure-button" href="' + subpigs["murl"] + '" target="_blank">' + subpigs["utime"] + ' - ' + subpigs["title"] + '</a></p>';
-                                var subpig_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><span class="button-span pure-button tools-span">LINK#PASSWD</span><ul class="pure-menu-list">';
+                            $("#data").empty();
+                            var subpig_data = msg["data"];
+                            var subpig_body = '<div class="accordion" id="dramapa">';
+                            for (i in subpig_data) {
+                                var subpigs = subpig_data[i];
+                                var eps = subpigs["dlurls"];
+                                var subpig_title = '<div class="card tools-card"><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + subpigs["utime"] + " - " + '</span><a href="' + subpigs["murl"] + '" target="_blank">' + subpigs["title"] + '</a></div>';
+                                var subpig_ul = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#dramapa"><div class="card-body tools-card-body"><div class="list-group"><a class="list-group-item list-group-item-action list-group-item-info">LINK#PASSWD</a>'
                                 var subpig_info = "";
                                 if (typeof (eps) != "undefined") {
-                                    var subpig_info = subpig_info + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + eps[0] + '#' + eps[1] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a></li>';
+                                    var subpig_info = subpig_info + '<a href="' + eps[0] + '#' + eps[1] + '" class="list-group-item list-group-item-action list-group-item-success" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a>';
                                 }
-                                var subpig_body = subpig_body + subpig_title + subpig_ul + subpig_info + '</ul></div>';
+                                var subpig_body = subpig_body + subpig_title + subpig_ul + subpig_info + '</div></div></div></div>';
                             }
-                            $("#datas").append(subpig_body)
+                            $("#data").append(subpig_body);
                         }
                         if (msg["type"] == "fixsub") {
-                            $("#datas").empty();
-                            var fixsub_datas = msg["datas"];
-                            var fixsub_body = "";
-                            for (i in fixsub_datas) {
-                                fixsubs = fixsub_datas[i]
-                                var fixsub_title = "";
-                                fixsub_data = fixsub_datas[i];
-                                var fixsub_title = '<p><a class="button-secondary pure-button" href="' + fixsubs["url"] + '" target="_blank">' + fixsubs["title"] + '</a></p>';
-                                var fixsub_ul = '<div class="pure-menu pure-menu-scrollable custom-restricted tools-div"><ul class="pure-menu-list">';
+                            $("#data").empty();
+                            var fixsub_data = msg["data"];
+                            var fixsub_body = '<div class="accordion" id="dramapa">';
+                            for (i in fixsub_data) {
+                                var fixsubs = fixsub_data[i]
+                                var fixsub_title = '<div class="card tools-card"><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + '</span><a href="' + fixsubs["url"] + '" target="_blank">' + fixsubs["title"] + '</a></div>';
+                                var fixsub_ul = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#dramapa"><div class="card-body tools-card-body">';
                                 var urls = fixsubs["dlurls"];
                                 var fixsub_info_all = "";
                                 for (j in urls) {
                                     var ep = urls[j];
-                                    var fixsub_ep = '<li class="pure-menu-item"><span class="button-span pure-button tools-span">' + ep[0] + '</span></li>'
-                                    var fixsub_info_b = fixsub_ep + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + ep[1] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; Baidu</a></li>';
-                                    var fixsub_info_m = fixsub_info_b + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + ep[2] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; Magnet</a></li>';
-                                    var fixsub_info_e = fixsub_info_m + '<li class="pure-menu-item"><a class="button-link pure-button tools-a" href="' + ep[3] + '" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; ED2K</a></li>';
-                                    var fixsub_info_all = fixsub_info_all + fixsub_info_e
+                                    var fixsub_ep = '<div class="card-body tools-card-body"><div class="list-group"><a class="list-group-item list-group-item-action list-group-item-info">' + ep[0] + '</a>'
+                                    var fixsub_info_b = fixsub_ep + '<a href="' + ep[1] + '" class="list-group-item list-group-item-action list-group-item-success" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; BAIDU</a>';
+                                    var fixsub_info_m = fixsub_info_b + '<a href="' + ep[2] + '" class="list-group-item list-group-item-action list-group-item-success" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; MAGENT</a>';
+                                    var fixsub_info_e = fixsub_info_m + '<a href="' + ep[3] + '" class="list-group-item list-group-item-action list-group-item-success" target="_blank"><i class="fa fa-link" aria-hidden="true"></i>&nbsp; ED2K</a>';
+                                    var fixsub_info_all = fixsub_info_all + fixsub_info_e + '</div></div>';
                                 }
-                                var fixsub_body = fixsub_body + fixsub_title + fixsub_ul + fixsub_info_all + '</ul></div>'
+                                var fixsub_body = fixsub_body + fixsub_title + fixsub_ul + fixsub_info_all + '</div></div></div>';
                             }
-                            $("#datas").append(fixsub_body)
+                            $("#data").append(fixsub_body)
                         }
                         $("a").each(function () {
                             if ($(this).text().length > 16) {
@@ -222,21 +217,21 @@ $(document).ready(function () {
                             }
                         })
                     } else {
-                        $("#datas").empty();
-                        $('#datas').append(error_system);
+                        $("#data").empty();
+                        $('#data').append(error_system);
                     }
-                    $('.tools-drama input').removeAttr("disabled");
+                    $('.tools-btngroup button').removeAttr("disabled");
                 },
                 beforeSend: function (XMLHttpRequest) {
-                    $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
-                    $('.tools-drama input').attr({
+                    $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                    $('.tools-btngroup button').attr({
                         disabled: "disabled"
                     });
                 },
                 error: function () {
-                    $("#datas").empty();
-                    $("#datas").append(error_system);
-                    $('.tools-drama input').removeAttr("disabled");
+                    $("#data").empty();
+                    $("#data").append(error_system);
+                    $('.tools-btngroup button').removeAttr("disabled");
                 }
             });
         })
@@ -247,11 +242,11 @@ $(document).ready(function () {
                 disabled: 'disabled'
             });
             var code = $("#area").val()
-            $("#datas").empty();
-            var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
-            var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+            $("#data").empty();
+            var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+            var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
             if (keyword.length == 0) {
-                $("#datas").append(error_null);
+                $("#data").append(error_null);
                 $('#jprogram').removeAttr("disabled");
                 return false;
             }
@@ -265,62 +260,62 @@ $(document).ready(function () {
                 dataType: "json",
                 success: function (msg) {
                     if (msg["status"] == 0) {
-                        $("#datas").empty();
+                        $("#data").empty();
                         var purl = msg["message"]
-                        var pdatas = msg["datas"]
-                        var pdatas_head = '<p><a class="pure-button pure-button-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
-                        var pdatas_body = ""
-                        for (i in pdatas) {
-                            var pgram = pdatas[i];
-                            var pdatas_date = pgram["date"]
-                            var pdatas_time = pgram["time"]
-                            var pdatas_url = pgram["url"]
-                            var pdatas_station = pgram["station"]
-                            var pdatas_title = pgram["title"]
-                            var pdatas_info = '<p><div><a class="button-div pure-button" href="' + pdatas_url + '" target="_blank"><p>' + pdatas_date + "&nbsp; " + pdatas_time + '</p><p>' + pdatas_station + '</p><p>' + pdatas_title + '</p></a></div><p>'
-                            var pdatas_content = pdatas_date + pdatas_time
-                            var pdatas_body = pdatas_body + pdatas_info
+                        var pdata = msg["data"]
+                        var pdata_head = '<p><a class="btn btn-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
+                        var pdata_body = ""
+                        for (i in pdata) {
+                            var pgram = pdata[i];
+                            var pdata_date = pgram["date"]
+                            var pdata_time = pgram["time"]
+                            var pdata_url = pgram["url"]
+                            var pdata_station = pgram["station"]
+                            var pdata_title = pgram["title"]
+                            var pdata_info = '<p><div><a class="btn btn-secondary" href="' + pdata_url + '" target="_blank"><p>' + pdata_date + "&nbsp; " + pdata_time + '</p><p>' + pdata_station + '</p><p>' + pdata_title + '</p></a></div><p>'
+                            var pdata_content = pdata_date + pdata_time
+                            var pdata_body = pdata_body + pdata_info
                         }
                         $('#jprogram').removeAttr("disabled");
-                        $('#datas').append(pdatas_head + pdatas_body);
+                        $('#data').append(pdata_head + pdata_body);
                         $(".tools-load p").each(function (i) {
-                            if ($(this).text().length > 18) {
-                                var text = $(this).text().substring(0, 18) + "...";
+                            if ($(this).text().length > 16) {
+                                var text = $(this).text().substring(0, 16) + "...";
                                 $(this).text(text);
                             }
                         })
                     } else {
-                        $("#datas").empty();
-                        $('#datas').append(error_null);
+                        $("#data").empty();
+                        $('#data').append(error_null);
                         $('#jprogram').removeAttr("disabled");
                     }
                 },
                 beforeSend: function (XMLHttpRequest) {
-                    $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                    $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
-                    $("#datas").empty();
-                    $("#datas").append(error_system);
+                    $("#data").empty();
+                    $("#data").append(error_system);
                     $('#jprogram').removeAttr("disabled");
                 }
             })
         })
     } else if (uri[uri.length - 1] == "stchannel") {
-        $("#datas").empty();
-        var error_null = '<p class="button-error pure-button" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
-        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
+        $("#data").empty();
+        var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+        var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
             type: "GET",
             url: "/v1/api/stinfo",
             dataType: "json",
             success: function (msg) {
                 var ut = msg["message"];
-                var dt = msg["datas"];
-                $("#datas").empty();
+                var dt = msg["data"];
+                $("#data").empty();
                 if (msg["status"] == 0) {
-                    var st_body = '<span class="button-span pure-button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</span>'
+                    var st_body = '<span class="btn btn-info"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</span>'
                 } else {
-                    var st_body = '<span class="button-error pure-button">NO DATA</span>'
+                    var st_body = '<span class="btn btn-danger">NO DATA</span>'
                 }
                 for (i in dt) {
                     var data = dt[i];
@@ -329,10 +324,10 @@ $(document).ready(function () {
                     var s_murl = data["murl"];
                     var s_purl = data["purl"];
                     var s_id = "dlink" + i;
-                    var st_info = '<hr class="tools-hr"><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p><img src="' + s_purl + '" style="width:300px"></p><button id="' + s_id + '" class="pure-button pure-button-primary tools-button" value="' + s_murl + '">Resources</button>';
+                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary tools-button" value="' + s_murl + '">Resources</button>';
                     var st_body = st_body + st_info;
                 }
-                $('#datas').append(st_body);
+                $('#data').append(st_body);
                 $('button').click(function () {
                     var sid = $(this).attr("id")
                     var murl = {
@@ -345,7 +340,7 @@ $(document).ready(function () {
                         data: JSON.stringify(murl),
                         dataType: "json",
                         success: function (msg) {
-                            var dl = '<a class="button-success pure-button tools-button" href="' + msg["datas"] + '" target="_blank">Download</a>'
+                            var dl = '<a class="btn btn-success tools-button" href="' + msg["data"] + '" target="_blank">Download</a>'
                             $("#" + sid).replaceWith(dl)
                             $(".tools-button").removeAttr("disabled");
                         },
@@ -365,11 +360,11 @@ $(document).ready(function () {
                 })
             },
             beforeSend: function (XMLHttpRequest) {
-                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
-                $("#datas").empty();
-                $("#datas").append(error_system);
+                $("#data").empty();
+                $("#data").append(error_system);
             }
         })
     } else if (uri[uri.length - 1] == "rika") {
@@ -388,7 +383,7 @@ $(document).ready(function () {
                     next: '<span aria-hidden="true">&raquo;</span>',
                     last: "Last " + pages,
                     onPageClick: function (event, page) {
-                        $("#datas").empty();
+                        $("#data").empty();
                         $.ajax({
                             type: "GET",
                             url: "/v1/api/msg",
@@ -397,8 +392,9 @@ $(document).ready(function () {
                             },
                             dataType: "json",
                             success: function (msg) {
-                                $("#datas").empty();
-                                var body = '<ul>'
+                                $("#data").empty();
+                                var body = '<div class="accordion" id="rikamsg">'
+                                
                                 for (i in msg) {
                                     message = msg[i]
                                     type = message["type"]
@@ -406,24 +402,24 @@ $(document).ready(function () {
                                     text = message["text"]
                                     media = message["media"]
                                     if (type == 1) {
-                                        media_ele = '<dd><div style="text-align:center;"><img src="/media'+ media +'" width="260px"></div></dd></dl></li>'
+                                        media_ele = '<img src="/media' + media + '" width="260px">'
                                     } else if (type > 1) {
-                                        media_ele = '<dd><div style="text-align:center;"><video src="/media' + media + '" width="260px" controls="controls"></video></div></dd></dl></li>'
+                                        media_ele = '<video src="/media' + media + '" width="260px" controls="controls">'
                                     } else {
-                                        media_ele = '</dl></li>'
+                                        media_ele = ''
                                     }
-                                    var title = '<li><dl><dt><span>' + date + '</span></dt>'
-                                    var content = '<hr><dd><span>' + text + '</dd>'
-                                    var media = media_ele
-                                    var body = body + title + content + media
+                                    var title = '<div class="card "><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + date + '</span></div>'
+                                    var content = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#rikamsg"><div class="card-body tools-msg"><span>' + text + '</span><div class="tools-media">' + media_ele + '</div></div></div>'
+                                    var body = body + title + content + "</div>"
                                 }
-                                $("#datas").append(body + '</ul>')
+
+                                $("#data").append(body)
                             },
                             beforeSend: function (XMLHttpRequest) {
-                                $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                                $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                             },
                             error: function () {
-                                $("#datas").append(error_system);
+                                $("#data").append(error_system);
                             }
                         })
                     }
@@ -437,10 +433,10 @@ $(document).ready(function () {
             }
         })
     } else {
-        var error_system = '<p class="button-error pure-button" onclick="location.reload();">SYSTEM error</p>';
-        var error_size = '<p class="button-error pure-button" onclick="location.reload();">Must be less than 100M</p>';
-        var error_type = '<p class="button-error pure-button" onclick="location.reload();">Only .mp4</p>';
-        var success = '<p class="button-success pure-button" onclick="location.reload();">Uploaded</p>';
+        var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
+        var error_size = '<p class="btn btn-danger" onclick="location.reload();">Must be less than 100M</p>';
+        var error_type = '<p class="btn btn-danger" onclick="location.reload();">Only .mp4</p>';
+        var success = '<p class="btn btn-success" onclick="location.reload();">Uploaded</p>';
         var uri = window.location.href.split("/")
         if (uri[uri.length - 1] == "hls") {
             $.ajax({
@@ -448,33 +444,43 @@ $(document).ready(function () {
                 url: "/v1/api/upload",
                 dataType: "json",
                 success: function (msg) {
-                    $("#datas").empty();
+                    $("#data").empty();
+                    var vbody = '<ul class="list-group">'
                     for (i = 1; i < msg + 1; i++) {
-                        $("#datas").append('<p><a href="/hls/' + i + '">video ' + i + "</a></p>")
+                        var vlist = '<li class="list-group-item"><a href="/hls/' + i + '" target="_blank">video ' + i + '</a></li>'
+                        var vbody = vbody + vlist + "</ul>"
                     }
+                    $("#data").append(vbody)
                 },
                 beforeSend: function (XMLHttpRequest) {
-                    $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                    $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
-                    $("#datas").append(error_system);
+                    $("#data").append(error_system);
                 }
             })
         }
         $('#upload').click(function () {
-            $("#datas").empty();
+            $("#data").empty();
             var formData = new FormData();
             var filebody = $('#file')[0].files[0]
             formData.append('file', filebody);
-            var filepath = $('#file').val().toLowerCase().split(".")
+            var filevalue = $('#file').val()
+            if (filevalue == "") {
+                $("#data").append(error_type);
+                return false;
+            }
+            var filepath = filevalue.toLowerCase().split(".")
             var filesize = filebody.size
             var filetype = filepath[filepath.length - 1];
-            if (filesize > 1024000000) {
-                $("#datas").append(error_size);
+            var fileInfo = filevalue.split('\\');
+            var fileName = fileInfo[fileInfo.length - 1];
+            if (filesize > 102400000) {
+                $("#data").append(error_size);
                 return false;
             }
             if (filetype != "mp4") {
-                $("#datas").append(error_type);
+                $("#data").append(error_type);
                 return false;
             }
             $.ajax({
@@ -486,16 +492,16 @@ $(document).ready(function () {
                 cache: false,
                 dataType: "json",
                 success: function (msg) {
-                    $("#datas").empty();
-                    $("#datas").append(success)
+                    $("#data").empty();
+                    $("#data").append(success)
                 },
                 beforeSend: function (XMLHttpRequest) {
-                    $("#datas").empty();
-                    $("#datas").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                    $("#data").empty();
+                    $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
-                    $("#datas").empty();
-                    $("#datas").append(error_system);
+                    $("#data").empty();
+                    $("#data").append(error_system);
                 }
             })
         })

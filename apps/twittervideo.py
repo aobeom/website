@@ -41,7 +41,7 @@ class tweetimg(object):
 
     def getTweets(self, token_data, status_url):
         if token_data["status"] == 0:
-            token = token_data["datas"]
+            token = token_data["data"]
             url_info = status_url.split("/")
             user = url_info[3]
             maxid = url_info[-1].split("?")[0]
@@ -66,8 +66,8 @@ class tweetimg(object):
 
     def getVurl(self, tweet_data):
         if tweet_data["status"] == 0:
-            if tweet_data["datas"]:
-                tweets = tweet_data["datas"][0]
+            if tweet_data["data"]:
+                tweets = tweet_data["data"][0]
                 if "extended_entities" in tweets:
                     media = tweets["extended_entities"]["media"]
                     media = media[0]

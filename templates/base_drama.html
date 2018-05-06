@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block drama %}
+<div>
+    <div>
+        <p id="update"></p>
+
+        <p class="btn btn-info">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            <span id="drama_hour">0 : </span>
+            <span id="drama_minute">00 : </span>
+            <span id="drama_second">00</span>
+        </p>
+
+
+    </div>
+    <hr>
+    <div class="btn-group tools-btngroup" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-primary" id="tvbt">TVBT</button>
+        <button type="button" class="btn btn-primary" id="subpig">SUBPIG</button>
+        <button type="button" class="btn btn-primary" id="fixsub">FIXSUB</button>
+    </div>
+
+    <div id="data" class="tools-load">
+
+
+    </div>
+
+</div>
+{% endblock %}

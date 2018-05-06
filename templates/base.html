@@ -1,9 +1,9 @@
 <!--
 @author AoBeom
 @create date 2017-12-03 07:13:58
-@modify date 2017-12-25 02:13:48
+@modify date 2018-05-06 09:23:56
 -->
-
+<!doctype html>
 <html>
 
 <head>
@@ -11,43 +11,41 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Tools</title>
-    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
-    <script src="static/js/ajax.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
     <link rel="shortcut icon" href="static/img/favicon.ico">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
+    <script src="static/js/ajax.js"></script>
     <link href='https://fonts.cat.net/css?family=Varela+Round' rel='stylesheet'>
-    <link rel="stylesheet" type="text/css" href="https://cdn.staticfile.org/pure/1.0.0/pure-min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="static/css/tools.css" />
+    <link href="https://cdn.bootcss.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="static/css/tools.css" rel="stylesheet">
 </head>
 
-<body>
-    <div class="tools-content">
-        <header>
-            <div class="pure-g tools-guide">
-                <div class="pure-u-1-4">
-                    <a class="button-guide pure-button" href="/">PICTURE</a>
-                </div>
-                <div class="pure-u-1-4">
-                    <a class="button-guide pure-button" href="/drama">DRAMA</a>
-                </div>
-                <div class="pure-u-1-4">
-                    <a class="button-guide pure-button" href="/program">PROGRAM</a>
-                </div>
-                <div class="pure-u-1-4">
-                    <a class="button-guide pure-button" href="/stchannel">ST</a>
-                </div>
+<body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="masthead">
+            <div class="inner">
+                <h3 class="masthead-brand">ToolBox</h3>
+                <nav class="nav nav-masthead justify-content-center">
+                    <a class="nav-link" href="/picture" id="picture">PIC</a>
+                    <a class="nav-link" href="/drama" id="drama">DRAMA</a>
+                    <a class="nav-link" href="/program" id="program">PROGRAM</a>
+                    <a class="nav-link" href="/stchannel" id="stchannel">ST</a>
+                </nav>
             </div>
         </header>
-        <section class="tools-main">
-            {% block picdown %} {% endblock %} {% block drama %} {% endblock %} {% block program %} {% endblock %} {% block st %} {% endblock %}
-        </section>
-        <footer>
-            <hr />
-            <p>© 2017-2018 AoBeom v1.2</p>
+        <main>
+            {% block picdown %} {% endblock %} {% block drama %} {% endblock %} {% block program %} {% endblock %} {% block st %} {%
+            endblock %}
+        </main>
+        <footer class="mastfoot mt-auto">
+            <hr>
+            <div class="inner">
+                <span>© 2017-2018 AoBeom v2.0</span>
+            </div>
         </footer>
     </div>
-
 </body>
 
 </html>

@@ -1,0 +1,61 @@
+<!--
+@author AoBeom
+@create date 2018-03-09 21:19:58
+@modify date 2018-04-30 20:58:36
+-->
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Manager</title>
+    <link href="static/img/favicon.ico" rel="shortcut icon">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
+    <script src="static/js/ajax.js"></script>
+    <link href='https://fonts.cat.net/css?family=Varela+Round' rel='stylesheet'>
+    <link href="https://cdn.bootcss.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="static/css/tools.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <a class="navbar-brand" href="/rika">Manager</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item" id="hls">
+                    <a class="nav-link" href="/hls">VIDEOS
+                    </a>
+                </li>
+                <li class="nav-item" id="upload" >
+                    <a class="nav-link" href="/upload">UPLOAD</a>
+                </li>
+                <li class="nav-item" id="rika">
+                    <a class="nav-link" href="/rika">Rika Message</a>
+                </li>
+            </ul>
+            <form method="POST" action='/v1/api/logout' class="form-inline mt-2 mt-md-0 tools-logout">
+                <button type="submit" class="btn btn-outline-success my-2 my-sm-0">
+                    Logout&nbsp;
+                    <i class="fa fa-sign-out " aria-hidden="true"></i>
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <main role="main" class="container tools-main">
+            {% block upload %} {% endblock %} {% block videolist %} {% endblock %} {% block rika %} {% endblock %}
+    </main>
+
+</body>
+
+</html>

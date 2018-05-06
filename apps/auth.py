@@ -4,8 +4,8 @@
 # @modify date 2018-04-07 19:35:33
 # @desc [auth]
 import hashlib
-from flask import redirect, render_template, request, g
-from flask_login import login_user, logout_user, current_user
+from flask import redirect, render_template, request
+from flask_login import login_user, logout_user
 
 # mysql
 # from model import User
@@ -28,17 +28,9 @@ def md5(text):
     return m.hexdigest()
 
 
-@app.before_request
-def before_request():
-    g.user = current_user
-
-
 @app.route('/ulogin')
 def login():
-    if g.user is not None and g.user.is_authenticated:
-        return redirect('/upload')
-    else:
-        return render_template("login.html")
+    return render_template("single_login.html")
 
 
 # mysql
@@ -63,7 +55,7 @@ def login_api():
     if pd_vaild:
         user_obj = User(pd_vaild['user'])
         login_user(user_obj, True)
-        return redirect("/upload")
+        return redirect("/rika")
     return redirect("/ulogin")
 
 

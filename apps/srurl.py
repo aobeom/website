@@ -35,8 +35,8 @@ class HLSPlayList(object):
         m3u8_playlists = re.findall(rule, m3u8_index, re.S | re.M)
         if len(m3u8_playlists) != 0:
             sr_playlist = m3u8_playlists[0]
-            datas = statusHandler.handler(0, sr_playlist)
+            data = statusHandler.handler(0, sr_playlist)
         else:
-            datas = statusHandler.handler(
+            data = statusHandler.handler(
                 1, None, message="Not yet started")
-        return datas
+        return data

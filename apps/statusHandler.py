@@ -1,8 +1,8 @@
-def handler(status, datas, types=None, code=None, message=None):
+def handler(status, data, types=None, code=None, message=None):
     infos = {}
     infos["status"] = status
-    if datas:
-        infos["datas"] = datas
+    if data:
+        infos["data"] = data
     if types:
         infos["type"] = types
     if code:

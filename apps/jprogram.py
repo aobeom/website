@@ -44,10 +44,10 @@ class yahooTV(object):
                 tv_dict["title"] = t[3]
                 tv_dict["station"] = t[4]
                 tv_infos.append(tv_dict)
-            datas = statusHandler.handler(0, tv_infos, message=tv_url)
+            data = statusHandler.handler(0, tv_infos, message=tv_url)
         else:
-            datas = statusHandler.handler(1, None, message="No Program Found")
-        return datas
+            data = statusHandler.handler(1, None, message="No Program Found")
+        return data
 
     def __tvLeftInfo(self, index):
         tv_index = index

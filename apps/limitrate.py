@@ -6,8 +6,8 @@ def limitIP(ip):
     keyname = "ip:{}".format(ip)
     limit_ip = r.redisCheck(keyname)
     if limit_ip is not None and int(limit_ip) > 9:
-        datas = statusHandler.handler(
+        data = statusHandler.handler(
             1, None, message="Too many requests per second")
-        return datas
+        return data
     else:
         r.redisCounter(keyname)
