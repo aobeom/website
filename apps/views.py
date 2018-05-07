@@ -345,7 +345,8 @@ def upload_file():
         h = hlstream.hlsegment()
         file = request.files['file']
         filename = secure_filename(file.filename)
-        video = os.path.join(os.getcwd(), "videos", filename)
+        mainpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+        video = os.path.join(mainpath, "videos", filename)
         file.save(video)
         playlist = h.segment(video, "media")
         redis_key = "playlist:{}".format(playlist)
