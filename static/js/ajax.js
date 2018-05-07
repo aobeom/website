@@ -460,12 +460,12 @@ $(document).ready(function () {
                 }
             })
         }
-        $('#upload').click(function () {
+        $('#toolup').click(function () {
             $("#data").empty();
             var formData = new FormData();
-            var filebody = $('#file')[0].files[0]
+            var filebody = $('#toolfile')[0].files[0]
             formData.append('file', filebody);
-            var filevalue = $('#file').val()
+            var filevalue = $('#toolfile').val()
             if (filevalue == "") {
                 $("#data").append(error_type);
                 return false;
