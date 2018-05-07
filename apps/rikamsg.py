@@ -197,14 +197,14 @@ def timeformat(timestamp):
 
 def main():
     msg = rikaMsg()
-    fromdate = "2018/02/03 00:00:00"
-    todate = "2018/02/04 00:00:00"
+    # fromdate = "2018/02/03 00:00:00"
+    # todate = "2018/02/04 00:00:00"
 
     # crond
-    # end = time.time()
-    # start = end - 86400
-    # fromdate = timeformat(start)
-    # todate = timeformat(end)
+    end = time.time()
+    start = end - 86400
+    fromdate = timeformat(start)
+    todate = timeformat(end)
 
     keya_msg = msg.keya_history(fromdate, todate)
     if keya_msg:
