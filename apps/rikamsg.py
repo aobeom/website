@@ -68,7 +68,7 @@ class rikaMsg(object):
         result = [q for q in quers_res]
         return result
 
-    def keya_history(self, fromdate=None, todate=None, count=300, sortorder=0):
+    def keya_history(self, fromdate=None, todate=None, count=10, sortorder=0):
         # date format "2018/01/01 00:00:00"
         keya_msg = []
         url = "https://client-k.hot.sonydna.com/article/allhistory"
@@ -85,14 +85,21 @@ class rikaMsg(object):
         response = requests.post(url=url, headers=headers, json=history_data)
         keya_result = json.loads(response.text)
         data = keya_result["result"]["history"]
+        total = str(len(data))
+        print("Update {}".format(total))
         for d in data:
             keya_new_dict = {}
             keya_body = d["body"]
-            keya_new_dict["tid"] = keya_body["contents"]
-            keya_new_dict["text"] = keya_body["talk"]
-            keya_new_dict["type"] = keya_body["media"]
-            keya_new_dict["date"] = keya_body["date"]
-            keya_msg.append(keya_new_dict)
+            nodata = self.keya_check(keya_body["contents"])
+            if nodata:
+                keya_new_dict["tid"] = keya_body["contents"]
+                keya_new_dict["text"] = keya_body["talk"]
+                keya_new_dict["type"] = keya_body["media"]
+                keya_new_dict["date"] = keya_body["date"]
+                keya_msg.append(keya_new_dict)
+            else:
+                print("Already Exist")
+                return None
         return keya_msg
 
     def keya_media(self, message=None):
@@ -188,6 +195,12 @@ class rikaMsg(object):
                     code.write(chunk)
         return media_info
 
+    def keya_check(self, tid):
+        query_record = {"tid": tid}
+        query = self.db_coll.find(query_record).count()
+        if query == 0:
+            return True
+
 
 def timeformat(timestamp):
     dformat = "%Y/%m/%d %H:%M:%S"
@@ -206,6 +219,7 @@ def main():
     fromdate = timeformat(start)
     todate = timeformat(end)
 
+    print("From {} to {}".format(fromdate, todate))
     keya_msg = msg.keya_history(fromdate, todate)
     if keya_msg:
         media_msg = msg.keya_media(keya_msg)
@@ -215,7 +229,7 @@ def main():
         else:
             msg.keya_text(keya_msg)
     else:
-        print "No update"
+        print("No update")
 
 
 if __name__ == "__main__":
