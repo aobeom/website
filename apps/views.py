@@ -326,15 +326,19 @@ def stmovie_dl():
 
 
 @app.errorhandler(500)
-def server_error(error):
-    data = statusHandler.handler(1, None, code=500, message="Server Error")
-    return jsonify(data)
+def server_5xx(error):
+    return render_template("error_5xx.html")
 
 
 @app.errorhandler(405)
-def method_error(error):
+def method_405(error):
     data = statusHandler.handler(1, None, code=405, message="Method Error")
     return jsonify(data)
+
+
+@app.errorhandler(404)
+def server_404(error):
+    return render_template("error_not_found.html")
 
 
 @app.route(API_UP, methods=['GET', 'POST'], strict_slashes=False)
