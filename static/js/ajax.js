@@ -368,33 +368,90 @@ $(document).ready(function () {
             }
         })
     } else if (uri[uri.length - 1] == "rika") {
-        $.ajax({
-            type: "GET",
-            url: "/v1/api/msg",
-            dataType: "json",
-            success: function (pages) {
-                $("#pages").empty();
-                $('#pages').twbsPagination({
-                    totalPages: pages,
-                    visiblePages: 3,
-                    first: '',
-                    last: '',
-                    prev: '<span aria-hidden="true">&laquo;</span>',
-                    next: '<span aria-hidden="true">&raquo;</span>',
-                    last: "Last " + pages,
-                    onPageClick: function (event, page) {
+        var dsize = $(window).width();
+        if (dsize <= 350) {
+            var visible = 2;
+        } else if (dsize >= 350 && dsize <= 700) {
+            var visible = 3;
+        } else if (dsize > 700) {
+            var visible = 5;
+        }
+        $(".tools-btngroup button").click(function () {
+            var typeid = $(this).attr("id");
+            $("#pages").remove();
+            $("#pagep").append('<div id="pages" class="tools-pages"></div>')
+            $.ajax({
+                type: "GET",
+                url: "/v1/api/msg",
+                data: {
+                    "type": typeid,
+                },
+                dataType: "json",
+                success: function (pages) {
+                    if (pages > 1) {
+                        $("#pages").empty();
+                        $("#data").empty();
+                        $('#pages').twbsPagination({
+                            totalPages: pages,
+                            visiblePages: visible,
+                            first: '<span aria-hidden="true">&laquo;&laquo;</span>',
+                            prev: '<span aria-hidden="true">&laquo;</span>',
+                            next: '<span aria-hidden="true">&raquo;</span>',
+                            last: "Last " + pages,
+                            onPageClick: function (event, page) {
+                                $("#data").empty();
+                                $.ajax({
+                                    type: "GET",
+                                    url: "/v1/api/msg",
+                                    data: {
+                                        "page": page,
+                                        "type": typeid,
+                                    },
+                                    dataType: "json",
+                                    success: function (msg) {
+                                        $("#data").empty();
+                                        var body = '<div class="accordion" id="rikamsg">'
+                                        for (i in msg) {
+                                            message = msg[i]
+                                            type = message["type"]
+                                            date = message["date"]
+                                            text = message["text"]
+                                            media = message["media"]
+                                            if (type == 1) {
+                                                media_ele = '<img src="/media' + media + '" width="260px">'
+                                            } else if (type > 1) {
+                                                media_ele = '<video src="/media' + media + '" width="260px" controls="controls">'
+                                            } else {
+                                                media_ele = ''
+                                            }
+                                            var title = '<div class="card "><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + date + '</span></div>'
+                                            var content = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#rikamsg"><div class="card-body tools-msg"><span>' + text + '</span><div class="tools-media">' + media_ele + '</div></div></div>'
+                                            var body = body + title + content + "</div>"
+                                        }
+                                        $("#data").append(body)
+                                    },
+                                    beforeSend: function (XMLHttpRequest) {
+                                        $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+                                    },
+                                    error: function () {
+                                        $("#data").append(error_system);
+                                    }
+                                })
+                            }
+                        });
+                    } else {
                         $("#data").empty();
                         $.ajax({
                             type: "GET",
                             url: "/v1/api/msg",
                             data: {
-                                "page": page,
+                                "page": 1,
+                                "type": typeid,
                             },
                             dataType: "json",
                             success: function (msg) {
                                 $("#data").empty();
                                 var body = '<div class="accordion" id="rikamsg">'
-                                
                                 for (i in msg) {
                                     message = msg[i]
                                     type = message["type"]
@@ -412,25 +469,20 @@ $(document).ready(function () {
                                     var content = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#rikamsg"><div class="card-body tools-msg"><span>' + text + '</span><div class="tools-media">' + media_ele + '</div></div></div>'
                                     var body = body + title + content + "</div>"
                                 }
-
-                                $("#data").append(body)
+                                $("#data").append(body);
+                                $("#pagep").empty();
                             },
                             beforeSend: function (XMLHttpRequest) {
                                 $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                             },
                             error: function () {
                                 $("#data").append(error_system);
+                                $("#pagep").empty();
                             }
                         })
                     }
-                });
-            },
-            beforeSend: function (XMLHttpRequest) {
-                $("#pages").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
-            },
-            error: function () {
-                $("#pages").append(error_system);
-            }
+                },
+            })
         })
     } else {
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';

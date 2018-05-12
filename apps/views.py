@@ -379,10 +379,17 @@ def subhls(code):
 @app.route(API_MSG, methods=['GET'], strict_slashes=False)
 @login_required
 def rika_msg():
-    msg = rikamsg.rikaMsg()
-    pages = msg.keya_pages_query()
+    mtype = request.args.get("type")
     page = request.args.get("page")
-    if page:
-        allinfo = msg.keya_allinfo_query(page)
-        return jsonify(allinfo)
+    mtype = int(mtype)
+    msg = rikamsg.rikaMsg()
+    pages = msg.keya_pages_query(mtype)
+    if mtype == 100:
+        if page:
+            allinfo = msg.keya_allinfo_query(page)
+            return jsonify(allinfo)
+    else:
+        if page:
+            allinfo = msg.keya_media_query(page, mtype)
+            return jsonify(allinfo)
     return jsonify(pages)

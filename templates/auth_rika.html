@@ -1,4 +1,14 @@
 {% extends "auth.html" %} {% block rika %}
-<div id="pages" class="tools-pages"></div>
+<div class="btn-group tools-btngroup" role="group" aria-label="Basic example">
+    <button type="button" class="btn btn-primary" id="100">ALL</button>
+    <button type="button" class="btn btn-primary" id="0">T</button>
+    <button type="button" class="btn btn-primary" id="1">P</button>
+    <button type="button" class="btn btn-primary" id="2">V</button>
+    <button type="button" class="btn btn-primary" id="3">A</button>
+</div>
+<div id="pagep">
+    <div id="pages" class="tools-pages"></div>
+</div>
+
 <div id="data"></div>
 {% endblock %}

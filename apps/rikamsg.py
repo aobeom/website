@@ -35,8 +35,11 @@ class rikaMsg(object):
             os.path.join(os.path.dirname(__file__), ".."))
         self.save_path = os.path.join(work_dir, "media", self.folder)
 
-    def keya_pages_query(self):
-        count = self.db_coll.count({})
+    def keya_pages_query(self, flag):
+        if flag == 100:
+            count = self.db_coll.count()
+        else:
+            count = self.db_coll.find({"type": flag}).count()
         comp = count % 10
         if comp != 0:
             pages = count / 10 + 1

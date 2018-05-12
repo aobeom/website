@@ -106,6 +106,10 @@ h6 {
     top: 6px;
 }
 
+.form-control {
+    border-color: #28a745;
+}
+
 /* picdown */
 
 .tools-banner {
