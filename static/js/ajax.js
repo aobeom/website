@@ -313,7 +313,7 @@ $(document).ready(function () {
                 var dt = msg["data"];
                 $("#data").empty();
                 if (msg["status"] == 0) {
-                    var st_body = '<span class="btn btn-info"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</span>'
+                    var st_body = '<button class="btn btn-info btn-fresh" type="button" disabled="disabled"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</button>'
                 } else {
                     var st_body = '<span class="btn btn-danger">NO DATA</span>'
                 }
@@ -324,11 +324,23 @@ $(document).ready(function () {
                     var s_murl = data["murl"];
                     var s_purl = data["purl"];
                     var s_id = "dlink" + i;
-                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary tools-button" value="' + s_murl + '">Resources</button>';
+                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary btn-source tools-button" value="' + s_murl + '">Resources</button>';
                     var st_body = st_body + st_info;
                 }
                 $('#data').append(st_body);
-                $('button').click(function () {
+                $.get("/v1/api/stupdate", function (msg) {
+                    if (msg["data"] == "false") {
+                        $(".btn-fresh").removeAttr('disabled');
+                    }
+                });
+                $('.btn-fresh').click(function () {
+                    $.get("/v1/api/stupdate", {
+                        "k": "u"
+                    }, function (msg) {
+                        location.reload();
+                    })
+                })
+                $('.btn-source').click(function () {
                     var sid = $(this).attr("id")
                     var murl = {
                         "url": $(this).val()
@@ -340,7 +352,7 @@ $(document).ready(function () {
                         data: JSON.stringify(murl),
                         dataType: "json",
                         success: function (msg) {
-                            var dl = '<a class="btn btn-success tools-button" href="' + msg["data"] + '" target="_blank">Download</a>'
+                            var dl = '<a class="btn btn-success btn-source tools-button" href="' + msg["data"] + '" target="_blank">Download</a>'
                             $("#" + sid).replaceWith(dl)
                             $(".tools-button").removeAttr("disabled");
                         },

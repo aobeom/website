@@ -83,3 +83,8 @@ class redisMode(object):
         self.__status()
         self.conn.incr(keyname)
         self.conn.expire(keyname, ex)
+
+    def redisTTL(self, keyname):
+        self.__status()
+        ttl = self.conn.ttl(keyname)
+        return ttl

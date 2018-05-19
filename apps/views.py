@@ -11,7 +11,7 @@ from flask import jsonify, redirect, render_template, request
 from flask_login import login_required
 from werkzeug import secure_filename
 
-from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikamsg
+from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikamsg, stchannel
 
 API_VERSION = "/v1"
 API_PICDOWN = API_VERSION + "/api/picdown"
@@ -19,6 +19,7 @@ API_DRAMA = API_VERSION + "/api/dramaget"
 API_PROGRAM = API_VERSION + "/api/programget"
 API_UTIME = API_VERSION + "/api/utime"
 API_ST = API_VERSION + "/api/stinfo"
+API_FRE = API_VERSION + "/api/stupdate"
 API_STDL = API_VERSION + "/api/stdl"
 API_UP = API_VERSION + "/api/upload"
 API_VIDEOS = API_VERSION + "/api/vlist"
@@ -303,6 +304,27 @@ def stmovie_get():
             data = limitinfo
     else:
         data = statusHandler.handler(1, None, message="No data")
+    return jsonify(data)
+
+
+@app.route(API_FRE, methods=['GET'], strict_slashes=False)
+def stmovie_fresh():
+    r = redisMode.redisMode()
+    data = {}
+    st_key = "st:update"
+    st_state = r.redisCheck(st_key)
+    if st_state:
+        ttl = r.redisTTL(st_key)
+        data = statusHandler.handler(0, "true", message="ttl: " + str(ttl))
+    else:
+        data = statusHandler.handler(1, "false")
+        value = request.args.get("k")
+        if value:
+            r.redisSave(st_key, "true", ex=7200)
+            st = stchannel.stMovies()
+            st_info = st.stMovieInfos()
+            infos = st.stGetUrl(st_info)
+            r.redisSave("stinfo", infos)
     return jsonify(data)
 
 
