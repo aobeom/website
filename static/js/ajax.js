@@ -178,7 +178,7 @@ $(document).ready(function () {
                             for (i in subpig_data) {
                                 var subpigs = subpig_data[i];
                                 var eps = subpigs["dlurls"];
-                                var subpig_title = '<div class="card tools-card"><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + subpigs["utime"] + " - " + '</span><a href="' + subpigs["murl"] + '" target="_blank">' + subpigs["title"] + '</a></div>';
+                                var subpig_title = '<div class="card tools-card"><div class="card-header" id="btn' + i + '" type="button" data-toggle="collapse" data-target="#tar' + i + '" aria-expanded="true" aria-controls="tar' + i + '"><span>' + subpigs["date"] + " - " + '</span><a href="' + subpigs["url"] + '" target="_blank">' + subpigs["title"] + '</a></div>';
                                 var subpig_ul = '<div id="tar' + i + '" class="collapse" aria-labelledby="btn' + i + '" data-parent="#dramapa"><div class="card-body tools-card-body"><div class="list-group"><a class="list-group-item list-group-item-action list-group-item-info">LINK#PASSWD</a>'
                                 var subpig_info = "";
                                 if (typeof (eps) != "undefined") {

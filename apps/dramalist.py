@@ -357,15 +357,15 @@ class subpig_rbl(object):
                 subpig_rule_title = r'\[(.*?)\]'
                 subpig_title = re.findall(
                     subpig_rule_title, subpig_title_origin)
-                subpig_info_dict["murl"] = sub_cont[0]
-                subpig_info_dict["utime"] = subpig_utime
+                subpig_info_dict["url"] = sub_cont[0]
+                subpig_info_dict["date"] = subpig_utime
                 subpig_info_dict["title"] = subpig_title[1]
                 subpig_index_info.append(subpig_info_dict)
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
-        subpig_drule = r'<p>.*?<a href="(https://pan.baidu.com/s/.*?)">.*?</a>.*?([0-9a-zA-Z]+).*?</p>'
-        murl = infos["murl"]
+        subpig_drule = r'<p>.*?<a href="(https://pan.baidu.com/s/.*?)".*?>.*?</a>.*?([0-9a-zA-Z]+).*?</p>'
+        murl = infos["url"]
         response = self.__request(murl)
         subpig_main = response.text
         subpig_durls = re.findall(subpig_drule, subpig_main, re.S | re.M)
