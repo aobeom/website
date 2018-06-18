@@ -379,6 +379,41 @@ $(document).ready(function () {
                 $("#data").append(error_system);
             }
         })
+    } else if (uri[uri.length - 1] == "tiktok") {
+        $("#data").empty();
+        var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
+        var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
+        $.ajax({
+            type: "GET",
+            url: "/v1/api/tiktok",
+            dataType: "json",
+            success: function (msg) {
+                var dt = msg["data"];
+                $("#data").empty();
+                if (msg["status"] != 0) {
+                    var st_body = '<span class="btn btn-danger">NO DATA</span>'
+                } else {
+                    var st_body = ''
+                }
+                for (i in dt) {
+                    var data = dt[i];
+                    var s_date = data["time"];
+                    var s_title = data["text"];
+                    var s_murl = data["playlist"];
+                    var s_purl = data["cover"];
+                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><a href="' + s_murl+ '" target="_blank"><img src="' + s_purl + '" style="width:200px"></a></p>';
+                    var st_body = st_body + st_info;
+                }
+                $('#data').append(st_body);
+            },
+            beforeSend: function (XMLHttpRequest) {
+                $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
+            },
+            error: function () {
+                $("#data").empty();
+                $("#data").append(error_system);
+            }
+        })
     } else if (uri[uri.length - 1] == "rika") {
         var dsize = $(window).width();
         if (dsize <= 350) {
@@ -496,7 +531,8 @@ $(document).ready(function () {
                 },
             })
         })
-    } else {
+    } 
+    else {
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
         var error_size = '<p class="btn btn-danger" onclick="location.reload();">Must be less than 100M</p>';
         var error_type = '<p class="btn btn-danger" onclick="location.reload();">Only .mp4</p>';

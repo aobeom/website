@@ -24,6 +24,7 @@ API_STDL = API_VERSION + "/api/stdl"
 API_UP = API_VERSION + "/api/upload"
 API_VIDEOS = API_VERSION + "/api/vlist"
 API_MSG = API_VERSION + "/api/msg"
+API_TIK = API_VERSION + "/api/tiktok"
 
 
 @app.route('/')
@@ -67,6 +68,11 @@ def hls():
 @login_required
 def rika():
     return render_template("auth_rika.html")
+
+
+@app.route('/tiktok')
+def tiktok():
+    return render_template("base_tiktok.html")
 
 
 @app.route(API_PICDOWN, methods=['GET'])
@@ -415,3 +421,24 @@ def rika_msg():
             allinfo = msg.keya_media_query(page, mtype)
             return jsonify(allinfo)
     return jsonify(pages)
+
+
+@app.route(API_TIK, methods=['GET'], strict_slashes=False)
+def tiktok_get():
+    r = redisMode.redisMode()
+    data = {}
+    tikinfo = r.redisCheck("tiktok")
+    if tikinfo:
+        tikinfo = r.redisList(tikinfo)
+    else:
+        data = statusHandler.handler(1, None, message="No data")
+    clientip = request.remote_addr
+    limitinfo = limitrate.limitIP(clientip)
+    if tikinfo:
+        if limitinfo is None:
+            data = statusHandler.handler(0, tikinfo)
+        else:
+            data = limitinfo
+    else:
+        data = statusHandler.handler(1, None, message="No data")
+    return jsonify(data)

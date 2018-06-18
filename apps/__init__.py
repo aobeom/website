@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask
 from flask_login import LoginManager, login_manager
 from get_config import get_db_conf
-
+from flask_cors import CORS
 # mysql
 # from flask_sqlalchemy import SQLAlchemy
 
@@ -24,7 +24,6 @@ secret_key = conf["secret_key"]
 app = Flask(__name__, template_folder="../templates",
             static_folder='../static',)
 app.config['SECRET_KEY'] = secret_key
-
 # mongodb
 app.config.update(
     MONGO_URI='mongodb://{dbhost}:{dbport}/{dbname}'.format(
