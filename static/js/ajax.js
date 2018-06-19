@@ -389,11 +389,12 @@ $(document).ready(function () {
             dataType: "json",
             success: function (msg) {
                 var dt = msg["data"];
+                var ut = msg["message"];
                 $("#data").empty();
                 if (msg["status"] != 0) {
                     var st_body = '<span class="btn btn-danger">NO DATA</span>'
                 } else {
-                    var st_body = ''
+                    var st_body = '<button class="btn btn-info btn-fresh" type="button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</button>'
                 }
                 for (i in dt) {
                     var data = dt[i];

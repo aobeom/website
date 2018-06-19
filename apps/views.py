@@ -427,16 +427,18 @@ def rika_msg():
 def tiktok_get():
     r = redisMode.redisMode()
     data = {}
-    tikinfo = r.redisCheck("tiktok")
+    tikinfo = r.redisCheck("tik:info")
     if tikinfo:
         tikinfo = r.redisList(tikinfo)
     else:
         data = statusHandler.handler(1, None, message="No data")
+        return jsonify(data)
+    tikutime = r.redisCheck("tik:utime")
     clientip = request.remote_addr
     limitinfo = limitrate.limitIP(clientip)
     if tikinfo:
         if limitinfo is None:
-            data = statusHandler.handler(0, tikinfo)
+            data = statusHandler.handler(0, tikinfo, message=tikutime)
         else:
             data = limitinfo
     else:
