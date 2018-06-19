@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask
 from flask_login import LoginManager, login_manager
 from get_config import get_db_conf
-from flask_cors import CORS
+# from flask_cors import CORS
 # mysql
 # from flask_sqlalchemy import SQLAlchemy
 
