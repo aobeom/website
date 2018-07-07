@@ -470,7 +470,6 @@ $(document).ready(function () {
                                         var body = '<div class="accordion" id="rikamsg">'
                                         for (i in msg) {
                                             message = msg[i]
-                                            console.log(message)
                                             type = message["type"]
                                             date = message["date"]
                                             text = message["text"]
@@ -512,7 +511,7 @@ $(document).ready(function () {
                                 $("#data").empty();
                                 var body = '<div class="accordion" id="rikamsg">'
                                 for (i in msg) {
-                                    message = msg[i]["data"]["entities"]
+                                    message = msg[i]
                                     type = message["type"]
                                     date = message["date"]
                                     text = message["text"]
