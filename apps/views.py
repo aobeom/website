@@ -301,11 +301,13 @@ class Stchannel(Resource):
 
 
 class UploadFile(Resource):
+    @login_required
     def get(self):
         playlists = redis.redisKeys("playlist:*")
         total = len(playlists)
         return handler(0, "Total video", number=total)
 
+    @login_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('file', type=FileStorage, location='files')
@@ -342,6 +344,7 @@ def subhls(code):
 
 
 class RikaMsg(Resource):
+    @login_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('type', required=True, help="Type is required")
