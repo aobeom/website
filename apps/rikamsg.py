@@ -10,7 +10,7 @@ import pymongo
 
 class rikaMsg(object):
     def __init__(self):
-        dbconf = get_config.get_db_conf()
+        dbconf = get_config.get_mongo_conf()
         rikaconf = get_config.get_rika_conf()
         # mongo config
         mongo_host = "{}:{}".format(dbconf["dbhost"], dbconf["dbport"])

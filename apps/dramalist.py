@@ -6,6 +6,7 @@
 import json
 import multiprocessing
 import re
+import sys
 import time
 from multiprocessing.dummy import Pool
 
@@ -247,80 +248,6 @@ class tvbtsub(object):
         return tvbt_infos
 
 
-# class subpig(object):
-#     def __init__(self):
-#         self.subpig_host = "http://www.jpdrama.cn"
-
-#     def __request(self, url, params=None, timeout=30):
-#         headers = {
-#             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
-#         }
-#         if params:
-#             response = requests.get(
-#                 url, headers=headers, params=params, timeout=timeout)
-#         else:
-#             response = requests.get(url, headers=headers, timeout=timeout)
-#         return response
-
-#     def subpigIndexInfo(self):
-#         subpig_updates = []
-#         subpig_index = self.subpig_host + "/forum.php?mod=forumdisplay&fid=306"
-#         response = self.__request(subpig_index)
-#         subpig_url = response.text
-#         subpig_rules = r'</em>.*?<a href="(.*?)".*?style="font-weight: bold;color: #EE1B2E".*?>(.*?)</a>'
-#         subpig_update_info = re.findall(subpig_rules, subpig_url)
-#         subpig_update_info.pop(0)
-#         subpig_update_info.pop(0)
-#         for info in subpig_update_info:
-#             subpig_info = []
-#             subpig_title = info[1]
-#             subpig_date = subpig_title.split("]")[-1].strip()
-#             subpig_url = self.subpig_host + "/" + info[0]
-#             subpig_info.append(subpig_date)
-#             subpig_info.append(subpig_title)
-#             subpig_info.append(subpig_url)
-#             subpig_updates.append(subpig_info)
-#         return subpig_updates
-
-#     def subpigGetUrl(self, updateinfo):
-#         subpig_updates = updateinfo
-#         # no thread
-#         # subpig_infos = []
-#         subpig_dict = {}
-#         subpig_date_rule = r'[0-9]+\/[0-9]+'
-#         subpig_title_rule = r'\[(.*?)\]'
-#         # no thread
-#         # for updates in subpig_updates:
-#         # subpig_date = re.findall(subpig_date_rule, updates[0])[0]
-#         # subpig_title = re.findall(subpig_title_rule, updates[1])[1]
-#         # subpig_url = updates[2].replace("amp;", "")
-#         # -- thread mode --
-#         subpig_date = re.findall(subpig_date_rule, subpig_updates[0])
-#         if subpig_date:
-#             subpig_date = subpig_date[0]
-#         else:
-#             subpig_date = "0/0"
-#         subpig_title = re.findall(subpig_title_rule, subpig_updates[1])[1]
-#         subpig_url = subpig_updates[2].replace("amp;", "")
-#         subpig_dict["date"] = subpig_date
-#         subpig_dict["title"] = subpig_title
-#         subpig_dict["url"] = subpig_url
-#         subpig_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
-#         response = self.__request(subpig_url)
-#         subpig_single_index = response.text
-#         subpig_dl_urls = re.findall(subpig_rule, subpig_single_index)
-#         for urls in subpig_dl_urls:
-#             dl_urls = []
-#             baidu_url = urls[0]
-#             baidu_passwd = urls[1]
-#             dl_urls.append(baidu_url)
-#             dl_urls.append(baidu_passwd)
-#             subpig_dict["dlurls"] = dl_urls
-#             # no thread
-#             # subpig_infos.append(subpig_dict)
-#             # -- thread mode --
-#         return subpig_dict
-
 class subpig_rbl(object):
     def __init__(self):
         self.subpig_host = "http://www.zzrbl.com"
@@ -330,10 +257,16 @@ class subpig_rbl(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
         }
         if params:
-            response = requests.get(
-                url, headers=headers, params=params, timeout=timeout)
+            try:
+                response = requests.get(
+                    url, headers=headers, params=params, timeout=timeout)
+            except BaseException as e:
+                sys.exit(e)
         else:
-            response = requests.get(url, headers=headers, timeout=timeout)
+            try:
+                response = requests.get(url, headers=headers, timeout=timeout)
+            except BaseException as e:
+                sys.exit(e)
         return response
 
     def subpigIndexInfo(self):
@@ -393,7 +326,6 @@ def main():
     r.redisSave(tvbt_key, tvbt_urls)
 
     subpig_key = "drama:subpig"
-    # p = subpig()
     p = subpig_rbl()
     index_subpig = p.subpigIndexInfo()
     pool = Pool(10)
@@ -421,25 +353,18 @@ def tvbt_process(redis):
     redis.redisSave(tvbt_key, tvbt_urls)
 
 
-# def subpig_process(redis):
-#     subpig_key = "drama:subpig"
-#     s = subpig()
-#     subpig_update_info = s.subpigIndexInfo()
-#     pool = Pool(4)
-#     subpig_urls = pool.map(s.subpigGetUrl, subpig_update_info)
-#     pool.close()
-#     pool.join
-#     redis.redisSave(subpig_key, subpig_urls)
-
 def subpig_process(redis):
     subpig_key = "drama:subpig"
     p = subpig_rbl()
     subpig_update_info = p.subpigIndexInfo()
-    pool = Pool(4)
-    subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
-    pool.close()
-    pool.join
-    redis.redisSave(subpig_key, subpig_urls)
+    if subpig_update_info:
+        pool = Pool(4)
+        subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
+        pool.close()
+        pool.join
+        redis.redisSave(subpig_key, subpig_urls)
+    else:
+        print("No data")
 
 
 def fixsub_process(redis):
@@ -461,12 +386,12 @@ def main2():
     p1 = multiprocessing.Process(target=tvbt_process, args=(r,), name="TVBT")
     p2 = multiprocessing.Process(
         target=subpig_process, args=(r,), name="SUBPIG")
-    p3 = multiprocessing.Process(
-        target=fixsub_process, args=(r,), name="FIXSUB")
+    # p3 = multiprocessing.Process(
+    #     target=fixsub_process, args=(r,), name="FIXSUB")
 
     p1.start()
     p2.start()
-    p3.start()
+    # p3.start()
 
     for p in multiprocessing.active_children():
         print("ChildProcess: {pname} ChildPID: {pid}".format(

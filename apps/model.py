@@ -1,29 +1,24 @@
 from flask import redirect
 
 # mysql
-# from flask_login import UserMixin
-# from apps import login_manger, db
+from flask_login import UserMixin
+from apps import login_manger, db
 
-# mongodb
-from apps import login_manger, mongo
+from passlib.hash import md5_crypt as hash_pwd
+
 
 # mysql
-# class User(db.Model, UserMixin):
-#     __tablename__ = 'users'
-#     id = db.Column(db.Integer, primary_key=True)
-#     user = db.Column(db.String(20), unique=True)
-#     password = db.Column(db.String(64))
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32), unique=True)
+    password = db.Column(db.String(64))
 
-# @login_manger.user_loader
-# def load_user(id):
-#     user = User.query.get(int(id))
-#     return user
+    def hash_password(self, pwd):
+        self.password = hash_pwd.encrypt(pwd)
 
-
-# mongodb
-class User():
-    def __init__(self, user):
-        self.user = user
+    def verify_password(self, pwd):
+        return hash_pwd.verify(pwd, self.password)
 
     def is_authenticated(self):
         return True
@@ -34,16 +29,10 @@ class User():
     def is_anonymous(self):
         return False
 
-    def get_id(self):
-        return self.user
-
 
 @login_manger.user_loader
-def load_user(user):
-    u = mongo.db.users.find_one({"user": user})
-    if not u:
-        return None
-    return User(u['user'])
+def load_user(id):
+    return User.query.get(int(id))
 
 
 # common

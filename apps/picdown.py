@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:23
-# @modify date 2018-02-26 18:10:11
+# @modify date 2018-06-22 22:42:58
 # @desc [原图链接获取]
-
 import hashlib
 import json
 import os
@@ -12,8 +11,7 @@ import sys
 from multiprocessing.dummy import Pool
 
 import requests
-
-from apps import statusHandler
+from lxml import etree
 
 if sys.version > '3':
     py3 = True
@@ -21,25 +19,31 @@ else:
     py3 = False
 
 
+# url处理的额外规则
 class picExtra(object):
     def __init__(self):
         pass
 
+    # mdpr统一跳转至photo页面
     def mdprImgCenter(self, url, host, headers):
         if "photo" in url:
             picurl = url
         else:
+            # google amp标识清除
             if "/amp" in url:
                 url = url.replace("/amp", "")
             urlpart = url.split("/")
             url = host + '/' + urlpart[3] + '/' + urlpart[-1]
             news_index = requests.get(
                 url, timeout=30, headers=headers).text
-            img_center_rule = r'<a data-click="head_img_link" data-pos="1" href="(.*?)" .*?>'
-            img_center = re.findall(img_center_rule, news_index, re.S | re.M)
+            # 提取photo页面
+            html = etree.HTML(news_index)
+            img_center = html.xpath(
+                r'//a[@data-click="head_img_link"]')[0].get("href")
             picurl = host + ''.join(img_center)
         return picurl
 
+    # oricon统一跳转至photo页面
     def oriconImgCenter(self, url, host):
         if "news" in url:
             if "full" not in url:
@@ -53,6 +57,7 @@ class picExtra(object):
             picurl = url
         return picurl
 
+    # mantan统一跳转至photo页面
     def mantanImgCenter(self, url, host):
         if "photo" not in url:
             mantan_code = url.split("/")[-1]
@@ -62,6 +67,7 @@ class picExtra(object):
         return picurl
 
 
+# Instagram从JS中获取
 class instapic(object):
     def __init__(self):
         self.headers = {
@@ -72,6 +78,7 @@ class instapic(object):
         response = requests.get(url, headers=self.headers, timeout=30)
         insta_body = response.text
         insta_pics = []
+        # 提取JS请求的内容
         insta_rule = r'<script type="text/javascript">window._sharedData = (.*?);</script>'
         insta_str = re.findall(insta_rule, insta_body, re.S | re.M)
         insta_json = json.loads(''.join(insta_str))
@@ -95,6 +102,7 @@ class instapic(object):
         return insta_pics
 
 
+# ameblo通过接口获取
 class ameblo(object):
     def __init__(self):
         self.headers = {
@@ -119,6 +127,7 @@ class ameblo(object):
         return ameblog_img_urls
 
 
+# nogizaka46博客图片获取
 class nogizaka(object):
     def __init__(self):
         self.headers = {
@@ -128,23 +137,36 @@ class nogizaka(object):
     def nogiBlog(self, url):
         nogi_imgs = []
         response = requests.get(url, timeout=30, headers=self.headers)
-        nogi_blog_index = response.text
-        nogi_box_rule = r'<div class="entrybody">(.*?)<div class="entrybottom">'
-        nogi_blog_box = re.findall(nogi_box_rule, nogi_blog_index, re.S | re.M)
-        nogi_img_rule = r'<a.*?href="(.*?)".*?>'
-        nogi_imgs_dcimg = re.findall(nogi_img_rule, nogi_blog_box[0])
+        nogi_blog_index = response.content
+        nogi_html = etree.HTML(nogi_blog_index)
+        # 获取dcimg地址
+        img_center = nogi_html.xpath(r'//div[@class="entrybody"]//a')
+        if img_center:
+            nogi_imgs_dcimg = [i.get("href") for i in img_center]
+            img_tag = True
+        # 获取直链
+        else:
+            img_center = nogi_html.xpath(r'//div[@class="entrybody"]/img')
+            nogi_imgs_dcimg = [i.get("src") for i in img_center]
+            img_tag = False
+        # 保存到本地
         media_path = os.path.join(os.getcwd(), "media")
         if not os.path.exists(media_path):
             os.mkdir(media_path)
         for dcimg in nogi_imgs_dcimg:
             r = requests.Session()
-            response = r.get(dcimg, timeout=30, headers=self.headers)
-            dcimg_index = response.text
-            dcimg_rule = r'<img.*?src="(.*?)".*?>'
-            nogi_img_url = re.findall(dcimg_rule, dcimg_index)
-            nogi_img_url = ''.join(nogi_img_url)
-            if "expired.gif" in nogi_img_url:
-                nogi_img_url = "http://dcimg.awalker.jp/img/expired.gif"
+            # dcimg地址则提取原图地址
+            if img_tag:
+                response = r.get(dcimg, timeout=30, headers=self.headers)
+                dcimg_index = response.text
+                dcimg_html = etree.HTML(dcimg_index)
+                nogi_img_url = dcimg_html.xpath(
+                    r'//div[@id="contents"]//img')[0].get("src")
+                if "expired.gif" in nogi_img_url:
+                    nogi_img_url = "http://dcimg.awalker.jp/img/expired.gif"
+            else:
+                nogi_img_url = dcimg
+            # 单独下载模块
             nogi_img_data = r.get(
                 nogi_img_url, timeout=30, headers=self.headers)
             if py3:
@@ -157,12 +179,14 @@ class nogizaka(object):
             with open(save_path, "wb") as code:
                 for chunk in nogi_img_data.iter_content(chunk_size=1024):
                     code.write(chunk)
+        # 返回一个uri列表提供本地下载
         if nogi_imgs:
             return nogi_imgs
         else:
             return None
 
 
+# 通用图片下载
 class picdown(object):
     def __init__(self):
         self.headers = {
@@ -179,136 +203,162 @@ class picdown(object):
         }
         self.picExtra = picExtra()
 
+    # 返回url状态码
     def __urlInvalid(self, url):
         response = requests.get(url, headers=self.headers, timeout=30)
         return response.status_code
 
+    # 提取图片地址
     def __get_core(self, para):
-        url = para[0]
-        rule = para[1]
-        response = requests.get(url, headers=self.headers, timeout=46)
-        pic_index = response.text
-        pic_urls = re.findall(rule, pic_index, re.S | re.M)
-        return pic_urls
+        img_main = para[0]
+        img_i_rule = para[1]
+        ibody = requests.get(img_main, headers=self.headers, timeout=46)
+        ibody = etree.HTML(ibody.text)
+        img_src = ibody.xpath(img_i_rule)
+        for i in img_src:
+            img_url = i.get("src").split("?")[0]
+            if img_url:
+                return img_url
 
+    # 检查输入url有效性
     def urlCheck(self, url):
-        http_code = self.__urlInvalid(url)
-        site = url.split("/")[2]
-        if http_code == 200:
-            host_rule = [
-                "http[s]?://mdpr.jp/photo.*",
-                "http[s]?://mdpr.jp/.*",
-                "http[s]?://www.oricon.co.jp/photo.*",
-                "http[s]?://www.oricon.co.jp/news.*",
-                "http[s]?://ameblo.jp/.*/entry-.*",
-                "http[s]?://*.*46.com/s/k46o/diary/detail/.*",
-                "http[s]?://*.*46.com/.*.php",
-                "http[s]?://natalie.mu/.*",
-                "http[s]?://mantan-web.jp/.*",
-                "http[s]?://thetv.jp/news/.*",
-                "http[s]?://(www.)?instagram.com/p/.*",
-                "http[s]?://tokyopopline.com/archives/.*"
-            ]
-            for rule in host_rule:
-                if len(re.findall(rule, url)):
-                    result = statusHandler.handler(0, url, site, http_code)
-                    return result
-            else:
-                result = statusHandler.handler(
-                    1, None, site, http_code, "This website is not supported")
+        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/p/.*)')
+        if host_rule.match(url):
+            http_code = self.__urlInvalid(url)
+            if http_code == 200:
+                result = {}
+                site = url.split("/")[2]
+                result["data"] = url
+                result["type"] = site
+                return result
         else:
-            result = statusHandler.handler(
-                1, None, site, http_code, "Url is error")
-        return result
+            return None
 
+    # 规则路由
     def picRouter(self, result):
-        site = result["type"]
-        url = result["data"]
-        if "mdpr" in site:
-            url = self.picExtra.mdprImgCenter(
-                url, self.host[site], self.headers)
-            fil_rule = r'<figure class="square">.*?<a href="(.*?)".*?>.*?</a>.*?</figure>'
-            pic_rule = r'<figure class="main-photo f9em">.*?<img src="(.*?)".*?>.*?</figure>'
-            piclist = self.picRules(url, site, fil_rule)
-            pics = self.picUrlsGet(piclist, pic_rule)
-            pics = [p.split("?")[0] for p in pics]
-        elif "oricon" in site:
-            url = self.picExtra.oriconImgCenter(url, self.host[site])
-            fil_rule = r'<li class="item">.*?<a href="(.*?)" class="inner">.*?<p class="item-image">'
-            fil_rule2 = r'"(/news/[0-9]+/photo/[0-9]+/)"class='
-            pic_rule = r'<div class="centering-image">.*?<img.*?src="(.*?)".*?>.*?</div>'
-            piclist = self.picRules(url, site, fil_rule, fil_rule2)
-            pics = self.picUrlsGet(piclist, pic_rule)
-        elif "ameblo" in site:
-            a = ameblo()
-            pics = a.amebloImgUrl(url)
-        elif "nogizaka" in site:
-            n = nogizaka()
-            pics = n.nogiBlog(url)
-        elif "keyakizaka" in site:
-            fil_rule = r'<div class="box-article">(.*?)<div class="box-bottom">'
-            fil_rule_add = r'<.*?src="(.*?)".*?>'
-            piclist = self.picRules(url, site, fil_rule, addrule=fil_rule_add)
-            pics = piclist
-        elif "natalie" in site:
-            fil_rule = r'<ul class="NA_imageList clearfix">(.*?)<div class="NA_articleFooter clearfix">'
-            fil_rule_add = r'<a href="(.*?)" title=.*?>.*?</a>'
-            pic_rule = r'<figure>.*?<img src="(.*?)".*?>.*?<figcaption>'
-            piclist = self.picRules(url, site, fil_rule, addrule=fil_rule_add)
-            pics = self.picUrlsGet(piclist, pic_rule)
-        elif "mantan" in site:
-            url = self.picExtra.mantanImgCenter(url, self.host[site])
-            fil_rule = r'<li class="newsbody__thumb.*?>.*?<a href="(.*?page=[0-9]+)">.*?</li>'
-            pic_rule = r'<img src="(.*?_size6.jpg)" srcset=".*?" alt=".*?" />'
-            piclist = self.picRules(url, site, fil_rule)
-            pics = self.picUrlsGet(piclist, pic_rule)
-        elif "thetv" in site:
-            fil_rule = r'<li class="list_thumbnail__item"><a href="(.*?)" data-echo-background=".*?" alt=".*?" onContextmenu="return false"></a></li>'
-            pic_rule = r'<figure>.*?<img src="(.*?)".*?>.*?</figure>'
-            piclist = self.picRules(url, site, fil_rule)
-            pics = self.picUrlsGet(piclist, pic_rule)
-        elif "instagram" in site:
-            i = instapic()
-            pics = i.instaPicUrl(url)
-        elif "tokyopopline" in site:
-            fil_rule = r'<div id="gallery-[0-9]+".*?>(.*?)</div>'
-            fil_rule_add = r'<a.*?href="(.*?)".*?>.*?</a>'
-            piclist = self.picRules(url, site, fil_rule, addrule=fil_rule_add)
-            pics = piclist
-        if pics:
-            result = statusHandler.handler(0, pics, site)
+        if result:
+            site = result["type"]
+            url = result["data"]
+            if "mdpr" in site:
+                url = self.picExtra.mdprImgCenter(
+                    url, self.host[site], self.headers)
+                img_i_rule = '//figure[@class="square"]//img'
+                rule = {
+                    "mode": "direct",
+                    "i_rule": img_i_rule
+                }
+                pics = self.picRules(url, self.host[site], **rule)
+            elif "oricon" in site:
+                url = self.picExtra.oriconImgCenter(url, self.host[site])
+                img_a_rule = '//div[@class="photo_thumbs"]//a'
+                img_i_rule = '//div[@class="centering-image"]//img'
+                img_other_rule = '//li[@class="item"]//a[@class="inner"]'
+                rule = {
+                    "mode": "indirect",
+                    "a_rule": img_a_rule,
+                    "i_rule": img_i_rule,
+                    "other_rule": img_other_rule
+                }
+                pics = self.picRules(url, self.host[site], **rule)
+            elif "ameblo" in site:
+                a = ameblo()
+                pics = a.amebloImgUrl(url)
+            elif "nogizaka" in site:
+                n = nogizaka()
+                pics = n.nogiBlog(url)
+            elif "keyakizaka" in site:
+                img_i_rule = '//div[@class="box-article"]//img'
+                rule = {
+                    "mode": "direct",
+                    "i_rule": img_i_rule
+                }
+                pics = self.picRules(url, **rule)
+            elif "natalie" in site:
+                img_a_rule = '//div[@class="GAE_newsListImage NA_imageUnit"]//li//a'
+                img_i_rule = '//div[@class="NA_figureUnit"]//img'
+                rule = {
+                    "mode": "indirect",
+                    "a_rule": img_a_rule,
+                    "i_rule": img_i_rule,
+                    "other_rule": ""
+                }
+                pics = self.picRules(url, **rule)
+            elif "mantan" in site:
+                img_a_rule = '//ul[@class="newsbody__thumblist"]//a'
+                img_i_rule = '//figure//img'
+                rule = {
+                    "mode": "indirect",
+                    "a_rule": img_a_rule,
+                    "i_rule": img_i_rule,
+                    "other_rule": ""
+                }
+                pics = self.picRules(url, self.host[site], **rule)
+            elif "thetv" in site:
+                img_a_rule = '//ul[@class="list_thumbnail"]/li/a[@alt]'
+                img_i_rule = '//figure/a/img|//figure/img'
+                rule = {
+                    "mode": "indirect",
+                    "a_rule": img_a_rule,
+                    "i_rule": img_i_rule,
+                    "other_rule": ""
+                }
+                pics = self.picRules(url, self.host[site], **rule)
+            elif "instagram" in site:
+                i = instapic()
+                pics = i.instaPicUrl(url)
+            elif "tokyopopline" in site:
+                img_i_rule = '//dl[@class="gallery-item"]/dt/a'
+                rule = {
+                    "mode": "direct",
+                    "i_rule": img_i_rule
+                }
+                pics = self.picRules(url, **rule)
+            return pics
         else:
-            result = statusHandler.handler(1, None, site)
-        return result
+            return None
 
-    def picRules(self, url, site, rule1, rule2=None, addrule=None):
-        response = requests.get(url, headers=self.headers, timeout=46)
-        pic_index = response.text
-        pic_list = re.findall(rule1, pic_index, re.S | re.M)
-        if not pic_list:
-            pic_list = re.findall(rule2, pic_index, re.S | re.M)
-            if not pic_list:
-                return [url]
-        if addrule:
-            pic_list = re.findall(addrule, str(pic_list), re.S | re.M)
-        pic_nlist = []
-        for p in pic_list:
-            if p.startswith("http"):
-                pic_nlist.append(p)
+    # 规则处理
+    def picRules(self, url, site=None, **rules):
+        mode = rules["mode"]
+        body = requests.get(url, headers=self.headers, timeout=46)
+        html = etree.HTML(body.text)
+        img_urls = []
+        if site:
+            site = site
+        else:
+            site = ""
+        # 图片地址在多个页面时
+        if mode == "indirect":
+            img_a_rule = rules["a_rule"]
+            img_i_rule = rules["i_rule"]
+            img_other_rule = rules["other_rule"]
+            img_body_main = html.xpath(img_a_rule)
+            if img_body_main:
+                img_entry_main = [site + i.get("href") for i in img_body_main]
             else:
-                pic_nlist.append(self.host[site] + p)
-        return pic_nlist
-
-    def picUrlsGet(self, piclist, rule1, rule2=None):
-        thread = len(piclist) / 4
-        pic_rule = [rule1] * len(piclist)
-        if 0 <= thread <= 9:
-            thread = 4
-        if thread > 9:
-            thread = 8
-        pool = Pool(thread)
-        picurls = pool.map(self.__get_core, zip(piclist, pic_rule))
-        pool.close()
-        pool.join()
-        pics = [''.join(p) for p in picurls if p]
-        return pics
+                img_body_main = html.xpath(img_other_rule)
+                img_entry_main = [site + i.get("href") for i in img_body_main]
+            thread = len(img_entry_main) / 4
+            img_i_rules = [img_i_rule] * len(img_entry_main)
+            if 0 <= thread <= 9:
+                thread = 4
+            if thread > 9:
+                thread = 8
+            pool = Pool(thread)
+            img_urls = pool.map(self.__get_core, zip(
+                img_entry_main, img_i_rules))
+            pool.close()
+            pool.join()
+        # 图片地址在同一个页面
+        elif mode == "direct":
+            img_i_rule = rules["i_rule"]
+            img_src = html.xpath(img_i_rule)
+            if img_src:
+                for i in img_src:
+                    if i.get("src"):
+                        img_urls.append(i.get("src").split("?")[0])
+                    else:
+                        img_urls.append(i.get("href").split("?")[0])
+        else:
+            img_urls = None
+        return img_urls

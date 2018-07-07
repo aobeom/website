@@ -1,65 +1,70 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2018-04-07 19:35:33
-# @modify date 2018-04-07 19:35:33
+# @modify date 2018-07-07 22:16:50
 # @desc [auth]
-import hashlib
-from flask import redirect, render_template, request
+
+from flask import redirect, render_template
 from flask_login import login_user, logout_user
+from flask_restful import reqparse, Resource, abort
 
 # mysql
-# from model import User
-# from apps import app, db
-
-# mongodb
 from model import User
-from apps import app, mongo
+from apps import app, db, api
 
 
-API_VERSION = "/v1"
-API_LOGIN = API_VERSION + "/api/login"
-API_LOGOUT = API_VERSION + "/api/logout"
-
-
-def md5(text):
-    m = hashlib.md5()
-    t = text.encode(encoding="utf-8")
-    m.update(t)
-    return m.hexdigest()
+APIVERSION = "/api/v1"
 
 
 @app.route('/ulogin')
-def login():
+def login_index():
     return render_template("single_login.html")
 
 
-# mysql
-# @app.route(API_LOGIN, methods=['POST'], strict_slashes=False)
-# def login_api():
-#     user = request.form['user']
-#     password = request.form['password']
-#     un_vaild = User.query.filter_by(user=user).first()
-#     pd_vaild = User.query.filter_by(password=md5(password)).first()
-#     if un_vaild and pd_vaild:
-#         login_user(un_vaild, True)
-#         return redirect("/upload")
-#     return redirect("/ulogin")
+class Register(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('username', required=True,
+                            help="username is required")
+        parser.add_argument('password', required=True,
+                            help="password is required")
+        args = parser.parse_args()
+        username = args["username"]
+        password = args["password"]
+        if username is None or password is None:
+            abort(400)
+        if User.query.filter_by(username=username).first() is not None:
+            abort(400)
+        user = User(username=username)
+        user.hash_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return (user.username)
 
-# mongodb
-@app.route(API_LOGIN, methods=['POST'], strict_slashes=False)
-def login_api():
-    user = request.form['user']
-    password = request.form['password']
-    pd_vaild = mongo.db.users.find_one(
-        {"user": user, "password": md5(password)})
-    if pd_vaild:
-        user_obj = User(pd_vaild['user'])
-        login_user(user_obj, True)
+
+class Login(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('username', required=True,
+                            help="username is required")
+        parser.add_argument('password', required=True,
+                            help="password is required")
+        args = parser.parse_args()
+        username = args["username"]
+        password = args["password"]
+        user = User.query.filter_by(username=username).first()
+        if not user or not user.verify_password(password):
+            return redirect("/ulogin")
+        login_user(user, True)
         return redirect("/rika")
-    return redirect("/ulogin")
 
 
-@app.route(API_LOGOUT, methods=['POST'], strict_slashes=False)
-def logout_api():
-    logout_user()
-    return redirect("/ulogin")
+class Logout(Resource):
+    def post(self):
+        logout_user()
+        return redirect("/ulogin")
+
+
+api.add_resource(Register, APIVERSION + '/register')
+api.add_resource(Login, APIVERSION + '/login')
+api.add_resource(Logout, APIVERSION + '/logout')

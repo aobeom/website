@@ -3,6 +3,7 @@ import os
 
 work_dir = os.path.dirname(os.path.abspath(__file__))
 dbconf = os.path.join(work_dir, "db.conf")
+mongoconf = os.path.join(work_dir, "mongodb.conf")
 rikaconf = os.path.join(work_dir, "rikainfo.conf")
 redisconf = os.path.join(work_dir, "redis.conf")
 
@@ -25,3 +26,7 @@ def get_rika_conf():
 
 def get_redis_conf():
     return __json_conf(redisconf)
+
+
+def get_mongo_conf():
+    return __json_conf(mongoconf)

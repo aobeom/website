@@ -1,30 +1,55 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-05-06 20:11:29
+# @modify date 2018-07-07 22:16:55
 # @desc [Flask view main]
 import os
 import time
-from multiprocessing.dummy import Pool
 
 from flask import jsonify, redirect, render_template, request
 from flask_login import login_required
+from flask_restful import reqparse, Resource
 from werkzeug import secure_filename
+from werkzeug.datastructures import FileStorage
 
-from apps import app, dlcore, dramalist, hlstream, jprogram, limitrate, picdown, redisMode, srurl, statusHandler, twittervideo, rikamsg, stchannel
+from apps import app, api, dlcore, hlstream, jprogram, picdown, redisMode, srurl, rikamsg, stchannel
 
-API_VERSION = "/v1"
-API_PICDOWN = API_VERSION + "/api/picdown"
-API_DRAMA = API_VERSION + "/api/dramaget"
-API_PROGRAM = API_VERSION + "/api/programget"
-API_UTIME = API_VERSION + "/api/utime"
-API_ST = API_VERSION + "/api/stinfo"
-API_FRE = API_VERSION + "/api/stupdate"
-API_STDL = API_VERSION + "/api/stdl"
-API_UP = API_VERSION + "/api/upload"
-API_VIDEOS = API_VERSION + "/api/vlist"
-API_MSG = API_VERSION + "/api/msg"
-API_TIK = API_VERSION + "/api/tiktok"
+APIVERSION = "/api/v1"
+redis = redisMode.redisMode()
+
+
+def limitIP(ip):
+    keyname = "ip:{}".format(ip)
+    limit_ip = redis.redisCheck(keyname)
+    if limit_ip is not None and int(limit_ip) > 9:
+        return False
+    else:
+        redis.redisCounter(keyname)
+        return True
+
+
+def handler(status, data, **other):
+    d = {}
+    d["status"] = status
+    d["message"] = data
+    d["data"] = other
+    return d
+
+
+@app.errorhandler(500)
+def server_5xx(error):
+    return render_template("error_5xx.html")
+
+
+@app.errorhandler(405)
+def method_405(error):
+    data = handler(1, None, code=405, message="Method Error")
+    return jsonify(data)
+
+
+@app.errorhandler(404)
+def server_404(error):
+    return render_template("error_not_found.html")
 
 
 @app.route('/')
@@ -71,376 +96,303 @@ def rika():
 
 
 @app.route('/tiktok')
-def tiktok():
+def tiktok_index():
     return render_template("base_tiktok.html")
 
 
-@app.route(API_PICDOWN, methods=['GET'])
-def pic_request():
-    url = request.args.get("url")
-    r = redisMode.redisMode()
-    if url:
-        clientip = request.remote_addr
-        limitinfo = limitrate.limitIP(clientip)
-        if limitinfo is None:
-            sites = ["www.showroom-live.com", "live.line.me"]
-            sitetype = url.split("/")[2]
-            if sitetype in sites:
-                delType = "m3u8"
-                redis_key = "{}:{}".format("hlsmeu8", url)
-                redisSR = r.redisCheck(redis_key, subkey=True)
-                if redisSR:
-                    urlinfo = r.redisDict(redisSR)
-                    hlsurl = urlinfo["data"]
-                    data = statusHandler.handler(0, hlsurl, delType)
-                else:
-                    sr = srurl.HLSPlayList()
-                    urlinfo = sr.urlRouter(url)
-                    if urlinfo["status"] == 0:
-                        hlsurl = urlinfo["data"]
-                        data = statusHandler.handler(0, hlsurl, delType)
-                        r.redisSave(redis_key, data, ex=300, subkey=True)
-                    else:
-                        data = urlinfo
-            elif "twitter.com" in sitetype:
-                delType = "twitter"
-                redis_key = "{}:{}".format("twv", url)
-                redistw = r.redisCheck(redis_key, subkey=True)
-                if redistw:
-                    urlinfo = r.redisDict(redistw)
-                    twvurl = urlinfo["data"]
-                    data = statusHandler.handler(0, twvurl, delType)
-                else:
-                    t = twittervideo.tweetimg()
-                    token = t.getToken()
-                    tweets = t.getTweets(token, url)
-                    vurl = t.getVurl(tweets)
-                    if vurl["status"] == 0:
-                        twvurl = vurl["data"]
-                        data = statusHandler.handler(0, twvurl, delType)
-                        r.redisSave(redis_key, data, ex=300, subkey=True)
-                    else:
-                        data = vurl
-            else:
-                delType = "picture"
-                p = picdown.picdown()
-                urldict = p.urlCheck(url)
-                if urldict["status"] == 0:
-                    sitename = urldict["type"]
-                    siteurl = urldict["data"]
-                    redis_key = "{}:{}".format(sitename, siteurl)
-                    redisUrls = r.redisCheck(redis_key, subkey=True)
-                    if redisUrls:
-                        redisUrls = r.redisDict(redisUrls)
-                        imgurls = redisUrls["data"]
-                        imgtype = redisUrls["type"]
-                        data = statusHandler.handler(0, imgurls, delType)
-                    else:
-                        result = p.picRouter(urldict)
-                        imgtype = result["type"]
-                        if result["status"] == 0:
-                            imgurls = result["data"]
-                            data = statusHandler.handler(0, imgurls, delType)
-                            r.redisSave(redis_key, data,
-                                        ex=259200, subkey=True)
+class Media(Resource):
+    def get(self, target):
+        parser = reqparse.RequestParser()
+        parser.add_argument('url', required=True, help="URL is required")
+        para = parser.parse_args()
+        url = para.get("url")
+        targets = ["news", "hls"]
+        if target not in targets:
+            return handler(1, "The type is not supported")
+        else:
+            clientip = request.remote_addr
+            limitinfo = limitIP(clientip)
+            if limitinfo:
+                if target == "news":
+                    p = picdown.picdown()
+                    urldict = p.urlCheck(url)
+                    if urldict:
+                        sitename = urldict["type"]
+                        siteurl = urldict["data"]
+                        redis_key = "{}:{}".format(sitename, siteurl)
+                        redisUrls = redis.redisCheck(redis_key, subkey=True)
+                        if redisUrls:
+                            imgurls = redis.redisList(redisUrls)
+                            return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls)
                         else:
-                            data = statusHandler.handler(
-                                1, None, imgtype, message="Images Not Found")
-                else:
-                    data = urldict
-        else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, message="Params Error")
-    return jsonify(data)
-
-
-@app.route(API_DRAMA, methods=['GET'])
-def drama_request():
-    id_type = request.args.get("id")
-    r = redisMode.redisMode()
-    if id_type:
-        clientip = request.remote_addr
-        limitinfo = limitrate.limitIP(clientip)
-        if limitinfo is None:
-            if id_type == "tvbt":
-                sitename = "tvbt"
-                redis_key = "drama:{}".format(sitename)
-                redisResult = r.redisCheck(redis_key)
-                if redisResult:
-                    redisResult = r.redisList(redisResult)
-                    dramaContent = redisResult
-                    data = statusHandler.handler(0, dramaContent, sitename)
-                else:
-                    t = dramalist.tvbtsub()
-                    tvbt_update_info = t.tvbtIndexInfo()
-                    dramaContent = t.tvbtGetUrl(tvbt_update_info)
-                    if dramaContent:
-                        data = statusHandler.handler(
-                            0, dramaContent, sitename)
-                        r.redisSave(redis_key, dramaContent)
+                            imgurls = p.picRouter(urldict)
+                            if imgurls:
+                                redis.redisSave(
+                                    redis_key, imgurls, ex=259200, subkey=True)
+                                return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls)
+                            else:
+                                return handler(1, "This news has no pictures")
                     else:
-                        data = statusHandler.handler(1, None, "No data")
-            elif id_type == "subpig":
-                sitename = "subpig"
-                redis_key = "drama:{}".format(sitename)
-                redisResult = r.redisCheck(redis_key)
-                if redisResult:
-                    redisResult = r.redisList(redisResult)
-                    dramaContent = redisResult
-                    data = statusHandler.handler(0, dramaContent, sitename)
-                else:
-                    p = dramalist.subpig_rbl()
-                    subpig_update_info = p.subpigIndexInfo()
-                    pool = Pool(10)
-                    dramaContent = pool.map(p.subpigGetUrl, subpig_update_info)
-                    pool.close()
-                    pool.join
-                    if dramaContent:
-                        data = statusHandler.handler(
-                            0, dramaContent, sitename)
-                        r.redisSave(redis_key, dramaContent)
+                        return handler(1, "The news site is not supported")
+                elif target == "hls":
+                    sr = srurl.HLSPlayList()
+                    urltype = sr.urlCheck(url)
+                    if urltype:
+                        site = urltype[0]
+                        hls_url = urltype[1]
+                        redis_key = "{}:{}".format("hlsm3u8", hls_url)
+                        redisSR = redis.redisCheck(redis_key, subkey=True)
+                        if redisSR:
+                            print("Good")
+                            m3u8_url = redisSR
+                            return handler(0, "This is a {} playlist".format(site), type=target, entities=m3u8_url)
+                        else:
+                            m3u8_url = sr.urlRouter(urltype)
+                            if m3u8_url:
+                                redis.redisSave(
+                                    redis_key, m3u8_url, ex=300, subkey=True)
+                                return handler(0, "This is a {} playlist".format(site), type=target, entities=m3u8_url)
+                            else:
+                                return handler(1, "No content")
                     else:
-                        data = statusHandler.handler(1, None, "No data")
-            elif id_type == "fixsub":
-                sitename = "fixsub"
-                redis_key = "drama:{}".format(sitename)
-                redisResult = r.redisCheck(redis_key)
-                if redisResult:
-                    redisResult = r.redisList(redisResult)
-                    dramaContent = redisResult
-                    data = statusHandler.handler(0, dramaContent, sitename)
-                else:
-                    f = dramalist.fixsub()
-                    pages = 1
-                    for page in range(1, pages + 1):
-                        fix_page_info = f.fixPageInfo(page)
-                        fix_single_page = f.fixSinglePageInfo(fix_page_info)
-                        dramaContent = f.fixInfoGet(fix_single_page)
-                    if dramaContent:
-                        data = statusHandler.handler(
-                            0, dramaContent, sitename)
-                        r.redisSave(redis_key, dramaContent)
-                    else:
-                        data = statusHandler.handler(1, None, "No data")
-        else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, "Params Error")
-    return jsonify(data)
-
-
-@app.route(API_PROGRAM, methods=['GET'])
-def program_request():
-    kw = request.args.get("kw")
-    code = request.args.get("ac")
-    if kw:
-        clientip = request.remote_addr
-        limitinfo = limitrate.limitIP(clientip)
-        if limitinfo is None:
-            keyword = kw.encode("utf-8")
-            redis_key = "{}:{}".format(code, keyword)
-            r = redisMode.redisMode()
-            redisKeyword = r.redisCheck(redis_key, subkey=True)
-            if redisKeyword:
-                rediskeyword = redisKeyword
-                rediskeyword = r.redisDict(rediskeyword)
-                try:
-                    keyword = str(keyword, encoding="utf-8")
-                except TypeError:
-                    keyword = keyword
-                tvinfo = rediskeyword
-                tvdata = tvinfo["data"]
-                tvurl = tvinfo["message"]
-                data = statusHandler.handler(0, tvdata, message=tvurl)
+                        return handler(1, "The hls site is not supported")
             else:
-                y = jprogram.yahooTV()
-                tvinfo = y.tvInfos(keyword, code)
-                if tvinfo["status"] == 0:
-                    tvdata = tvinfo["data"]
-                    tvurl = tvinfo["message"]
-                    data = statusHandler.handler(0, tvdata, message=tvurl)
-                    r.redisSave(redis_key, data, ex=14400, subkey=True)
+                return handler(1, "Too many requests per second")
+
+
+class Drama(Resource):
+    def get(self, subname):
+        subnames = ["tvbt", "subpig", "fixsub"]
+        if subname not in subnames:
+            return handler(1, "The subtitle group does not exist")
+        else:
+            clientip = request.remote_addr
+            limitinfo = limitIP(clientip)
+            if limitinfo:
+                redis_key = "drama:{}".format(subname)
+                redisResult = redis.redisCheck(redis_key)
+                if redisResult:
+                    redisResult = redis.redisList(redisResult)
+                    dramaContent = redisResult
+                    return handler(0, "{} drama listing".format(subname), name=subname, entities=dramaContent)
                 else:
-                    data = tvinfo
+                    return handler(1, "No drama data")
+            else:
+                return handler(1, "Too many requests per second")
+
+
+class DramaTime(Resource):
+    def get(self):
+        utime = redis.conn.get("drama:utime")
+        try:
+            utime = str(utime, encoding="utf-8")
+        except TypeError:
+            utime = utime
+        if utime:
+            utime_timestamp = int(time.mktime(
+                time.strptime(str(utime), '%Y-%m-%d %H:%M:%S')))
+            ntime_timestamp = int(time.time())
+            ltime_timestamp = utime_timestamp + 14400
+            sec = ltime_timestamp - ntime_timestamp
+            return handler(0, "Drama update time", second=sec, time=utime)
         else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, message="Params Error")
-    return jsonify(data)
+            return handler(1, "No data")
 
 
-@app.route(API_UTIME, methods=['GET'], strict_slashes=False)
-def drama_utime():
-    r = redisMode.redisMode()
-    utime = r.conn.get("drama:utime")
-    try:
-        utime = str(utime, encoding="utf-8")
-    except TypeError:
-        utime = utime
-    if utime:
-        utime_timestamp = int(time.mktime(
-            time.strptime(str(utime), '%Y-%m-%d %H:%M:%S')))
-        ntime_timestamp = int(time.time())
-        ltime_timestamp = utime_timestamp + 14400
-        countdown_sec = ltime_timestamp - ntime_timestamp
-        data = statusHandler.handler(0, countdown_sec, message=utime)
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-    return jsonify(data)
-
-
-@app.route(API_ST, methods=['GET'], strict_slashes=False)
-def stmovie_get():
-    r = redisMode.redisMode()
-    data = {}
-    stinfo = r.redisCheck("stinfo")
-    if stinfo:
-        stinfo = r.redisList(stinfo)
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-        return jsonify(data)
-    stutime = r.redisCheck("st:utime")
-    clientip = request.remote_addr
-    limitinfo = limitrate.limitIP(clientip)
-    if stinfo:
-        if limitinfo is None:
-            data = statusHandler.handler(0, stinfo, message=stutime)
+class Program(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('kw', required=True, help="Keyword is required")
+        parser.add_argument('ac', required=True,
+                            help="Region code is required")
+        para = parser.parse_args()
+        kw = para["kw"]
+        ac = para["ac"]
+        if kw and ac:
+            clientip = request.remote_addr
+            limitinfo = limitIP(clientip)
+            if limitinfo:
+                keyword = kw.encode("utf-8")
+                redis_key = "{}:{}".format(ac, keyword)
+                redisKeyword = redis.redisCheck(redis_key, subkey=True)
+                if redisKeyword:
+                    rediskeyword = redis.redisList(redisKeyword)
+                    try:
+                        keyword = str(keyword, encoding="utf-8")
+                    except TypeError:
+                        keyword = keyword
+                    tvinfo = rediskeyword
+                    tvdata = tvinfo[0]
+                    tvurl = tvinfo[1]
+                    return handler(0, "Program information", ori_url=tvurl, entities=tvdata)
+                else:
+                    y = jprogram.yahooTV()
+                    tvinfo = y.tvInfos(keyword, ac)
+                    if tvinfo:
+                        redis.redisSave(redis_key, tvinfo,
+                                        ex=14400, subkey=True)
+                        tvdata = tvinfo[0]
+                        tvurl = tvinfo[1]
+                        return handler(0, "Program information", ori_url=tvurl, entities=tvdata)
+                    else:
+                        return handler(1, "No information")
+            else:
+                return handler(1, "Too many requests per second")
         else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-    return jsonify(data)
+            return handler(1, "Parameter error")
 
 
-@app.route(API_FRE, methods=['GET'], strict_slashes=False)
-def stmovie_fresh():
-    r = redisMode.redisMode()
-    data = {}
+class StchannelTime(Resource):
     st_key = "st:update"
-    st_state = r.redisCheck(st_key)
-    if st_state:
-        ttl = r.redisTTL(st_key)
-        data = statusHandler.handler(0, "true", message="ttl: " + str(ttl))
-    else:
-        data = statusHandler.handler(1, "false")
-        value = request.args.get("k")
-        if value:
-            r.redisSave(st_key, "true", ex=7200)
-            st = stchannel.stMovies()
-            st_info = st.stMovieInfos()
-            infos = st.stGetUrl(st_info)
-            r.redisSave("stinfo", infos)
-    return jsonify(data)
 
-
-@app.route(API_STDL, methods=['POST'], strict_slashes=False)
-def stmovie_dl():
-    h = dlcore.HLSVideo()
-    murl = request.get_json()
-    playlist = murl["url"]
-    keyvideo = h.hlsInfo(playlist)
-    uri = h.hlsDL(keyvideo)
-    clientip = request.remote_addr
-    limitinfo = limitrate.limitIP(clientip)
-    if uri:
-        if limitinfo is None:
-            data = statusHandler.handler(0, uri)
+    def get(self):
+        st_state = redis.redisCheck(self.st_key)
+        if st_state:
+            ttl = redis.redisTTL(self.st_key)
+            sec = str(ttl)
+            return handler(0, "Time limit", second=sec)
         else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-    return jsonify(data)
+            return handler(1, "No limit")
+
+    def post(self):
+        redis.redisSave(self.st_key, "STchannel update time", ex=7200)
+        st = stchannel.stMovies()
+        st_info = st.stMovieInfos()
+        infos = st.stGetUrl(st_info)
+        if infos:
+            redis.redisSave("stinfo", infos)
+            return handler(0, "Update completed")
+        else:
+            return handler(1, "No Update")
 
 
-@app.errorhandler(500)
-def server_5xx(error):
-    return render_template("error_5xx.html")
+class Stchannel(Resource):
+    def get(self):
+        stinfo = redis.redisCheck("stinfo")
+        stutime = redis.redisCheck("st:utime")
+        clientip = request.remote_addr
+        limitinfo = limitIP(clientip)
+        if limitinfo:
+            if stinfo:
+                stinfo = redis.redisList(stinfo)
+                return handler(0, "STchannel video listing", time=stutime, entities=stinfo)
+            else:
+                return handler(1, "No listing")
+        else:
+            return handler(1, "Too many requests per second")
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('url', required=True, help="signal is required")
+        args = parser.parse_args()
+        playlist = args["url"]
+        clientip = request.remote_addr
+        limitinfo = limitIP(clientip)
+        if limitinfo:
+            h = dlcore.HLSVideo()
+            keyvideo = h.hlsInfo(playlist)
+            uri = h.hlsDL(keyvideo)
+            if uri:
+                return handler(0, "Video url", entities=uri)
+            else:
+                return handler(1, "No video")
+        else:
+            return handler(1, "Too many requests per second")
 
 
-@app.errorhandler(405)
-def method_405(error):
-    data = statusHandler.handler(1, None, code=405, message="Method Error")
-    return jsonify(data)
+class UploadFile(Resource):
+    def get(self):
+        playlists = redis.redisKeys("playlist:*")
+        total = len(playlists)
+        return handler(0, "Total video", number=total)
 
-
-@app.errorhandler(404)
-def server_404(error):
-    return render_template("error_not_found.html")
-
-
-@app.route(API_UP, methods=['GET', 'POST'], strict_slashes=False)
-@login_required
-def upload_file():
-    if request.method == 'POST':
-        r = redisMode.redisMode()
-        h = hlstream.hlsegment()
-        file = request.files['file']
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('file', type=FileStorage, location='files')
+        args = parser.parse_args()
+        file = args['file']
         filename = secure_filename(file.filename)
         mainpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
         video = os.path.join(mainpath, "videos", filename)
         file.save(video)
+        h = hlstream.hlsegment()
         playlist = h.segment(video, "media")
         redis_key = "playlist:{}".format(playlist)
-        data = statusHandler.handler(0, playlist)
-        r.redisSave(redis_key, data, ex=604800, subkey=True)
-        return jsonify(data)
-    if request.method == 'GET':
-        r = redisMode.redisMode()
-        playlists = r.redisKeys("playlist:*")
-        totals = str(len(playlists))
-        return totals
+        data = handler(0, "Video url", path=playlist)
+        redis.redisSave(redis_key, data, ex=604800, subkey=True)
+        return data
 
 
 @app.route('/hls/<code>')
 @login_required
 def subhls(code):
-    code = int(code) - 1
-    r = redisMode.redisMode()
-    playlists = r.redisKeys("playlist:*")
-    playlist = playlists[code]
-    url = r.redisCheck(playlist)
-    url = r.redisDict(url)
-    return render_template("single_player.html", url=url)
-
-
-@app.route(API_MSG, methods=['GET'], strict_slashes=False)
-@login_required
-def rika_msg():
-    mtype = request.args.get("type")
-    page = request.args.get("page")
-    mtype = int(mtype)
-    msg = rikamsg.rikaMsg()
-    pages = msg.keya_pages_query(mtype)
-    if mtype == 100:
-        if page:
-            allinfo = msg.keya_allinfo_query(page)
-            return jsonify(allinfo)
+    playlists = redis.redisKeys("playlist:*")
+    total = len(playlists)
+    if int(code) <= total and int(code) != 0:
+        index = int(code) - 1
+        playlist = playlists[index]
+        if playlist:
+            data = redis.redisCheck(playlist)
+            data = redis.redisDict(data)
+            url = data["data"]["path"]
+            print(url)
+            return render_template("single_player.html", url=url)
     else:
-        if page:
-            allinfo = msg.keya_media_query(page, mtype)
-            return jsonify(allinfo)
-    return jsonify(pages)
+        return handler(1, "No video")
 
 
-@app.route(API_TIK, methods=['GET'], strict_slashes=False)
-def tiktok_get():
-    r = redisMode.redisMode()
-    data = {}
-    tikinfo = r.redisCheck("tik:info")
-    if tikinfo:
-        tikinfo = r.redisList(tikinfo)
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-        return jsonify(data)
-    tikutime = r.redisCheck("tik:utime")
-    clientip = request.remote_addr
-    limitinfo = limitrate.limitIP(clientip)
-    if tikinfo:
-        if limitinfo is None:
-            data = statusHandler.handler(0, tikinfo, message=tikutime)
+class RikaMsg(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('type', required=True, help="Type is required")
+        parser.add_argument('page', help="Page code is required")
+        para = parser.parse_args()
+        mtype = int(para["type"])
+        page = para["page"]
+        msg = rikamsg.rikaMsg()
+        if mtype in range(4) or mtype == 100:
+            if page:
+                if mtype == 100:
+                    allinfo = msg.keya_allinfo_query(page)
+                    if allinfo:
+                        return handler(0, "All message", entities=allinfo)
+                    else:
+                        return handler(1, "No data")
+                else:
+                    partinfo = msg.keya_media_query(page, mtype)
+                    if partinfo:
+                        return handler(0, "Part message", entities=partinfo)
+                    else:
+                        return handler(1, "No data")
+            else:
+                pages = msg.keya_pages_query(mtype)
+                return handler(0, "Total pages", pages=pages)
         else:
-            data = limitinfo
-    else:
-        data = statusHandler.handler(1, None, message="No data")
-    return jsonify(data)
+            return handler(1, "No such type, only 0-4 or 100")
+
+
+class Tiktok(Resource):
+    def get(self):
+        tikinfo = redis.redisCheck("tik:info")
+        tikutime = redis.redisCheck("tik:utime")
+        clientip = request.remote_addr
+        limitinfo = limitIP(clientip)
+        if limitinfo:
+            if tikinfo:
+                tikinfo = redis.redisList(tikinfo)
+                return handler(0, "Tiktok video listing", time=tikutime, entities=tikinfo)
+            else:
+                return handler(1, "No listing")
+        else:
+            return handler(1, "Too many requests per second")
+
+
+api.add_resource(Media, APIVERSION + '/media/<target>')
+api.add_resource(Drama, APIVERSION + '/drama/<subname>')
+api.add_resource(DramaTime, APIVERSION + '/drama/time')
+api.add_resource(Program, APIVERSION + '/program')
+api.add_resource(Stchannel, APIVERSION + '/stchannel')
+api.add_resource(StchannelTime, APIVERSION + '/stchannel/time')
+api.add_resource(UploadFile, APIVERSION + '/upload')
+api.add_resource(RikaMsg, APIVERSION + '/rikamsg')
+api.add_resource(Tiktok, APIVERSION + '/tiktok')

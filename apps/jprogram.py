@@ -9,8 +9,6 @@ import re
 
 import requests
 
-from apps import statusHandler
-
 
 class yahooTV(object):
     def __init__(self):
@@ -19,7 +17,7 @@ class yahooTV(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
         }
 
-    def tvInfos(self, keyword, code):
+    def tvInfos(self, keyword, code=23):
         apihost = self.host + "/search/?"
         params = {
             "q": keyword,
@@ -44,10 +42,7 @@ class yahooTV(object):
                 tv_dict["title"] = t[3]
                 tv_dict["station"] = t[4]
                 tv_infos.append(tv_dict)
-            data = statusHandler.handler(0, tv_infos, message=tv_url)
-        else:
-            data = statusHandler.handler(1, None, message="No Program Found")
-        return data
+            return [tv_infos, tv_url]
 
     def __tvLeftInfo(self, index):
         tv_index = index

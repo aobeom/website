@@ -9,8 +9,6 @@ import re
 
 import requests
 
-from apps import statusHandler
-
 
 class HLSPlayList(object):
     def __init__(self):
@@ -18,16 +16,27 @@ class HLSPlayList(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
         }
 
-    def urlRouter(self, url):
+    def urlCheck(self, url):
+        host_rule = re.compile(r'https?://.*showroom-live\.com/.*|live\.line\.me/.*')
+        if host_rule.match(url):
+            site = url.split("/")[2]
+            return site, url
+        else:
+            return None
+
+    def urlRouter(self, urltype):
         rules = {
             "www.showroom-live.com": r'https://[0-9a-z\.\:\-]+/liveedge/[0-9a-z]+/playlist.m3u8',
             "live.line.me": r'https://lss.line-scdn.net/p/live/[\S]+/[0-9]+/chunklist.m3u8'
         }
-        urlkey = url.split("/")[2]
-        if urlkey in rules:
-            rule = rules[urlkey]
+        if urltype:
+            site = urltype[0]
+            url = urltype[1]
+            rule = rules[site]
             m3u8_url = self.__getUrl(url, rule)
-        return m3u8_url
+            return m3u8_url
+        else:
+            return None
 
     def __getUrl(self, url, rule):
         response = requests.get(url, headers=self.headers)
@@ -35,8 +44,6 @@ class HLSPlayList(object):
         m3u8_playlists = re.findall(rule, m3u8_index, re.S | re.M)
         if len(m3u8_playlists) != 0:
             sr_playlist = m3u8_playlists[0]
-            data = statusHandler.handler(0, sr_playlist)
+            return sr_playlist
         else:
-            data = statusHandler.handler(
-                1, None, message="Not yet started")
-        return data
+            return None

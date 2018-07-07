@@ -5,12 +5,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask
 from flask_login import LoginManager, login_manager
 from get_config import get_db_conf
-# from flask_cors import CORS
-# mysql
-# from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
 
-# mongodb
-from flask_pymongo import PyMongo
+# mysql
+from flask_sqlalchemy import SQLAlchemy
 
 
 conf = get_db_conf()
@@ -24,19 +22,14 @@ secret_key = conf["secret_key"]
 app = Flask(__name__, template_folder="../templates",
             static_folder='../static',)
 app.config['SECRET_KEY'] = secret_key
-# mongodb
-app.config.update(
-    MONGO_URI='mongodb://{dbhost}:{dbport}/{dbname}'.format(
-        dbhost=dbhost, dbport=dbport, dbname=dbname),
-)
-mongo = PyMongo(app)
+api = Api(app, catch_all_404s=True)
 
 # mysql
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{dbuser}:{dbpasswd}@{dbhost}:{dbport}/{dbname}'.format(
-#     dbuser=dbuser, dbpasswd=dbpasswd, dbhost=dbhost, dbport=dbport, dbname=dbname)
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-# db = SQLAlchemy()
-# db.init_app(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{dbuser}:{dbpasswd}@{dbhost}:{dbport}/{dbname}'.format(
+    dbuser=dbuser, dbpasswd=dbpasswd, dbhost=dbhost, dbport=dbport, dbname=dbname)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db = SQLAlchemy()
+db.init_app(app)
 
 login_manger = LoginManager()
 login_manger.session_protection = 'strong'

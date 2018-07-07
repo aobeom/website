@@ -1,7 +1,7 @@
 /**
  * @author AoBeom
  * @create date 2017-12-08 16:15:17
- * @modify date 2018-05-06 20:34:24
+ * @modify date 2018-07-07 22:16:44
  */
 
 
@@ -46,6 +46,7 @@ $(document).ready(function () {
             });
             $("#data").empty();
             var url = $("#picURL").val()
+            var uri = ""
             var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
             var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
             if (url.length == 0) {
@@ -59,16 +60,22 @@ $(document).ready(function () {
                 $("#data").append(error_null);
                 $('#picdown').removeAttr("disabled");
                 return false;
+            } else {
+                if (url.indexOf("showroom") != -1 || url.indexOf("line") != -1) {
+                    uri = "/hls"
+                } else {
+                    uri = "/news"
+                }
             }
             $.ajax({
                 type: "GET",
-                url: "/v1/api/picdown",
+                url: "/api/v1/media" + uri,
                 data: "url=" + url,
                 dataType: "json",
                 success: function (msg) {
                     if (msg["status"] == 0) {
-                        if (msg["type"] == "picture") {
-                            var urls = msg["data"];
+                        if (msg["data"]["type"] == "news") {
+                            var urls = msg["data"]["entities"];
                             $("#data").empty();
                             for (u in urls) {
                                 if (urls[u].indexOf(".mp4") > 0) {
@@ -78,15 +85,10 @@ $(document).ready(function () {
                                 }
                             }
                         }
-                        if (msg["type"] == "m3u8") {
-                            var urls = msg["data"];
+                        if (msg["data"]["type"] == "hls") {
+                            var urls = msg["data"]["entities"];
                             $("#data").empty();
                             $('#data').append('<p><button id="copied" class="btn btn-success" type="button" data-clipboard-text="' + urls + '"><i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp; Copy to potplayer</button></p>');
-                        }
-                        if (msg["type"] == "twitter") {
-                            var urls = msg["data"];
-                            $("#data").empty();
-                            $('#data').append('<a class="btn btn-success" href="' + urls + '" target="_blank">Download</a>')
                         }
                         $('#picdown').removeAttr("disabled");
                     } else {
@@ -95,7 +97,7 @@ $(document).ready(function () {
                         $('#picdown').removeAttr("disabled");
                     }
                 },
-                beforeSend: function (XMLHttpRequest) {
+                beforeSend: function () {
                     $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
@@ -108,11 +110,11 @@ $(document).ready(function () {
     } else if (uri[uri.length - 1] == "drama") {
         $.ajax({
             type: "GET",
-            url: "/v1/api/utime/",
+            url: "/api/v1/drama/time",
             dataType: "json",
             success: function (msg) {
-                var date = msg["message"]
-                var countdown = msg["data"]
+                var date = msg["data"]["time"]
+                var countdown = msg["data"]["second"]
                 var sectotal = parseInt(countdown);
 
                 function timer(sectotal) {
@@ -145,16 +147,15 @@ $(document).ready(function () {
             $("#data").empty();
             var data = {};
             var id = $(this).attr("id");
-            var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
+            error_system = '<p class="btn btn-danger" onclick="location.reload();">No drama data</p>'
             $.ajax({
                 type: "GET",
-                url: "/v1/api/dramaget",
-                data: "id=" + id,
+                url: "/api/v1/drama/" + id,
                 dataType: "json",
                 success: function (msg) {
                     if (msg["status"] == 0) {
-                        if (msg["type"] == "tvbt") {
-                            var tvbt_data = msg["data"];
+                        if (msg["data"]["name"] == "tvbt") {
+                            var tvbt_data = msg["data"]["entities"];
                             $("#data").empty();
                             var tvbt_body = '<div class="accordion" id="dramapa">'
                             for (i in tvbt_data) {
@@ -171,9 +172,9 @@ $(document).ready(function () {
                             }
                             $("#data").append(tvbt_body);
                         }
-                        if (msg["type"] == "subpig") {
+                        if (msg["data"]["name"] == "subpig") {
                             $("#data").empty();
-                            var subpig_data = msg["data"];
+                            var subpig_data = msg["data"]["entities"];
                             var subpig_body = '<div class="accordion" id="dramapa">';
                             for (i in subpig_data) {
                                 var subpigs = subpig_data[i];
@@ -188,9 +189,9 @@ $(document).ready(function () {
                             }
                             $("#data").append(subpig_body);
                         }
-                        if (msg["type"] == "fixsub") {
+                        if (msg["data"]["name"] == "fixsub") {
                             $("#data").empty();
-                            var fixsub_data = msg["data"];
+                            var fixsub_data = msg["data"]["entities"];
                             var fixsub_body = '<div class="accordion" id="dramapa">';
                             for (i in fixsub_data) {
                                 var fixsubs = fixsub_data[i]
@@ -222,7 +223,7 @@ $(document).ready(function () {
                     }
                     $('.tools-btngroup button').removeAttr("disabled");
                 },
-                beforeSend: function (XMLHttpRequest) {
+                beforeSend: function () {
                     $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                     $('.tools-btngroup button').attr({
                         disabled: "disabled"
@@ -252,7 +253,7 @@ $(document).ready(function () {
             }
             $.ajax({
                 type: "GET",
-                url: "/v1/api/programget",
+                url: "/api/v1/program",
                 data: {
                     "kw": keyword,
                     "ac": code
@@ -261,8 +262,8 @@ $(document).ready(function () {
                 success: function (msg) {
                     if (msg["status"] == 0) {
                         $("#data").empty();
-                        var purl = msg["message"]
-                        var pdata = msg["data"]
+                        var purl = msg["ori_url"]
+                        var pdata = msg["data"]["entities"]
                         var pdata_head = '<p><a class="btn btn-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
                         var pdata_body = ""
                         for (i in pdata) {
@@ -290,7 +291,7 @@ $(document).ready(function () {
                         $('#jprogram').removeAttr("disabled");
                     }
                 },
-                beforeSend: function (XMLHttpRequest) {
+                beforeSend: function () {
                     $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
@@ -301,45 +302,48 @@ $(document).ready(function () {
             })
         })
     } else if (uri[uri.length - 1] == "stchannel") {
-        $("#data").empty();
-        var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
+
+        $.get("/api/v1/stchannel/time", function (msg) {
+            if (msg["status"] == 0) {
+                $(".btn-fresh").attr({
+                    disabled: "disabled"
+                });
+            }
+        })
+        $('.btn-fresh').click(function () {
+            $.post("/api/v1/stchannel/time", function (msg) {
+                if (msg["status"] == 0) {
+                    $(".btn-fresh").removeAttr('disabled');
+                    location.reload();
+                }
+            })
+        })
         $.ajax({
             type: "GET",
-            url: "/v1/api/stinfo",
+            url: "/api/v1/stchannel",
             dataType: "json",
             success: function (msg) {
-                var ut = msg["message"];
-                var dt = msg["data"];
+                var st_body = ''
                 $("#data").empty();
                 if (msg["status"] == 0) {
-                    var st_body = '<button class="btn btn-info btn-fresh" type="button" disabled="disabled"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</button>'
+                    var ut = msg["data"]["time"];
+                    var dt = msg["data"]["entities"];
+                    $('.btn-fresh').append('<i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut);
+                    for (i in dt) {
+                        var data = dt[i];
+                        var s_date = data["date"];
+                        var s_title = data["title"];
+                        var s_murl = data["murl"];
+                        var s_purl = data["purl"];
+                        var s_id = "dlink" + i;
+                        var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary btn-source tools-button" value="' + s_murl + '">Resources</button>';
+                        var st_body = st_body + st_info;
+                    }
                 } else {
-                    var st_body = '<span class="btn btn-danger">NO DATA</span>'
-                }
-                for (i in dt) {
-                    var data = dt[i];
-                    var s_date = data["date"];
-                    var s_title = data["title"];
-                    var s_murl = data["murl"];
-                    var s_purl = data["purl"];
-                    var s_id = "dlink" + i;
-                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary btn-source tools-button" value="' + s_murl + '">Resources</button>';
-                    var st_body = st_body + st_info;
+                    st_body = '<span class="btn btn-danger">NO DATA</span>'
                 }
                 $('#data').append(st_body);
-                $.get("/v1/api/stupdate", function (msg) {
-                    if (msg["data"] == "false") {
-                        $(".btn-fresh").removeAttr('disabled');
-                    }
-                });
-                $('.btn-fresh').click(function () {
-                    $.get("/v1/api/stupdate", {
-                        "k": "u"
-                    }, function (msg) {
-                        location.reload();
-                    })
-                })
                 $('.btn-source').click(function () {
                     var sid = $(this).attr("id")
                     var murl = {
@@ -348,15 +352,15 @@ $(document).ready(function () {
                     $.ajax({
                         type: "POST",
                         contentType: "application/json;charset=utf-8",
-                        url: "/v1/api/stdl",
+                        url: "/api/v1/stchannel",
                         data: JSON.stringify(murl),
                         dataType: "json",
                         success: function (msg) {
-                            var dl = '<a class="btn btn-success btn-source tools-button" href="' + msg["data"] + '" target="_blank">Download</a>'
+                            var dl = '<a class="btn btn-success btn-source tools-button" href="' + msg["data"]["entities"] + '" target="_blank">Download</a>'
                             $("#" + sid).replaceWith(dl)
                             $(".tools-button").removeAttr("disabled");
                         },
-                        beforeSend: function (XMLHttpRequest) {
+                        beforeSend: function () {
                             $("#" + sid).text("Loading...")
                             $("#" + sid).attr({
                                 disabled: "disabled"
@@ -371,47 +375,50 @@ $(document).ready(function () {
                     })
                 })
             },
-            beforeSend: function (XMLHttpRequest) {
+            beforeSend: function () {
                 $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
                 $("#data").empty();
+                $('.btn-fresh').remove();
                 $("#data").append(error_system);
             }
         })
     } else if (uri[uri.length - 1] == "tiktok") {
         $("#data").empty();
-        var error_null = '<p class="btn btn-danger" onclick="location.reload();">URL ERROR / NO RESULT FOUND</p>';
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
         $.ajax({
             type: "GET",
-            url: "/v1/api/tiktok",
+            url: "/api/v1/tiktok",
             dataType: "json",
             success: function (msg) {
-                var dt = msg["data"];
-                var ut = msg["message"];
+                var st_body = ''
                 $("#data").empty();
-                if (msg["status"] != 0) {
-                    var st_body = '<span class="btn btn-danger">NO DATA</span>'
+                if (msg["status"] == 0) {
+                    var dt = msg["data"]["entities"];
+                    var ut = msg["data"]["time"];
+                    $("#data").empty();
+                    $('.btn-fresh').append('<i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut);
+                    for (i in dt) {
+                        var data = dt[i];
+                        var s_date = data["time"];
+                        var s_title = data["text"];
+                        var s_murl = data["playlist"];
+                        var s_purl = data["cover"];
+                        var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><a href="' + s_murl + '" target="_blank"><img src="' + s_purl + '" style="width:200px"></a></p>';
+                        var st_body = st_body + st_info;
+                    }
                 } else {
-                    var st_body = '<button class="btn btn-info btn-fresh" type="button"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp; Latest ' + ut + '</button>'
-                }
-                for (i in dt) {
-                    var data = dt[i];
-                    var s_date = data["time"];
-                    var s_title = data["text"];
-                    var s_murl = data["playlist"];
-                    var s_purl = data["cover"];
-                    var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><a href="' + s_murl+ '" target="_blank"><img src="' + s_purl + '" style="width:200px"></a></p>';
-                    var st_body = st_body + st_info;
+                    st_body = '<span class="btn btn-danger">NO DATA</span>'
                 }
                 $('#data').append(st_body);
             },
-            beforeSend: function (XMLHttpRequest) {
+            beforeSend: function () {
                 $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
             },
             error: function () {
                 $("#data").empty();
+                $('.btn-fresh').remove();
                 $("#data").append(error_system);
             }
         })
@@ -430,12 +437,13 @@ $(document).ready(function () {
             $("#pagep").append('<div id="pages" class="tools-pages"></div>')
             $.ajax({
                 type: "GET",
-                url: "/v1/api/msg",
+                url: "/api/v1/rikamsg",
                 data: {
                     "type": typeid,
                 },
                 dataType: "json",
-                success: function (pages) {
+                success: function (page) {
+                    var pages = page["data"]["pages"]
                     if (pages > 1) {
                         $("#pages").empty();
                         $("#data").empty();
@@ -450,17 +458,19 @@ $(document).ready(function () {
                                 $("#data").empty();
                                 $.ajax({
                                     type: "GET",
-                                    url: "/v1/api/msg",
+                                    url: "/api/v1/rikamsg",
                                     data: {
                                         "page": page,
                                         "type": typeid,
                                     },
                                     dataType: "json",
-                                    success: function (msg) {
+                                    success: function (info) {
+                                        msg = info["data"]["entities"]
                                         $("#data").empty();
                                         var body = '<div class="accordion" id="rikamsg">'
                                         for (i in msg) {
                                             message = msg[i]
+                                            console.log(message)
                                             type = message["type"]
                                             date = message["date"]
                                             text = message["text"]
@@ -478,7 +488,7 @@ $(document).ready(function () {
                                         }
                                         $("#data").append(body)
                                     },
-                                    beforeSend: function (XMLHttpRequest) {
+                                    beforeSend: function () {
                                         $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                                     },
                                     error: function () {
@@ -491,17 +501,18 @@ $(document).ready(function () {
                         $("#data").empty();
                         $.ajax({
                             type: "GET",
-                            url: "/v1/api/msg",
+                            url: "/api/v1/rikamsg",
                             data: {
                                 "page": 1,
                                 "type": typeid,
                             },
                             dataType: "json",
-                            success: function (msg) {
+                            success: function (info) {
+                                msg = info["data"]["entities"]
                                 $("#data").empty();
                                 var body = '<div class="accordion" id="rikamsg">'
                                 for (i in msg) {
-                                    message = msg[i]
+                                    message = msg[i]["data"]["entities"]
                                     type = message["type"]
                                     date = message["date"]
                                     text = message["text"]
@@ -520,7 +531,7 @@ $(document).ready(function () {
                                 $("#data").append(body);
                                 $("#pagep").empty();
                             },
-                            beforeSend: function (XMLHttpRequest) {
+                            beforeSend: function () {
                                 $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                             },
                             error: function () {
@@ -532,8 +543,7 @@ $(document).ready(function () {
                 },
             })
         })
-    } 
-    else {
+    } else {
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
         var error_size = '<p class="btn btn-danger" onclick="location.reload();">Must be less than 100M</p>';
         var error_type = '<p class="btn btn-danger" onclick="location.reload();">Only .mp4</p>';
@@ -542,9 +552,10 @@ $(document).ready(function () {
         if (uri[uri.length - 1] == "hls") {
             $.ajax({
                 type: "GET",
-                url: "/v1/api/upload",
+                url: "/api/v1/upload",
                 dataType: "json",
-                success: function (msg) {
+                success: function (info) {
+                    msg = info["data"]["number"]
                     $("#data").empty();
                     var vbody = '<ul class="list-group">'
                     for (i = 1; i < msg + 1; i++) {
@@ -553,7 +564,7 @@ $(document).ready(function () {
                     }
                     $("#data").append(vbody)
                 },
-                beforeSend: function (XMLHttpRequest) {
+                beforeSend: function () {
                     $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
                 error: function () {
@@ -586,7 +597,7 @@ $(document).ready(function () {
             }
             $.ajax({
                 type: "POST",
-                url: "/v1/api/upload",
+                url: "/api/v1/upload",
                 data: formData,
                 processData: false,
                 contentType: false,
@@ -596,7 +607,7 @@ $(document).ready(function () {
                     $("#data").empty();
                     $("#data").append(success)
                 },
-                beforeSend: function (XMLHttpRequest) {
+                beforeSend: function () {
                     $("#data").empty();
                     $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
                 },
