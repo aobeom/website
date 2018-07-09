@@ -262,7 +262,7 @@ $(document).ready(function () {
                 success: function (msg) {
                     if (msg["status"] == 0) {
                         $("#data").empty();
-                        var purl = msg["ori_url"]
+                        var purl = msg["data"]["ori_url"]
                         var pdata = msg["data"]["entities"]
                         var pdata_head = '<p><a class="btn btn-primary" href="' + purl + '" target="_blank">Yahoo Results</a></p>'
                         var pdata_body = ""
