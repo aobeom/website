@@ -82,7 +82,10 @@ class instapic(object):
         insta_rule = r'<script type="text/javascript">window._sharedData = (.*?);</script>'
         insta_str = re.findall(insta_rule, insta_body, re.S | re.M)
         insta_json = json.loads(''.join(insta_str))
-        insta_core = insta_json["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]
+        try:
+            insta_core = insta_json["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]
+        except KeyError:
+            return None
         if "edge_sidecar_to_children" in insta_core:
             insta_content = insta_core["edge_sidecar_to_children"]["edges"]
             for i in insta_content:
@@ -91,6 +94,9 @@ class instapic(object):
                     insta_pics.append(insta_node["display_url"])
                 elif insta_node["__typename"] == "GraphVideo":
                     insta_pics.append(insta_node["video_url"])
+        elif "video_url" in insta_core:
+            insta_tv = insta_core["video_url"]
+            insta_pics.append(insta_tv)
         else:
             insta_type = insta_core["is_video"]
             if insta_type:
@@ -222,7 +228,7 @@ class picdown(object):
 
     # 检查输入url有效性
     def urlCheck(self, url):
-        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/p/.*)')
+        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/.*)')
         if host_rule.match(url):
             http_code = self.__urlInvalid(url)
             if http_code == 200:
