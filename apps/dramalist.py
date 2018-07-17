@@ -383,20 +383,27 @@ def main2():
     r = redisMode.redisMode()
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     r.redisSave("drama:utime", times)
-    p1 = multiprocessing.Process(target=tvbt_process, args=(r,), name="TVBT")
-    p2 = multiprocessing.Process(
-        target=subpig_process, args=(r,), name="SUBPIG")
-    # p3 = multiprocessing.Process(
-    #     target=fixsub_process, args=(r,), name="FIXSUB")
 
-    p1.start()
-    p2.start()
-    # p3.start()
+    process = {
+        "TVBT": tvbt_process,
+        "SUBPIG": subpig_process,
+        "FIXSUB": fixsub_process
+    }
+    task = []
+    print("Main process run...")
+    for name, func in process.items():
+        p = multiprocessing.Process(target=func, args=(r,), name=name)
+        task.append(p)
 
-    for p in multiprocessing.active_children():
+    for t in task:
+        t.start()
         print("ChildProcess: {pname} ChildPID: {pid}".format(
-            pname=p.name, pid=p.pid))
-    print("Loading Complete")
+            pname=t.name, pid=t.pid))
+
+    for t in task:
+        t.join()
+        print("{name}[{pid}] Complete".format(name=t.name, pid=t.pid))
+    print("Main process done")
 
 
 if __name__ == "__main__":
