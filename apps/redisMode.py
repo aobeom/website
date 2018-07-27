@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:48:50
-# @modify date 2018-03-09 21:18:59
+# @modify date 2018-07-27 20:54:40
 # @desc [py-redis简单封装]
 
 import hashlib
@@ -11,11 +11,15 @@ import redis
 
 
 class redisMode(object):
-    def __init__(self):
+    def __init__(self, crond=False):
         redisconf = get_config.get_redis_conf()
+        redis_crond_host = redisconf["redis_crond_host"]
         redis_host = redisconf["redis_host"]
         redis_port = redisconf["redis_port"]
-        self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+        if crond:
+            self.conn = redis.StrictRedis(host=redis_crond_host, port=redis_port, db=0)
+        else:
+            self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 
     def __status(self):
         try:

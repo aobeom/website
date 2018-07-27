@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # @author AoBeom
 # @create date 2017-12-25 04:49:59
-# @modify date 2018-01-29 23:22:22
+# @modify date 2018-07-27 20:54:31
 # @desc [HLS downloader]
 import binascii
 import os
@@ -164,6 +164,7 @@ class HLSVideo(object):
         ivs = range(1, len(videos) + 1)
         STkey = open(keypath, "rb").read()
         KEY = binascii.b2a_hex(STkey)
+        KEY = str(KEY, encoding="utf-8")
         videoin = self.__isFolder("encrypt")
         videoout = self.__isFolder("decrypt")
         new_videos = []

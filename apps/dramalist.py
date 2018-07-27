@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-01-21 15:35:58
+# @modify date 2018-07-27 20:54:36
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -380,7 +380,7 @@ def fixsub_process(redis):
 
 
 def main2():
-    r = redisMode.redisMode()
+    r = redisMode.redisMode(crond=True)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     r.redisSave("drama:utime", times)
 

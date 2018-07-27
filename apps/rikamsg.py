@@ -1,3 +1,7 @@
+# @author AoBeom
+# @create date 2018-07-27 20:56:17
+# @modify date 2018-07-27 20:56:17
+# @desc [rika msg]
 import json
 import os
 import time
@@ -9,11 +13,14 @@ import pymongo
 
 
 class rikaMsg(object):
-    def __init__(self):
+    def __init__(self, crond=False):
         dbconf = get_config.get_mongo_conf()
         rikaconf = get_config.get_rika_conf()
         # mongo config
-        mongo_host = "{}:{}".format(dbconf["dbhost"], dbconf["dbport"])
+        if crond:
+            mongo_host = "{}:{}".format(dbconf["dbhost_crond"], dbconf["dbport"])
+        else:
+            mongo_host = "{}:{}".format(dbconf["dbhost"], dbconf["dbport"])
         mongo_dbs = dbconf["dbname"]
         mongo_coll = rikaconf["mongo_coll"]
         client = pymongo.MongoClient(mongo_host)
@@ -25,7 +32,7 @@ class rikaMsg(object):
         self.token = rikaconf["token"]
         self.group = rikaconf["group"]
         self.headers = {
-            "X-API-Version": "1.3.0",
+            "X-API-Version": "1.4.0",
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)",
         }
 
@@ -42,9 +49,9 @@ class rikaMsg(object):
             count = self.db_coll.find({"type": flag}).count()
         comp = count % 10
         if comp != 0:
-            pages = count / 10 + 1
+            pages = count // 10 + 1
         else:
-            pages = count / 10
+            pages = count // 10
         return pages
 
     def keya_allinfo_query(self, page):
@@ -212,7 +219,7 @@ def timeformat(timestamp):
 
 
 def main():
-    msg = rikaMsg()
+    msg = rikaMsg(crond=True)
     # fromdate = "2018/02/03 00:00:00"
     # todate = "2018/02/04 00:00:00"
 

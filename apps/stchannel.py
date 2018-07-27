@@ -1,4 +1,8 @@
-# coding:utf-8
+# coding=utf-8
+# @author AoBeom
+# @create date 2018-07-27 20:55:14
+# @modify date 2018-07-27 20:55:14
+# @desc [stchannel video download]
 import requests
 import json
 import datetime
@@ -15,7 +19,7 @@ class stMovies(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)",
             "Content-Type": "application/json; charset=UTF-8"
         }
-        self.redis = redisMode.redisMode()
+        self.redis = redisMode.redisMode(crond=True)
 
     def __dformat(self, date):
         dateformat = datetime.datetime.strptime(
@@ -86,7 +90,7 @@ def main():
     st = stMovies()
     st_info = st.stMovieInfos()
     infos = st.stGetUrl(st_info)
-    r = redisMode.redisMode()
+    r = redisMode.redisMode(crond=True)
     r.redisSave("stinfo", infos)
     r.redisSave("st:utime", times)
 

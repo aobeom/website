@@ -1,4 +1,8 @@
 # coding=utf-8
+# @author AoBeom
+# @create date 2018-07-27 20:55:02
+# @modify date 2018-07-27 20:55:02
+# @desc [tiktok sensei]
 import json
 import os
 import time
@@ -66,7 +70,7 @@ def newVideo(new, old):
 def main():
     path = os.path.dirname(os.path.abspath(__file__))
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r = redisMode.redisMode()
+    r = redisMode.redisMode(crond=True)
     redis_info = "tik:info"
     redis_utime = "tik:utime"
     vinfo_old = r.redisCheck(redis_info)
