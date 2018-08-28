@@ -18,7 +18,7 @@ class stMovies(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)",
             "Content-Type": "application/json; charset=UTF-8"
         }
-        self.redis = redisMode.redisMode()
+        self.redis = redisMode.redisMode(crond=True)
 
     def __dformat(self, date):
         dateformat = datetime.datetime.strptime(
@@ -85,7 +85,7 @@ class stMovies(object):
 
 
 def main():
-    r = redisMode.redisMode()
+    r = redisMode.redisMode(crond=True)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     r.redisSave("st:utime", times)
 

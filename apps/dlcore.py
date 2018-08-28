@@ -165,6 +165,7 @@ class HLSVideo(object):
         ivs = range(1, len(videos) + 1)
         STkey = open(keypath, "rb").read()
         KEY = binascii.b2a_hex(STkey)
+        KEY = str(KEY, encoding="utf-8")
         videoin = self.__isFolder("encrypt")
         videoout = self.__isFolder("decrypt")
         new_videos = []
