@@ -90,22 +90,26 @@ def main():
     r.redisSave("st:utime", times)
 
     st = stMovies()
-    hls = dlcore.HLSVideo()
     st_info = st.stMovieInfos()
     st_data = st.stGetUrl(st_info)
     st_data_new = []
     for d in st_data:
         playlist = d["murl"]
+        t = d["date"]
         media_path_redis = r.redisCheck("stv:" + playlist, subkey=True)
         if media_path_redis:
+            print(t + " Already Exist!")
+            d["path"] = media_path_redis
+            st_data_new.append(d)
             continue
         else:
+            hls = dlcore.HLSVideo()
             keyvideo = hls.hlsInfo(playlist)
             media_path = hls.hlsDL(keyvideo)
             r.redisSave("stv:" + playlist, media_path, ex=2592000, subkey=True)
             d["path"] = media_path
             st_data_new.append(d)
-        time.sleep(1)
+            time.sleep(3)
     r.redisSave("stinfo", st_data_new)
 
 
