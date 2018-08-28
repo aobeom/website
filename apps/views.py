@@ -12,7 +12,7 @@ from flask_restful import reqparse, Resource
 from werkzeug import secure_filename
 from werkzeug.datastructures import FileStorage
 
-from apps import app, api, dlcore, hlstream, jprogram, picdown, redisMode, srurl, rikamsg, stchannel
+from apps import app, api, hlstream, jprogram, picdown, redisMode, srurl, rikamsg
 
 APIVERSION = "/api/v1"
 redis = redisMode.redisMode()
@@ -242,30 +242,6 @@ class Program(Resource):
             return handler(1, "Parameter error")
 
 
-class StchannelTime(Resource):
-    st_key = "st:update"
-
-    def get(self):
-        st_state = redis.redisCheck(self.st_key)
-        if st_state:
-            ttl = redis.redisTTL(self.st_key)
-            sec = str(ttl)
-            return handler(0, "Time limit", second=sec)
-        else:
-            return handler(1, "No limit")
-
-    def post(self):
-        redis.redisSave(self.st_key, "STchannel update time", ex=7200)
-        st = stchannel.stMovies()
-        st_info = st.stMovieInfos()
-        infos = st.stGetUrl(st_info)
-        if infos:
-            redis.redisSave("stinfo", infos)
-            return handler(0, "Update completed")
-        else:
-            return handler(1, "No Update")
-
-
 class Stchannel(Resource):
     def get(self):
         stinfo = redis.redisCheck("stinfo")
@@ -278,24 +254,6 @@ class Stchannel(Resource):
                 return handler(0, "STchannel video listing", time=stutime, entities=stinfo)
             else:
                 return handler(1, "No listing")
-        else:
-            return handler(1, "Too many requests per second")
-
-    def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('url', required=True, help="signal is required")
-        args = parser.parse_args()
-        playlist = args["url"]
-        clientip = request.remote_addr
-        limitinfo = limitIP(clientip)
-        if limitinfo:
-            h = dlcore.HLSVideo()
-            keyvideo = h.hlsInfo(playlist)
-            uri = h.hlsDL(keyvideo)
-            if uri:
-                return handler(0, "Video url", entities=uri)
-            else:
-                return handler(1, "No video")
         else:
             return handler(1, "Too many requests per second")
 
@@ -395,7 +353,6 @@ api.add_resource(Drama, APIVERSION + '/drama/<subname>')
 api.add_resource(DramaTime, APIVERSION + '/drama/time')
 api.add_resource(Program, APIVERSION + '/program')
 api.add_resource(Stchannel, APIVERSION + '/stchannel')
-api.add_resource(StchannelTime, APIVERSION + '/stchannel/time')
 api.add_resource(UploadFile, APIVERSION + '/upload')
 api.add_resource(RikaMsg, APIVERSION + '/rikamsg')
 api.add_resource(Tiktok, APIVERSION + '/tiktok')

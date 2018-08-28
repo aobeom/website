@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # @author AoBeom
 # @create date 2017-12-25 04:49:59
-# @modify date 2018-07-27 20:54:31
+# @modify date 2018-01-29 23:22:22
 # @desc [HLS downloader]
 import binascii
 import os
@@ -23,7 +23,8 @@ class HLSVideo(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)"
         }
         if cookies:
-            r = requests.get(url, headers=headers, cookies=cookies, timeout=timeout)
+            r = requests.get(url, headers=headers,
+                             cookies=cookies, timeout=timeout)
         else:
             r = requests.get(url, headers=headers, timeout=timeout)
         return r
@@ -164,7 +165,6 @@ class HLSVideo(object):
         ivs = range(1, len(videos) + 1)
         STkey = open(keypath, "rb").read()
         KEY = binascii.b2a_hex(STkey)
-        KEY = str(KEY, encoding="utf-8")
         videoin = self.__isFolder("encrypt")
         videoout = self.__isFolder("decrypt")
         new_videos = []
@@ -193,14 +193,3 @@ class HLSVideo(object):
         videoin = stream[:-1]
         command = "cat {} > {}".format(videoin, videoput)
         os.system(command)
-
-
-def main():
-    playlist = raw_input("Enter Playlist URL: ")
-    HLS = HLSVideo()
-    keyvideo = HLS.hlsInfo(playlist)
-    HLS.hlsDL(keyvideo)
-
-
-if __name__ == "__main__":
-    main()

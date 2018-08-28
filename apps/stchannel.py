@@ -1,14 +1,13 @@
-# coding=utf-8
-# @author AoBeom
-# @create date 2018-07-27 20:55:14
-# @modify date 2018-07-27 20:55:14
-# @desc [stchannel video download]
+# coding:utf-8
 import requests
 import json
 import datetime
 import time
 import urllib
 import redisMode
+import hashlib
+
+import dlcore
 
 
 class stMovies(object):
@@ -19,7 +18,7 @@ class stMovies(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)",
             "Content-Type": "application/json; charset=UTF-8"
         }
-        self.redis = redisMode.redisMode(crond=True)
+        self.redis = redisMode.redisMode()
 
     def __dformat(self, date):
         dateformat = datetime.datetime.strptime(
@@ -86,13 +85,28 @@ class stMovies(object):
 
 
 def main():
+    r = redisMode.redisMode()
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    st = stMovies()
-    st_info = st.stMovieInfos()
-    infos = st.stGetUrl(st_info)
-    r = redisMode.redisMode(crond=True)
-    r.redisSave("stinfo", infos)
     r.redisSave("st:utime", times)
+
+    st = stMovies()
+    hls = dlcore.HLSVideo()
+    st_info = st.stMovieInfos()
+    st_data = st.stGetUrl(st_info)
+    st_data_new = []
+    for d in st_data:
+        playlist = d["murl"]
+        redis_url_md5 = hashlib.md5(playlist).hexdigest()[8:-8]
+        media_path_redis = r.redisCheck(redis_url_md5)
+        if media_path_redis:
+            continue
+        else:
+            keyvideo = hls.hlsInfo(playlist)
+            media_path = hls.hlsDL(keyvideo)
+            r.redisSave(playlist, media_path, ex=2592000, md5value=True)
+            d["path"] = media_path
+            st_data_new.append(d)
+    r.redisSave("stinfo", st_data_new)
 
 
 if __name__ == "__main__":
