@@ -1,13 +1,13 @@
 # coding:utf-8
-import requests
-import json
 import datetime
+import json
 import time
 import urllib
-import redisMode
-import hashlib
+
+import requests
 
 import dlcore
+import redisMode
 
 
 class stMovies(object):
@@ -96,16 +96,16 @@ def main():
     st_data_new = []
     for d in st_data:
         playlist = d["murl"]
-        redis_url_md5 = hashlib.md5(playlist).hexdigest()[8:-8]
-        media_path_redis = r.redisCheck(redis_url_md5)
+        media_path_redis = r.redisCheck("stv:" + playlist, subkey=True)
         if media_path_redis:
             continue
         else:
             keyvideo = hls.hlsInfo(playlist)
             media_path = hls.hlsDL(keyvideo)
-            r.redisSave(playlist, media_path, ex=2592000, md5value=True)
+            r.redisSave("stv:" + playlist, media_path, ex=2592000, subkey=True)
             d["path"] = media_path
             st_data_new.append(d)
+        time.sleep(1)
     r.redisSave("stinfo", st_data_new)
 
 

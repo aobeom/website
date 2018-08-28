@@ -17,14 +17,14 @@ class HLSVideo(object):
     def __init__(self):
         self.datename = time.strftime(
             '%y%m%d%H%M%S', time.localtime(time.time()))
+        self.work_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
     def __requests(self, url, cookies=None, timeout=30):
         headers = {
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)"
         }
         if cookies:
-            r = requests.get(url, headers=headers,
-                             cookies=cookies, timeout=timeout)
+            r = requests.get(url, headers=headers, cookies=cookies, timeout=timeout)
         else:
             r = requests.get(url, headers=headers, timeout=timeout)
         return r
@@ -41,7 +41,7 @@ class HLSVideo(object):
     def __isFolder(self, filename):
         try:
             filename = filename + "_" + self.datename
-            propath = os.path.join(os.getcwd(), "media")
+            propath = os.path.join(self.work_dir, "media")
             video_path = os.path.join(propath, filename)
             if not os.path.exists(video_path):
                 os.mkdir(video_path)
@@ -137,7 +137,7 @@ class HLSVideo(object):
 
         self.hlsDec(key_path, videos)
 
-        mediapath = os.path.join(os.getcwd(), "media")
+        mediapath = os.path.join(self.work_dir, "media")
         folder = os.path.join(mediapath, "decrypt_" + self.datename)
         video_name = os.path.join(folder, self.datename + ".ts")
         if os.path.exists(video_name):
@@ -165,7 +165,6 @@ class HLSVideo(object):
         ivs = range(1, len(videos) + 1)
         STkey = open(keypath, "rb").read()
         KEY = binascii.b2a_hex(STkey)
-        KEY = str(KEY, encoding="utf-8")
         videoin = self.__isFolder("encrypt")
         videoout = self.__isFolder("decrypt")
         new_videos = []
