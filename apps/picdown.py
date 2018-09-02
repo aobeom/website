@@ -152,7 +152,9 @@ class nogizaka(object):
             img_tag = True
         # 获取直链
         else:
-            img_center = nogi_html.xpath(r'//div[@class="entrybody"]/img')
+            img_center = nogi_html.xpath(r'//div[@class="entrybody"]/div/img')
+            if not img_center:
+                img_center = nogi_html.xpath(r'//div[@class="entrybody"]/img')
             nogi_imgs_dcimg = [i.get("src") for i in img_center]
             img_tag = False
         # 保存到本地
@@ -166,7 +168,7 @@ class nogizaka(object):
                 response = r.get(dcimg, timeout=30, headers=self.headers)
                 dcimg_index = response.text
                 dcimg_html = etree.HTML(dcimg_index)
-                nogi_img_url = dcimg_html.xpath(
+                nogi_img_url = "http://dcimg.awalker.jp" + dcimg_html.xpath(
                     r'//div[@id="contents"]//img')[0].get("src")
                 if "expired.gif" in nogi_img_url:
                     nogi_img_url = "http://dcimg.awalker.jp/img/expired.gif"

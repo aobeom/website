@@ -61,7 +61,7 @@ $(document).ready(function () {
                 $('#picdown').removeAttr("disabled");
                 return false;
             } else {
-                if (url.indexOf("showroom") != -1 || url.indexOf("line") != -1) {
+                if (url.indexOf("showroom") != -1 || url.indexOf("line.me") != -1) {
                     uri = "/hls"
                 } else {
                     uri = "/news"
