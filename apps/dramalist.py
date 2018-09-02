@@ -77,8 +77,8 @@ class fixsub(object):
                 baidu_url = i[0]
                 magnet_url = i[1]
                 ed2k_url = i[2]
-                ep_rule = r'\.([SE0-9]+)\.'
-                result = re.findall(ep_rule, magnet_url)
+                ep_rule = r'\.([SPE0-9]+)\.'
+                result = re.findall(ep_rule, ed2k_url)
                 if len(result) == 0:
                     ep_num = re.findall(ep_rule, ed2k_url)[0]
                 else:
@@ -94,7 +94,7 @@ class fixsub(object):
                 count = count + 1
                 baidu_url = i[0]
                 magnet_url = i[1]
-                ep_rule = r'\.([SE0-9]+)\.'
+                ep_rule = r'\.([SPE0-9]+)\.'
                 result = re.findall(ep_rule, magnet_url)
                 if len(result) == 0:
                     ep_num = str(count).zfill(2)

@@ -1,13 +1,12 @@
-# coding=utf-8
-# @author AoBeom
-# @create date 2018-07-27 20:55:14
-# @modify date 2018-07-27 20:55:14
-# @desc [stchannel video download]
-import requests
-import json
+# coding:utf-8
 import datetime
+import json
 import time
 import urllib
+
+import requests
+
+import dlcore
 import redisMode
 
 
@@ -86,13 +85,32 @@ class stMovies(object):
 
 
 def main():
+    r = redisMode.redisMode(crond=True)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    r.redisSave("st:utime", times)
+
     st = stMovies()
     st_info = st.stMovieInfos()
-    infos = st.stGetUrl(st_info)
-    r = redisMode.redisMode(crond=True)
-    r.redisSave("stinfo", infos)
-    r.redisSave("st:utime", times)
+    st_data = st.stGetUrl(st_info)
+    st_data_new = []
+    for d in st_data:
+        playlist = d["murl"]
+        t = d["date"]
+        media_path_redis = r.redisCheck("stv:" + playlist, subkey=True)
+        if media_path_redis:
+            print(t + " Already Exist!")
+            d["path"] = media_path_redis
+            st_data_new.append(d)
+            continue
+        else:
+            hls = dlcore.HLSVideo()
+            keyvideo = hls.hlsInfo(playlist)
+            media_path = hls.hlsDL(keyvideo)
+            r.redisSave("stv:" + playlist, media_path, ex=2592000, subkey=True)
+            d["path"] = media_path
+            st_data_new.append(d)
+            time.sleep(3)
+    r.redisSave("stinfo", st_data_new)
 
 
 if __name__ == "__main__":

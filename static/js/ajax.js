@@ -303,22 +303,6 @@ $(document).ready(function () {
         })
     } else if (uri[uri.length - 1] == "stchannel") {
         var error_system = '<p class="btn btn-danger" onclick="location.reload();">SYSTEM error</p>';
-
-        $.get("/api/v1/stchannel/time", function (msg) {
-            if (msg["status"] == 0) {
-                $(".btn-fresh").attr({
-                    disabled: "disabled"
-                });
-            }
-        })
-        $('.btn-fresh').click(function () {
-            $.post("/api/v1/stchannel/time", function (msg) {
-                if (msg["status"] == 0) {
-                    $(".btn-fresh").removeAttr('disabled');
-                    location.reload();
-                }
-            })
-        })
         $.ajax({
             type: "GET",
             url: "/api/v1/stchannel",
@@ -334,46 +318,16 @@ $(document).ready(function () {
                         var data = dt[i];
                         var s_date = data["date"];
                         var s_title = data["title"];
-                        var s_murl = data["murl"];
                         var s_purl = data["purl"];
+                        var s_path = data["path"]
                         var s_id = "dlink" + i;
-                        var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><button id="' + s_id + '" class="btn btn-primary btn-source tools-button" value="' + s_murl + '">Resources</button>';
+                        var st_info = '<hr><p>' + s_date + '</p><p style="text-align:left;">' + s_title + '</p><p class="tools-img"><img src="' + s_purl + '"></p><a target="_blank" id="' + s_id + '" class="btn btn-success tools-button" href="' + s_path + '">Download</a>';
                         var st_body = st_body + st_info;
                     }
                 } else {
                     st_body = '<span class="btn btn-danger">NO DATA</span>'
                 }
                 $('#data').append(st_body);
-                $('.btn-source').click(function () {
-                    var sid = $(this).attr("id")
-                    var murl = {
-                        "url": $(this).val()
-                    }
-                    $.ajax({
-                        type: "POST",
-                        contentType: "application/json;charset=utf-8",
-                        url: "/api/v1/stchannel",
-                        data: JSON.stringify(murl),
-                        dataType: "json",
-                        success: function (msg) {
-                            var dl = '<a class="btn btn-success btn-source tools-button" href="' + msg["data"]["entities"] + '" target="_blank">Download</a>'
-                            $("#" + sid).replaceWith(dl)
-                            $(".tools-button").removeAttr("disabled");
-                        },
-                        beforeSend: function () {
-                            $("#" + sid).text("Loading...")
-                            $("#" + sid).attr({
-                                disabled: "disabled"
-                            });
-                            $(".tools-button").attr({
-                                disabled: "disabled"
-                            });
-                        },
-                        error: function () {
-                            $("#" + sid).replaceWith(error_system);
-                        }
-                    })
-                })
             },
             beforeSend: function () {
                 $("#data").append('<p><i class="fa fa-cog fa-spin fa-3x fa-fw"></i></p>');
