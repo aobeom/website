@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2018-04-07 19:35:33
-# @modify date 2018-07-07 22:16:50
+# @modify date 2018-09-09 20:49:59
 # @desc [auth]
 
-from flask import redirect, render_template
 from flask_login import login_user, logout_user
 from flask_restful import reqparse, Resource, abort
 
@@ -16,9 +15,12 @@ from apps import app, db, api
 APIVERSION = "/api/v1"
 
 
-@app.route('/ulogin')
-def login_index():
-    return render_template("single_login.html")
+def handler(status, data, **other):
+    d = {}
+    d["status"] = status
+    d["message"] = data
+    d["data"] = other
+    return d
 
 
 class Register(Resource):
@@ -54,15 +56,15 @@ class Login(Resource):
         password = args["password"]
         user = User.query.filter_by(username=username).first()
         if not user or not user.verify_password(password):
-            return redirect("/ulogin")
+            return handler(1, "No Auth")
         login_user(user, True)
-        return redirect("/rika")
+        return handler(0, "Hello " + username)
 
 
 class Logout(Resource):
     def post(self):
         logout_user()
-        return redirect("/ulogin")
+        return handler(0, "Logout")
 
 
 api.add_resource(Register, APIVERSION + '/register')

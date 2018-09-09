@@ -1,6 +1,6 @@
 # @author AoBeom
 # @create date 2018-07-27 20:56:17
-# @modify date 2018-07-27 20:56:17
+# @modify date 2018-09-09 20:59:27
 # @desc [rika msg]
 import json
 import os
@@ -56,11 +56,15 @@ class rikaMsg(object):
 
     def keya_allinfo_query(self, page):
         page = int(page)
+        mongo_project = {'$project': {"_id": 0}}
+        mongo_sort = {'$sort': {"date": -1}}
+        mongo_limit = {'$limit': 10}
         if page > 1:
             skip = 10 * (page - 1)
-            quers_res = self.db_coll.find({}, {"_id": 0}).limit(10).skip(skip)
+            mongo_skip = {'$skip': skip}
+            quers_res = self.db_coll.aggregate([mongo_project, mongo_sort, mongo_skip, mongo_limit])
         else:
-            quers_res = self.db_coll.find({}, {"_id": 0}).limit(10)
+            quers_res = self.db_coll.aggregate([mongo_project, mongo_sort, mongo_limit])
         result = [q for q in quers_res]
         return result
 
@@ -68,13 +72,16 @@ class rikaMsg(object):
         # flag 0 text, 1 img, 2 video, 3 audio
         page = int(page)
         flag = int(flag)
-        query = {"type": flag}
+        mongo_match = {'$match': {'type': flag}}
+        mongo_project = {'$project': {"_id": 0}}
+        mongo_sort = {'$sort': {"date": -1}}
+        mongo_limit = {'$limit': 10}
         if page > 1:
             skip = 10 * (page - 1)
-            quers_res = self.db_coll.find(
-                query, {"_id": 0}).limit(10).skip(skip)
+            mongo_skip = {'$skip': skip}
+            quers_res = self.db_coll.aggregate([mongo_match, mongo_project, mongo_sort, mongo_skip, mongo_limit])
         else:
-            quers_res = self.db_coll.find(query, {"_id": 0}).limit(10)
+            quers_res = self.db_coll.aggregate([mongo_match, mongo_project, mongo_sort, mongo_limit])
         result = [q for q in quers_res]
         return result
 

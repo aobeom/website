@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:25
-# @modify date 2018-07-07 22:16:55
+# @modify date 2018-09-09 22:14:10
 # @desc [Flask view main]
 import os
 import time
 
-from flask import jsonify, redirect, render_template, request
+from flask import request
 from flask_login import login_required
 from flask_restful import reqparse, Resource
 from werkzeug import secure_filename
@@ -34,70 +34,6 @@ def handler(status, data, **other):
     d["message"] = data
     d["data"] = other
     return d
-
-
-@app.errorhandler(500)
-def server_5xx(error):
-    return render_template("error_5xx.html")
-
-
-@app.errorhandler(405)
-def method_405(error):
-    data = handler(1, None, code=405, message="Method Error")
-    return jsonify(data)
-
-
-@app.errorhandler(404)
-def server_404(error):
-    return render_template("error_not_found.html")
-
-
-@app.route('/')
-def index():
-    return redirect("/picture")
-
-
-@app.route('/picture')
-def picture():
-    return render_template("base_picdown.html")
-
-
-@app.route('/drama')
-def dramaindex():
-    return render_template("base_drama.html")
-
-
-@app.route('/program')
-def programindex():
-    return render_template("base_program.html")
-
-
-@app.route('/stchannel')
-def stindex():
-    return render_template("base_st.html")
-
-
-@app.route('/upload')
-@login_required
-def upload():
-    return render_template("auth_upload.html")
-
-
-@app.route('/hls')
-@login_required
-def hls():
-    return render_template("auth_videolist.html")
-
-
-@app.route('/rika')
-@login_required
-def rika():
-    return render_template("auth_rika.html")
-
-
-@app.route('/tiktok')
-def tiktok_index():
-    return render_template("base_tiktok.html")
 
 
 class Media(Resource):
@@ -295,8 +231,7 @@ def subhls(code):
             data = redis.redisCheck(playlist)
             data = redis.redisDict(data)
             url = data["data"]["path"]
-            print(url)
-            return render_template("single_player.html", url=url)
+            return handler(0, "video path", url)
     else:
         return handler(1, "No video")
 

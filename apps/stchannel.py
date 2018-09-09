@@ -1,4 +1,8 @@
 # coding:utf-8
+# @author AoBeom
+# @create date 2018-09-09 22:13:40
+# @modify date 2018-09-09 22:13:40
+# @desc [description]
 import datetime
 import json
 import time
@@ -111,6 +115,7 @@ def main():
             st_data_new.append(d)
             time.sleep(3)
     r.redisSave("stinfo", st_data_new)
+    print("Update time: " + times)
 
 
 if __name__ == "__main__":
