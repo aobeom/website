@@ -1,8 +1,8 @@
-from flask import redirect
+import base64
 
 # mysql
 from flask_login import UserMixin
-from apps import login_manger, db
+from apps import db
 
 from passlib.hash import md5_crypt as hash_pwd
 
@@ -17,6 +17,11 @@ class User(db.Model, UserMixin):
     def hash_password(self, pwd):
         self.password = hash_pwd.encrypt(pwd)
 
+    def generate_token(self, user, pwd):
+        token = hash_pwd.encrypt(user + pwd)
+        t_base64 = base64.b64encode(token.encode('utf-8'))
+        return t_base64
+
     def verify_password(self, pwd):
         return hash_pwd.verify(pwd, self.password)
 
@@ -28,14 +33,3 @@ class User(db.Model, UserMixin):
 
     def is_anonymous(self):
         return False
-
-
-@login_manger.user_loader
-def load_user(id):
-    return User.query.get(int(id))
-
-
-# common
-@login_manger.unauthorized_handler
-def unauthorized():
-    return redirect("/ulogin")

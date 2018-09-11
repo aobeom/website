@@ -6,13 +6,12 @@
 import os
 import time
 
-from flask import request
-from flask_login import login_required
+from flask import request, g
 from flask_restful import reqparse, Resource
 from werkzeug import secure_filename
 from werkzeug.datastructures import FileStorage
 
-from apps import app, api, hlstream, jprogram, picdown, redisMode, srurl, rikamsg
+from apps import api, hlstream, jprogram, picdown, redisMode, srurl, rikamsg, authen
 
 APIVERSION = "/api/v1"
 redis = redisMode.redisMode()
@@ -34,6 +33,17 @@ def handler(status, data, **other):
     d["message"] = data
     d["data"] = other
     return d
+
+
+@authen.verify_token
+def verify_token(token):
+    g.user = None
+    token_check = redis.redisCheck(token)
+    if token_check:
+        username = token_check
+        g.user = username
+        return True
+    return False
 
 
 class Media(Resource):
@@ -195,13 +205,13 @@ class Stchannel(Resource):
 
 
 class UploadFile(Resource):
-    @login_required
+    decorators = [authen.login_required]
+
     def get(self):
         playlists = redis.redisKeys("playlist:*")
         total = len(playlists)
         return handler(0, "Total video", number=total)
 
-    @login_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('file', type=FileStorage, location='files')
@@ -219,25 +229,9 @@ class UploadFile(Resource):
         return data
 
 
-@app.route('/hls/<code>')
-@login_required
-def subhls(code):
-    playlists = redis.redisKeys("playlist:*")
-    total = len(playlists)
-    if int(code) <= total and int(code) != 0:
-        index = int(code) - 1
-        playlist = playlists[index]
-        if playlist:
-            data = redis.redisCheck(playlist)
-            data = redis.redisDict(data)
-            url = data["data"]["path"]
-            return handler(0, "video path", url)
-    else:
-        return handler(1, "No video")
-
-
 class RikaMsg(Resource):
-    @login_required
+    decorators = [authen.login_required]
+
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('type', required=True, help="Type is required")
