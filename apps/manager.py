@@ -4,14 +4,17 @@
 # @modify date 2018-09-09 20:49:59
 # @desc [auth]
 
-from flask_restful import reqparse, Resource, abort
+from flask_restful import reqparse, Resource
 
 # mysql
 from model import User
-from apps import db, api, redisMode
+from apps import db, api, redisMode, get_config
 
 redis = redisMode.redisMode()
 APIVERSION = "/api/v1"
+
+conf = get_config.get_db_conf()
+secret_key = conf["secret_key"]
 
 
 def handler(status, data, **other):
@@ -29,18 +32,23 @@ class Register(Resource):
                             help="username is required")
         parser.add_argument('password', required=True,
                             help="password is required")
+        parser.add_argument('flag')
         args = parser.parse_args()
         username = args["username"]
         password = args["password"]
-        if username is None or password is None:
-            abort(400)
-        if User.query.filter_by(username=username).first() is not None:
-            abort(400)
-        user = User(username=username)
-        user.hash_password(password)
-        db.session.add(user)
-        db.session.commit()
-        return (user.username)
+        flag = args["flag"]
+        if flag == secret_key:
+            if username is None or password is None:
+                return handler(1, "Username or Password Invalid")
+            if User.query.filter_by(username=username).first() is not None:
+                return handler(1, "User already exists")
+            user = User(username=username)
+            user.hash_password(password)
+            db.session.add(user)
+            db.session.commit()
+            return handler(0, "Dear " + user.username + " Welcome to API World!")
+        else:
+            return handler(1, "Permission denied")
 
 
 class Token(Resource):
@@ -56,7 +64,8 @@ class Token(Resource):
             if not user or not user.verify_password(password):
                 return handler(1, "username or password invalid")
             token = user.generate_token(username, password)
-            redis.redisSave(token, username, ex=1200)
+            token = token.decode("utf-8")
+            redis.redisSave(token, username, ex=604800)
         else:
             return handler(1, "username or password invalid")
         return handler(0, "Hello " + username, token=token)

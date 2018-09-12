@@ -11,7 +11,7 @@ redisconf = os.path.join(work_dir, "redis.conf")
 def __json_conf(conf):
     f = open(conf, "rb")
     conf = f.read()
-    conf = json.loads(conf)
+    conf = json.loads(conf.decode("utf-8"))
     f.close()
     return conf
 
