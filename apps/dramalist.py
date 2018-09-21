@@ -80,7 +80,10 @@ class fixsub(object):
                 ep_rule = r'\.([SPE0-9]+)\.'
                 result = re.findall(ep_rule, ed2k_url)
                 if len(result) == 0:
-                    ep_num = re.findall(ep_rule, ed2k_url)[0]
+                    try:
+                        ep_num = re.findall(ep_rule, ed2k_url)[0]
+                    except IndexError:
+                        ep_num = "SP"
                 else:
                     ep_num = result[0]
                 episode.append(ep_num)
@@ -125,13 +128,13 @@ class fixsub(object):
         fixsub_infos = urls
         # baidu,magnet,ed2k,_blank
         b_m_e_rule = re.compile(
-            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>.*?<a href="(ed2k.*?)".*?>.*?</a>')
+            r'<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>.*?<a href="(ed2k.*?)".*?>.*?</a>')
         # baidu,magnet,_blank
         b_m_rule = re.compile(
-            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>')
+            r'<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?<a href="(magnet.*?)".*?>.*?</a>')
         # baidu,_blank
         b_rule = re.compile(
-            r'<a href="(https://pan.baidu.com.*?)".*?>.*?</a>')
+            r'<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>')
         for title, url in fixsub_infos.items():
             fix_dict = {}
             info_list = []
@@ -217,7 +220,7 @@ class tvbtsub(object):
             tvbt_dict = {}
             count = 0
             tvbt_title_rule = r'\](.*?)\['
-            tvbt_dl_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
+            tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
             tvbt_uptime = updates[0]
             tvbt_url = updates[1]
             tvbt_title = updates[2]
@@ -233,8 +236,8 @@ class tvbtsub(object):
                 "ISO-8859-1").decode("utf-8")
             tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
             if len(tvbt_single_info) == 0:
-                tvbt_dl_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>'
-                tvbt_dl_pass = r'.*?提取码：([0-9a-zA-Z]+).*?<'
+                tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>'
+                tvbt_dl_pass = u'.*?提取码：([0-9a-zA-Z]+).*?<'
                 tvbt_single_url = re.findall(tvbt_dl_rule, tvbt_single_index)
                 tvbt_single_dl = re.findall(tvbt_dl_pass, tvbt_single_index)
                 tvbt_single_info = [tvbt_single_url + tvbt_single_dl]
@@ -303,13 +306,13 @@ class subpig_rbl(object):
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
-        subpig_drule = r'<p>.*?<a href="(https://pan.baidu.com/s/.*?)".*?>.*?</a>.*?([0-9a-zA-Z]+).*?</p>'
+        subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?([0-9a-zA-Z]+).*?</p>'
         murl = infos["url"]
         response = self.__request(murl)
         subpig_main = response.text
         subpig_durls = re.findall(subpig_drule, subpig_main, re.S | re.M)
         if not subpig_durls:
-            subpig_drule = r'>.*?(https://pan.baidu.com/s/.*?).*?([0-9a-zA-Z]+).*?<'
+            subpig_drule = r'>.*?(http[s]?://pan.baidu.com.*?).*?([0-9a-zA-Z]+).*?<'
             subpig_durls = re.findall(subpig_drule, subpig_main, re.S | re.M)
         for durl in subpig_durls:
             subpig_dlinfo = []
