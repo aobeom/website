@@ -232,6 +232,12 @@ class tvbtsub(object):
             tvbt_single_index = response.text.encode(
                 "ISO-8859-1").decode("utf-8")
             tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
+            if len(tvbt_single_info) == 0:
+                tvbt_dl_rule = r'<a href="(.*?pan.baidu.com.*?)" target="_blank">.*?</a>'
+                tvbt_dl_pass = r'.*?提取码：([0-9a-zA-Z]+).*?<'
+                tvbt_single_url = re.findall(tvbt_dl_rule, tvbt_single_index)
+                tvbt_single_dl = re.findall(tvbt_dl_pass, tvbt_single_index)
+                tvbt_single_info = [tvbt_single_url + tvbt_single_dl]
             tvbt_dl_urls = []
             for info in tvbt_single_info:
                 dl_urls = []
