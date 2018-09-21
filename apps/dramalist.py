@@ -6,6 +6,7 @@
 import json
 import multiprocessing
 import re
+import os
 import sys
 import time
 from multiprocessing.dummy import Pool
@@ -16,6 +17,8 @@ try:
     from apps import redisMode
 except BaseException:
     import redisMode
+
+redis = redisMode.redisMode(crond=True)
 
 
 class fixsub(object):
@@ -325,14 +328,13 @@ class subpig_rbl(object):
 
 
 def main():
-    r = redisMode.redisMode()
     tvbt_key = "drama:tvbt"
     t = tvbtsub()
     tvbt_update_info = t.tvbtIndexInfo()
     tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r.redisSave("drama:utime", times)
-    r.redisSave(tvbt_key, tvbt_urls)
+    redis.redisSave("drama:utime", times)
+    redis.redisSave(tvbt_key, tvbt_urls)
 
     subpig_key = "drama:subpig"
     p = subpig_rbl()
@@ -341,42 +343,8 @@ def main():
     subpig_urls = pool.map(p.subpigGetUrl, index_subpig)
     pool.close()
     pool.join
-    r.redisSave(subpig_key, subpig_urls)
+    redis.redisSave(subpig_key, subpig_urls)
 
-    pages = 1
-    fix_key = "drama:fixsub"
-    f = fixsub()
-    # pages = f.fixPageNum()
-    for page in range(1, pages + 1):
-        fix_page_info = f.fixPageInfo(page)
-        fix_single_page = f.fixSinglePageInfo(fix_page_info)
-        fix_dl_urls = f.fixInfoGet(fix_single_page)
-    r.redisSave(fix_key, fix_dl_urls)
-
-
-def tvbt_process(redis):
-    tvbt_key = "drama:tvbt"
-    t = tvbtsub()
-    tvbt_update_info = t.tvbtIndexInfo()
-    tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
-    redis.redisSave(tvbt_key, tvbt_urls)
-
-
-def subpig_process(redis):
-    subpig_key = "drama:subpig"
-    p = subpig_rbl()
-    subpig_update_info = p.subpigIndexInfo()
-    if subpig_update_info:
-        pool = Pool(4)
-        subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
-        pool.close()
-        pool.join
-        redis.redisSave(subpig_key, subpig_urls)
-    else:
-        print("No data")
-
-
-def fixsub_process(redis):
     pages = 1
     fix_key = "drama:fixsub"
     f = fixsub()
@@ -388,31 +356,63 @@ def fixsub_process(redis):
     redis.redisSave(fix_key, fix_dl_urls)
 
 
-def main2():
-    r = redisMode.redisMode(crond=True)
-    times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r.redisSave("drama:utime", times)
+def tvbt_process(name):
+    print("Run {} [{}]...".format(name, os.getpid()))
+    tvbt_key = "drama:tvbt"
+    t = tvbtsub()
+    tvbt_update_info = t.tvbtIndexInfo()
+    tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
+    redis.redisSave(tvbt_key, tvbt_urls)
+    print("{} [{}] done".format(name, os.getpid()))
 
-    process = {
+
+def subpig_process(name):
+    print("Run {} [{}]...".format(name, os.getpid()))
+    subpig_key = "drama:subpig"
+    p = subpig_rbl()
+    subpig_update_info = p.subpigIndexInfo()
+    if subpig_update_info:
+        pool = Pool(4)
+        subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
+        pool.close()
+        pool.join
+        redis.redisSave(subpig_key, subpig_urls)
+    else:
+        print("No data")
+    print("{} [{}] done".format(name, os.getpid()))
+
+
+def fixsub_process(name):
+    print("Run {} [{}]...".format(name, os.getpid()))
+    pages = 1
+    fix_key = "drama:fixsub"
+    f = fixsub()
+    # pages = f.fixPageNum()
+    for page in range(1, pages + 1):
+        fix_page_info = f.fixPageInfo(page)
+        fix_single_page = f.fixSinglePageInfo(fix_page_info)
+        fix_dl_urls = f.fixInfoGet(fix_single_page)
+    redis.redisSave(fix_key, fix_dl_urls)
+    print("{} [{}] done".format(name, os.getpid()))
+
+
+def main2():
+    times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    redis.redisSave("drama:utime", times)
+
+    pool = multiprocessing.Pool()
+    tasks = {
         "TVBT": tvbt_process,
         "SUBPIG": subpig_process,
         "FIXSUB": fixsub_process
     }
-    task = []
-    print("Main process run...")
-    for name, func in process.items():
-        p = multiprocessing.Process(target=func, args=(r,), name=name)
-        task.append(p)
-
-    for t in task:
-        t.start()
-        print("ChildProcess: {pname} ChildPID: {pid}".format(
-            pname=t.name, pid=t.pid))
-
-    for t in task:
-        t.join()
-        print("{name}[{pid}] Complete".format(name=t.name, pid=t.pid))
-    print("Main process done")
+    print("Main process [{}] start".format(os.getpid()))
+    for name, func in tasks.items():
+        pool.apply_async(func, args=(name, )).get(30)
+    print("Waiting for all subprocesses done...")
+    pool.close()
+    pool.join()
+    print("All process done")
 
 
 if __name__ == "__main__":
