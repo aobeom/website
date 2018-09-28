@@ -241,22 +241,22 @@ class RikaMsg(Resource):
         page = para["page"]
         msg = rikamsg.rikaMsg()
         if mtype in range(4) or mtype == 100:
+            pages = msg.keya_pages_query(mtype)
             if page:
                 if mtype == 100:
                     allinfo = msg.keya_allinfo_query(page)
                     if allinfo:
-                        return handler(0, "All message", entities=allinfo)
+                        return handler(0, "All message", entities=allinfo, pages=pages)
                     else:
                         return handler(1, "No data")
                 else:
                     partinfo = msg.keya_media_query(page, mtype)
                     if partinfo:
-                        return handler(0, "Part message", entities=partinfo)
+                        return handler(0, "Part message", entities=partinfo, pages=pages)
                     else:
                         return handler(1, "No data")
             else:
-                pages = msg.keya_pages_query(mtype)
-                return handler(0, "Total pages", pages=pages)
+                return handler(1, "Type and Page is required")
         else:
             return handler(1, "No such type, only 0-4 or 100")
 
