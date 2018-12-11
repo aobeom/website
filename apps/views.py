@@ -11,7 +11,7 @@ from flask_restful import reqparse, Resource
 from werkzeug import secure_filename
 from werkzeug.datastructures import FileStorage
 
-from apps import api, hlstream, jprogram, picdown, redisMode, srurl, rikamsg, authen
+from apps import api, hlstream, jprogram, picdown, redisMode, srurl, rikamsg, authen, tweetV
 
 APIVERSION = "/api/v1"
 redis = redisMode.redisMode()
@@ -52,7 +52,7 @@ class Media(Resource):
         parser.add_argument('url', required=True, help="URL is required")
         para = parser.parse_args()
         url = para.get("url")
-        targets = ["news", "hls"]
+        targets = ["news", "hls", "twitter"]
         if target not in targets:
             return handler(1, "The type is not supported")
         else:
@@ -102,6 +102,12 @@ class Media(Resource):
                                 return handler(1, "No content")
                     else:
                         return handler(1, "The hls site is not supported")
+                elif target == "twitter":
+                    vurl = tweetV.getVideoURL(url)
+                    if vurl:
+                        return handler(0, "This is a Twitter Video url", type=target, entities=vurl)
+                    else:
+                        return handler(1, "This url has no video")
             else:
                 return handler(1, "Too many requests per second")
 
