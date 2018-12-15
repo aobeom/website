@@ -223,7 +223,9 @@ class tvbtsub(object):
             tvbt_dict = {}
             count = 0
             tvbt_title_rule = r'\](.*?)\['
-            tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
+            # tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
+            tvbt_dl_rule1 = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>.*?([0-9a-zA-Z]+).*?<'
+            tvbt_dl_rule2 = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a> <br />.*?([0-9a-zA-Z]+).*?>'
             tvbt_uptime = updates[0]
             tvbt_url = updates[1]
             tvbt_title = updates[2]
@@ -237,13 +239,16 @@ class tvbtsub(object):
             response = self.__request(tvbt_url)
             tvbt_single_index = response.text.encode(
                 "ISO-8859-1").decode("utf-8")
-            tvbt_single_info = re.findall(tvbt_dl_rule, tvbt_single_index)
-            if len(tvbt_single_info) == 0:
-                tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>'
-                tvbt_dl_pass = u'.*?提取码：([0-9a-zA-Z]+).*?<'
-                tvbt_single_url = re.findall(tvbt_dl_rule, tvbt_single_index)
-                tvbt_single_dl = re.findall(tvbt_dl_pass, tvbt_single_index)
-                tvbt_single_info = [tvbt_single_url + tvbt_single_dl]
+            tvbt_single_info1 = re.findall(tvbt_dl_rule1, tvbt_single_index, re.S | re.M)
+            tvbt_single_info2 = re.findall(tvbt_dl_rule2, tvbt_single_index, re.S | re.M)
+            tvbt_single_info1 = [i for i in tvbt_single_info1 if i[1] != "br"]
+            tvbt_single_info = tvbt_single_info1 + tvbt_single_info2
+            # if len(tvbt_single_info) == 0:
+            #     tvbt_dl_rule = r'<a href="(http[s]?://pan.baidu.com.*?)" target="_blank">.*?</a>'
+            #     tvbt_dl_pass = u'.*?提取码：([0-9a-zA-Z]+).*?<'
+            #     tvbt_single_url = re.findall(tvbt_dl_rule, tvbt_single_index)
+            #     tvbt_single_dl = re.findall(tvbt_dl_pass, tvbt_single_index)
+            #     tvbt_single_info = [tvbt_single_url + tvbt_single_dl]
             tvbt_dl_urls = []
             for info in tvbt_single_info:
                 dl_urls = []
@@ -403,8 +408,8 @@ def main2():
     pool = multiprocessing.Pool()
     tasks = {
         "TVBT": tvbt_process,
-        "SUBPIG": subpig_process,
-        "FIXSUB": fixsub_process
+        "FIXSUB": fixsub_process,
+        "SUBPIG": subpig_process
     }
     print("Main process [{}] start".format(os.getpid()))
     for name, func in tasks.items():
