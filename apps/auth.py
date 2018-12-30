@@ -1,28 +1,20 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2018-04-07 19:35:33
-# @modify date 2018-09-09 20:49:59
+# @modify date 2018-12-30 18:37:46
 # @desc [auth]
-
 from flask_restful import reqparse, Resource
 
-# mysql
-from model import User
-from apps import db, api, redisMode, get_config
 
-redis = redisMode.redisMode()
+from modules import mongoSet
+from apps import api
+from modules.config import handler, get_key
+
+secret_key = get_key()
+
+User = mongoSet.dbAuth()
+
 APIVERSION = "/api/v1"
-
-conf = get_config.get_db_conf()
-secret_key = conf["secret_key"]
-
-
-def handler(status, data, **other):
-    d = {}
-    d["status"] = status
-    d["message"] = data
-    d["data"] = other
-    return d
 
 
 class Register(Resource):
@@ -40,13 +32,10 @@ class Register(Resource):
         if flag == secret_key:
             if username is None or password is None:
                 return handler(1, "Username or Password Invalid")
-            if User.query.filter_by(username=username).first() is not None:
+            if User.register(username, password):
+                return handler(0, "Dear " + username + " Welcome to API World!")
+            else:
                 return handler(1, "User already exists")
-            user = User(username=username)
-            user.hash_password(password)
-            db.session.add(user)
-            db.session.commit()
-            return handler(0, "Dear " + user.username + " Welcome to API World!")
         else:
             return handler(1, "Permission denied")
 
@@ -60,12 +49,9 @@ class Token(Resource):
         username = args["username"]
         password = args["password"]
         if username and password is not None:
-            user = User.query.filter_by(username=username).first()
-            if not user or not user.verify_password(password):
+            token = User.login(username, password)
+            if not token:
                 return handler(1, "username or password invalid")
-            token = user.generate_token(username, password)
-            token = token.decode("utf-8")
-            redis.redisSave(token, username, ex=604800)
         else:
             return handler(1, "username or password invalid")
         return handler(0, "Hello " + username, token=token)
@@ -73,7 +59,12 @@ class Token(Resource):
 
 class Logout(Resource):
     def post(self):
-        pass
+        parser = reqparse.RequestParser()
+        parser.add_argument('username')
+        args = parser.parse_args()
+        username = args["username"]
+        User.logout(username)
+        return handler(0, "GoodBye " + username)
 
 
 api.add_resource(Register, APIVERSION + '/auth/register')

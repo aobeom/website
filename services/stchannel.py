@@ -1,17 +1,25 @@
 # coding:utf-8
 # @author AoBeom
 # @create date 2018-09-09 22:13:40
-# @modify date 2018-09-09 22:13:40
+# @modify date 2018-12-30 16:15:54
 # @desc [description]
 import datetime
 import json
+import os
+import sys
 import time
-import urllib
 
 import requests
 
-import dlcore
-import redisMode
+from lib import dlcore
+
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+sys.path.append(rootPath)
+
+from modules import mongoSet
+
+db = mongoSet.dbSTchannel()
 
 
 class stMovies(object):
@@ -22,7 +30,6 @@ class stMovies(object):
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.1; E6533 Build/32.4.A.0.160)",
             "Content-Type": "application/json; charset=UTF-8"
         }
-        self.redis = redisMode.redisMode(crond=True)
 
     def __dformat(self, date):
         dateformat = datetime.datetime.strptime(
@@ -32,20 +39,15 @@ class stMovies(object):
         dformats = time.strftime("%Y-%m-%d %H:%M:%S", darray)
         return dformats
 
-    def stToken(self, delkey=False):
-        r = self.redis
-        token_redis = "st:token"
-        if delkey:
-            token = r.redisDel(token_redis)
-        else:
-            token = r.redisCheck(token_redis)
+    def stToken(self):
+        token = db.get_token()
         if token:
-            authToken = token
+            authToken = token["token"]
         else:
             userInfo = requests.post(
                 self.user_api, headers=self.headers, timeout=30).text
             authToken = json.loads(userInfo)["api_token"]
-            r.redisSave(token_redis, authToken)
+            db.refresh_token(authToken)
         return authToken
 
     def stMovieInfos(self):
@@ -62,7 +64,7 @@ class stMovies(object):
             self.movie_api, headers=userHeader, params=api_param, timeout=30)
         code = response.status_code
         while code != 200:
-            authToken = self.stToken(delkey=True)
+            authToken = self.stToken()
             userHeader["Authorization"] = "Bearer " + authToken
             response = requests.get(
                 self.movie_api, headers=userHeader, params=api_param, timeout=30)
@@ -76,7 +78,7 @@ class stMovies(object):
         for i in movies:
             st_new = {}
             st_title = i["title"].strip()
-            st_movie = urllib.unquote(i["movie_url_everyone"]).replace(
+            st_movie = requests.utils.unquote(i["movie_url_everyone"]).replace(
                 "ulizasekailab", "https").replace("videoquery=", "")
             st_thumbnail = i["thumbnail_path"]
             st_date = self.__dformat(i["publish_start_date"])
@@ -89,32 +91,31 @@ class stMovies(object):
 
 
 def main():
-    r = redisMode.redisMode(crond=True)
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    r.redisSave("st:utime", times)
+    mongoSet.updateTime("stchannel", times)
 
     st = stMovies()
     st_info = st.stMovieInfos()
     st_data = st.stGetUrl(st_info)
-    st_data_new = []
-    for d in st_data:
-        playlist = d["murl"]
-        t = d["date"]
-        media_path_redis = r.redisCheck("stv:" + playlist, subkey=True)
-        if media_path_redis:
-            print(t + " Already Exist!")
-            d["path"] = media_path_redis
-            st_data_new.append(d)
-            continue
-        else:
-            hls = dlcore.HLSVideo()
+
+    update_data = db.updateMovieList(st_data)
+    db.updateData(st_data)
+
+    hls = dlcore.HLSVideo()
+
+    update_num = len(update_data)
+
+    if update_num != 0:
+        print("Update [{}]".format(update_num))
+        for u in update_data:
+            playlist = u["murl"]
+            purl = u["purl"]
             keyvideo = hls.hlsInfo(playlist)
             media_path = hls.hlsDL(keyvideo)
-            r.redisSave("stv:" + playlist, media_path, ex=2592000, subkey=True)
-            d["path"] = media_path
-            st_data_new.append(d)
+            db.updateMoviePath(purl, media_path)
             time.sleep(3)
-    r.redisSave("stinfo", st_data_new)
+    else:
+        print("No Update")
     print("Update time: " + times)
 
 

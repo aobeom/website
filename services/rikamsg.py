@@ -1,33 +1,28 @@
 # @author AoBeom
 # @create date 2018-07-27 20:56:17
-# @modify date 2018-09-09 20:59:27
+# @modify date 2018-12-30 16:15:36
 # @desc [rika msg]
 import json
 import os
+import sys
 import time
 
 import requests
 
-import get_config
-import pymongo
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+sys.path.append(rootPath)
+
+from modules.config import get_rika_conf
+from modules import mongoSet
+
+db = mongoSet.dbRikaMsg()
 
 
 class rikaMsg(object):
     def __init__(self, crond=False):
-        dbconf = get_config.get_mongo_conf()
-        rikaconf = get_config.get_rika_conf()
-        # mongo config
-        if crond:
-            mongo_host = "{}:{}".format(dbconf["dbhost_crond"], dbconf["dbport"])
-        else:
-            mongo_host = "{}:{}".format(dbconf["dbhost"], dbconf["dbport"])
-        mongo_dbs = dbconf["dbname"]
-        mongo_coll = rikaconf["mongo_coll"]
-        client = pymongo.MongoClient(mongo_host)
-        dbs = client[mongo_dbs]
-        self.db_coll = dbs[mongo_coll]
-
         # rika auth
+        rikaconf = get_rika_conf()
         self.username = rikaconf["username"]
         self.token = rikaconf["token"]
         self.group = rikaconf["group"]
@@ -41,49 +36,6 @@ class rikaMsg(object):
         work_dir = os.path.abspath(
             os.path.join(os.path.dirname(__file__), ".."))
         self.save_path = os.path.join(work_dir, "media", self.folder)
-
-    def keya_pages_query(self, flag):
-        if flag == 100:
-            count = self.db_coll.count()
-        else:
-            count = self.db_coll.find({"type": flag}).count()
-        comp = count % 10
-        if comp != 0:
-            pages = count // 10 + 1
-        else:
-            pages = count // 10
-        return pages
-
-    def keya_allinfo_query(self, page):
-        page = int(page)
-        mongo_project = {'$project': {"_id": 0}}
-        mongo_sort = {'$sort': {"date": -1}}
-        mongo_limit = {'$limit': 10}
-        if page > 1:
-            skip = 10 * (page - 1)
-            mongo_skip = {'$skip': skip}
-            quers_res = self.db_coll.aggregate([mongo_project, mongo_sort, mongo_skip, mongo_limit])
-        else:
-            quers_res = self.db_coll.aggregate([mongo_project, mongo_sort, mongo_limit])
-        result = [q for q in quers_res]
-        return result
-
-    def keya_media_query(self, page, flag):
-        # flag 0 text, 1 img, 2 video, 3 audio
-        page = int(page)
-        flag = int(flag)
-        mongo_match = {'$match': {'type': flag}}
-        mongo_project = {'$project': {"_id": 0}}
-        mongo_sort = {'$sort': {"date": -1}}
-        mongo_limit = {'$limit': 10}
-        if page > 1:
-            skip = 10 * (page - 1)
-            mongo_skip = {'$skip': skip}
-            quers_res = self.db_coll.aggregate([mongo_match, mongo_project, mongo_sort, mongo_skip, mongo_limit])
-        else:
-            quers_res = self.db_coll.aggregate([mongo_match, mongo_project, mongo_sort, mongo_limit])
-        result = [q for q in quers_res]
-        return result
 
     def keya_history(self, fromdate=None, todate=None, count=10, sortorder=0):
         # date format "2018/01/01 00:00:00"
@@ -107,7 +59,7 @@ class rikaMsg(object):
         for d in data:
             keya_new_dict = {}
             keya_body = d["body"]
-            nodata = self.keya_check(keya_body["contents"])
+            nodata = db.checkInfo(keya_body["contents"])
             if nodata:
                 keya_new_dict["tid"] = keya_body["contents"]
                 keya_new_dict["text"] = keya_body["talk"]
@@ -154,7 +106,7 @@ class rikaMsg(object):
                 "media": ""
             }
             keya_word.append(insert_record)
-            self.db_coll.insert_one(insert_record)
+            db.update(insert_record)
         return keya_word
 
     def keya_allmsg(self, message, media_info):
@@ -180,7 +132,7 @@ class rikaMsg(object):
                         "text": msg["text"],
                         "media": msg["media"]
                     }
-            self.db_coll.insert_one(insert_record)
+            db.update(insert_record)
             keya_infos.append(msg)
         return keya_infos
 
@@ -211,12 +163,6 @@ class rikaMsg(object):
                 for chunk in r.iter_content(chunk_size=1024):
                     code.write(chunk)
         return media_info
-
-    def keya_check(self, tid):
-        query_record = {"tid": tid}
-        query = self.db_coll.find(query_record).count()
-        if query == 0:
-            return True
 
 
 def timeformat(timestamp):

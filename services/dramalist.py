@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-07-27 20:54:36
+# @modify date 2018-12-30 16:15:48
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
-import re
 import os
+import re
 import sys
 import time
 from multiprocessing.dummy import Pool
 
 import requests
 
-try:
-    from apps import redisMode
-except BaseException:
-    import redisMode
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+sys.path.append(rootPath)
 
-redis = redisMode.redisMode(crond=True)
+from modules import mongoSet
 
 
 class fixsub(object):
@@ -332,48 +331,17 @@ class subpig_rbl(object):
         return infos
 
 
-def main():
-    tvbt_key = "drama:tvbt"
-    t = tvbtsub()
-    tvbt_update_info = t.tvbtIndexInfo()
-    tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
-    times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    redis.redisSave("drama:utime", times)
-    redis.redisSave(tvbt_key, tvbt_urls)
-
-    subpig_key = "drama:subpig"
-    p = subpig_rbl()
-    index_subpig = p.subpigIndexInfo()
-    pool = Pool(10)
-    subpig_urls = pool.map(p.subpigGetUrl, index_subpig)
-    pool.close()
-    pool.join
-    redis.redisSave(subpig_key, subpig_urls)
-
-    pages = 1
-    fix_key = "drama:fixsub"
-    f = fixsub()
-    # pages = f.fixPageNum()
-    for page in range(1, pages + 1):
-        fix_page_info = f.fixPageInfo(page)
-        fix_single_page = f.fixSinglePageInfo(fix_page_info)
-        fix_dl_urls = f.fixInfoGet(fix_single_page)
-    redis.redisSave(fix_key, fix_dl_urls)
-
-
-def tvbt_process(name):
+def tvbt_process(name, db):
     print("Run {} [{}]...".format(name, os.getpid()))
-    tvbt_key = "drama:tvbt"
     t = tvbtsub()
     tvbt_update_info = t.tvbtIndexInfo()
     tvbt_urls = t.tvbtGetUrl(tvbt_update_info)
-    redis.redisSave(tvbt_key, tvbt_urls)
+    db.update(name, tvbt_urls)
     print("{} [{}] done".format(name, os.getpid()))
 
 
-def subpig_process(name):
+def subpig_process(name, db):
     print("Run {} [{}]...".format(name, os.getpid()))
-    subpig_key = "drama:subpig"
     p = subpig_rbl()
     subpig_update_info = p.subpigIndexInfo()
     if subpig_update_info:
@@ -381,39 +349,40 @@ def subpig_process(name):
         subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
         pool.close()
         pool.join
-        redis.redisSave(subpig_key, subpig_urls)
+        db.update(name, subpig_urls)
     else:
         print("No data")
     print("{} [{}] done".format(name, os.getpid()))
 
 
-def fixsub_process(name):
+def fixsub_process(name, db):
     print("Run {} [{}]...".format(name, os.getpid()))
     pages = 1
-    fix_key = "drama:fixsub"
     f = fixsub()
     # pages = f.fixPageNum()
     for page in range(1, pages + 1):
         fix_page_info = f.fixPageInfo(page)
         fix_single_page = f.fixSinglePageInfo(fix_page_info)
         fix_dl_urls = f.fixInfoGet(fix_single_page)
-    redis.redisSave(fix_key, fix_dl_urls)
+    db.update(name, fix_dl_urls)
     print("{} [{}] done".format(name, os.getpid()))
 
 
-def main2():
+def main():
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    redis.redisSave("drama:utime", times)
+    mongoSet.updateTime("drama", times)
 
-    pool = multiprocessing.Pool()
+    db = mongoSet.dbDrama()
+
+    pool = multiprocessing.Pool(processes=3)
     tasks = {
-        "TVBT": tvbt_process,
-        "FIXSUB": fixsub_process,
-        "SUBPIG": subpig_process
+        "tvbt": tvbt_process,
+        "fixsub": fixsub_process,
+        "subpig": subpig_process
     }
     print("Main process [{}] start".format(os.getpid()))
     for name, func in tasks.items():
-        pool.apply_async(func, args=(name, )).get(30)
+        pool.apply_async(func, args=(name, db,)).get(30)
     print("Waiting for all subprocesses done...")
     pool.close()
     pool.join()
@@ -421,4 +390,4 @@ def main2():
 
 
 if __name__ == "__main__":
-    main2()
+    main()

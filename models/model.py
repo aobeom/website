@@ -1,10 +1,12 @@
 import base64
 
+from passlib.hash import md5_crypt as hash_pwd
+
 # mysql
 from flask_login import UserMixin
-from apps import db
+from flask_sqlalchemy import SQLAlchemy
 
-from passlib.hash import md5_crypt as hash_pwd
+db = SQLAlchemy()
 
 
 # mysql

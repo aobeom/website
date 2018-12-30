@@ -5,6 +5,7 @@
 # @desc [HLS downloader]
 import binascii
 import os
+import sys
 import re
 import shutil
 import time
@@ -12,12 +13,22 @@ from multiprocessing.dummy import Pool
 
 import requests
 
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.dirname(os.path.split(curPath)[0])
+sys.path.append(rootPath)
+
+from modules.config import get_media_path_conf
+
 
 class HLSVideo(object):
     def __init__(self):
-        self.datename = time.strftime(
-            '%y%m%d%H%M%S', time.localtime(time.time()))
-        self.work_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+        self.datename = time.strftime('%y%m%d%H%M%S', time.localtime(time.time()))
+        # self.work_dir = os.path.dirname((os.path.dirname(os.path.abspath(__file__))))
+        self.media_path = get_media_path_conf()["media_path"]
+        if not os.path.exists(self.media_path):
+            print("{} No Found".format(self.media_path))
+            exit()
+        self.save_uri = os.path.join(self.media_path, self.datename + ".ts")
 
     def __requests(self, url, cookies=None, timeout=30):
         headers = {
@@ -41,7 +52,7 @@ class HLSVideo(object):
     def __isFolder(self, filename):
         try:
             filename = filename + "_" + self.datename
-            propath = os.path.join(self.work_dir, "media")
+            propath = os.path.join(self.media_path, "media")
             video_path = os.path.join(propath, filename)
             if not os.path.exists(video_path):
                 os.mkdir(video_path)
@@ -137,7 +148,7 @@ class HLSVideo(object):
 
         self.hlsDec(key_path, videos)
 
-        mediapath = os.path.join(self.work_dir, "media")
+        mediapath = os.path.join(self.media_path, "media")
         folder = os.path.join(mediapath, "decrypt_" + self.datename)
         video_name = os.path.join(folder, self.datename + ".ts")
         if os.path.exists(video_name):
@@ -154,8 +165,7 @@ class HLSVideo(object):
             shutil.rmtree(folder)
         else:
             self.__errorList("not_fount", self.datename)
-        save_uri = "/media/" + self.datename + ".ts"
-        return save_uri
+        return self.save_uri
 
     # 视频解密函数
     def hlsDec(self, keypath, videos):
@@ -165,6 +175,7 @@ class HLSVideo(object):
         ivs = range(1, len(videos) + 1)
         STkey = open(keypath, "rb").read()
         KEY = binascii.b2a_hex(STkey)
+        KEY = str(KEY, encoding="utf-8")
         videoin = self.__isFolder("encrypt")
         videoout = self.__isFolder("decrypt")
         new_videos = []
@@ -177,8 +188,7 @@ class HLSVideo(object):
             inputVS = os.path.join(videoin, inputV)
             outputVS = os.path.join(videoout, outputV)
             # 解密命令 核心命令
-            command = "openssl aes-128-cbc -d -in " + inputVS + \
-                " -out " + outputVS + " -nosalt -iv " + iv + " -K " + KEY
+            command = "openssl aes-128-cbc -d -in " + inputVS + " -out " + outputVS + " -nosalt -iv " + iv + " -K " + KEY
             os.system(command)
             new_videos.append(outputVS)
         self.hlsConcat(new_videos, outname)

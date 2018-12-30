@@ -5,21 +5,23 @@
 # @desc [py-redis简单封装]
 
 import hashlib
+import json
 
-import get_config
 import redis
+import os
+import sys
+work_dir = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.dirname(work_dir)
+sys.path.append(parent_path)
+from modules.config import get_redis_conf
 
 
 class redisMode(object):
-    def __init__(self, crond=False):
-        redisconf = get_config.get_redis_conf()
-        redis_crond_host = redisconf["redis_crond_host"]
+    def __init__(self):
+        redisconf = get_redis_conf()
         redis_host = redisconf["redis_host"]
         redis_port = redisconf["redis_port"]
-        if crond:
-            self.conn = redis.StrictRedis(host=redis_crond_host, port=redis_port, db=0)
-        else:
-            self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+        self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 
     def __status(self):
         try:
@@ -81,6 +83,7 @@ class redisMode(object):
             keyname = "{}:{}".format(main_key, sub_key)
         if md5value:
             keyname = self.__hashMd5(keyname)
+        value = json.dumps(value)
         self.conn.set(keyname, value, ex=ex)
 
     def redisCounter(self, keyname, ex=10):
