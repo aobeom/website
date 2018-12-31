@@ -74,7 +74,7 @@ class Media(Resource):
                         data = Medias.getData(siteurl)
                         if data:
                             imgurls = data["source"]
-                            return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls)
+                            return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls, cache="HIT")
                         else:
                             imgurls = p.picRouter(urldict)
                             if imgurls:
@@ -93,7 +93,7 @@ class Media(Resource):
                         data = Medias.getLiveData(hls_url)
                         if data:
                             m3u8_url = data["source"]
-                            return handler(0, "This is a {} playlist".format(site), type=target, entities=m3u8_url)
+                            return handler(0, "This is a {} playlist".format(site), type=target, entities=m3u8_url, cache="HIT")
                         else:
                             m3u8_url = sr.urlRouter(urltype)
                             if m3u8_url:
@@ -108,7 +108,7 @@ class Media(Resource):
                     data = Medias.getData(url)
                     if data:
                         tweet_vurl = data["source"]
-                        return handler(0, "This is a Twitter Video url", type=target, entities=tweet_vurl)
+                        return handler(0, "This is a Twitter Video url", type=target, entities=tweet_vurl, cache="HIT")
                     else:
                         site = "twitter.com"
                         tweet_vurl = tweetV.getVideoURL(url)
@@ -171,7 +171,7 @@ class Program(Resource):
                 if data:
                     tvdata = data["prog_info"]
                     tvurl = data["yahoo_url"]
-                    return handler(0, "Program information", ori_url=tvurl, entities=tvdata)
+                    return handler(0, "Program information", ori_url=tvurl, entities=tvdata, cache="HIT")
                 else:
                     y = jprogram.yahooTV()
                     tvinfo = y.tvInfos(keyword, ac)
