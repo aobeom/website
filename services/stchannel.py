@@ -101,13 +101,12 @@ def main():
     update_data = db.updateMovieList(st_data)
     db.updateData(st_data)
 
-    hls = dlcore.HLSVideo()
-
     update_num = len(update_data)
 
     if update_num != 0:
         print("Update [{}]".format(update_num))
         for u in update_data:
+            hls = dlcore.HLSVideo()
             playlist = u["murl"]
             purl = u["purl"]
             keyvideo = hls.hlsInfo(playlist)
