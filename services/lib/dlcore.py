@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # @author AoBeom
 # @create date 2017-12-25 04:49:59
-# @modify date 2018-01-29 23:22:22
+# @modify date 2018-12-31 10:57:44
 # @desc [HLS downloader]
 import binascii
 import os
@@ -23,7 +23,6 @@ from modules.config import get_media_path_conf
 class HLSVideo(object):
     def __init__(self):
         self.datename = time.strftime('%y%m%d%H%M%S', time.localtime(time.time()))
-        # self.work_dir = os.path.dirname((os.path.dirname(os.path.abspath(__file__))))
         self.media_path = get_media_path_conf()["media_path"]
         if not os.path.exists(self.media_path):
             print("{} No Found".format(self.media_path))
@@ -52,8 +51,7 @@ class HLSVideo(object):
     def __isFolder(self, filename):
         try:
             filename = filename + "_" + self.datename
-            propath = os.path.join(self.media_path, "media")
-            video_path = os.path.join(propath, filename)
+            video_path = os.path.join(self.media_path, filename)
             if not os.path.exists(video_path):
                 os.mkdir(video_path)
                 return video_path
@@ -148,7 +146,7 @@ class HLSVideo(object):
 
         self.hlsDec(key_path, videos)
 
-        mediapath = os.path.join(self.media_path, "media")
+        mediapath = self.media_path
         folder = os.path.join(mediapath, "decrypt_" + self.datename)
         video_name = os.path.join(folder, self.datename + ".ts")
         if os.path.exists(video_name):
