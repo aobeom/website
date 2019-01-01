@@ -126,6 +126,7 @@ class fixsub(object):
         return url_infos
 
     def fixInfoGet(self, urls):
+        # print("FIXSUB Update [{}]".format(str(len(urls))))
         fix_info = []
         fixsub_infos = urls
         # baidu,magnet,ed2k,_blank
@@ -138,6 +139,7 @@ class fixsub(object):
         b_rule = re.compile(
             r'<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>')
         for title, url in fixsub_infos.items():
+            # print("FIXSUB Get [{}] Urls".format(title))
             fix_dict = {}
             info_list = []
             response = self.__request(url)
@@ -216,6 +218,7 @@ class tvbtsub(object):
         return tvbt_updates
 
     def tvbtGetUrl(self, updateinfo):
+        # print("TVBT Update [{}]".format(str(len(updateinfo))))
         tvbt_updates = updateinfo
         tvbt_infos = []
         for updates in tvbt_updates:
@@ -235,6 +238,7 @@ class tvbtsub(object):
             tvbt_dict["date"] = tvbt_uptime
             tvbt_dict["url"] = tvbt_url
             tvbt_dict["title"] = tvbt_title
+            # print("TVBT Get [{}] Urls".format(tvbt_title))
             response = self.__request(tvbt_url)
             tvbt_single_index = response.text.encode(
                 "ISO-8859-1").decode("utf-8")
@@ -310,9 +314,11 @@ class subpig_rbl(object):
                 subpig_info_dict["date"] = subpig_utime
                 subpig_info_dict["title"] = subpig_title[1]
                 subpig_index_info.append(subpig_info_dict)
+        # print("SUBPIG Update [{}]".format(str(len(subpig_index_info))))
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
+        # print("SUBPIG Get [{}] Urls".format(infos["title"]))
         subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?提取码.*?([0-9a-zA-Z]+).*?</p>'
         murl = infos["url"]
         response = self.__request(murl)
@@ -348,7 +354,7 @@ def subpig_process(name, db):
         pool = Pool(4)
         subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
         pool.close()
-        pool.join
+        pool.join()
         db.update(name, subpig_urls)
     else:
         print("No data")
@@ -382,7 +388,7 @@ def main():
     }
     print("Main process [{}] start".format(os.getpid()))
     for name, func in tasks.items():
-        pool.apply_async(func, args=(name, db,)).get(30)
+        pool.apply_async(func, args=(name, db,))
     print("Waiting for all subprocesses done...")
     pool.close()
     pool.join()
