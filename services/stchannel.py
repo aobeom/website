@@ -6,6 +6,7 @@
 import datetime
 import json
 import time
+import operator
 
 import requests
 
@@ -90,6 +91,7 @@ def main():
     st = stMovies()
     st_info = st.stMovieInfos()
     st_data = st.stGetUrl(st_info)
+    st_data = sorted(st_data, key=operator.itemgetter('date'), reverse=True)
 
     update_data = db.updateMovieList(st_data)
     db.updateData(st_data)

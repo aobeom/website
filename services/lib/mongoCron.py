@@ -100,7 +100,7 @@ class dbSTchannel(object):
         self.col_token.update(query, para, upsert)
 
     def updateMovieList(self, new_data):
-        old_data = self.col_info.find({}, projection={'_id': False}).sort("_id", DESCENDING).limit(15)
+        old_data = self.col_info.find({}, projection={'_id': False}).sort("date", DESCENDING).limit(15)
         diff_data = set.difference(*[{d['murl'] for d in diff} for diff in [new_data, old_data]])
         update_data = [d for d in new_data if d['murl'] in diff_data]
         return update_data
