@@ -9,7 +9,7 @@ from flask import request, g
 from flask_restful import reqparse, Resource
 
 from modules import jprogram, picdown, srurl, tweetV, redisMode
-from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbCrond, dbProgram, dbSTchannel, dbRikaMsg
+from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbProgram, dbSTchannel, dbRikaMsg, updateTimeGet
 from modules.config import handler
 from apps import authen, api
 
@@ -21,7 +21,6 @@ from apps import authen, api
 
 APIVERSION = "/api/v1"
 redis = redisMode.redisMode()
-Crond = dbCrond()
 Users = dbAuth()
 Medias = dbMedia()
 Dramas = dbDrama()
@@ -142,7 +141,7 @@ class Drama(Resource):
 
 class DramaTime(Resource):
     def get(self):
-        utime = Crond.getData("drama")["time"]
+        utime = updateTimeGet("drama")["time"]
         if utime:
             utime_timestamp = int(time.mktime(
                 time.strptime(utime, '%Y-%m-%d %H:%M:%S')))
@@ -195,7 +194,7 @@ class Stchannel(Resource):
         if limitinfo:
             data = STchan.top15()
             if data:
-                stutime = Crond.getData("stchannel")["time"]
+                stutime = updateTimeGet("stchannel")["time"]
                 stinfo = list(data)
                 return handler(0, "STchannel video listing", time=stutime, entities=stinfo)
             else:

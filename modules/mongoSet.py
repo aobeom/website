@@ -29,21 +29,13 @@ db_program_info = "program_info"
 db_rika_info = "rikaMsg"
 
 
-def updateTime(type_, time_):
+def updateTimeGet(type_):
     mongo.mongoCol(db_updatetime)
-    query = {"type": type_}
-    para = {'$set': {"time": time_}}
-    mongo.mongoUpdate(query, para, True)
-
-
-class dbCrond(object):
-    def getData(self, type_):
-        mongo.mongoCol(db_updatetime)
-        query = {
-            "type": type_
-        }
-        data = mongo.mongoFindOne(query)
-        return data
+    query = {
+        "type": type_
+    }
+    data = mongo.mongoFindOne(query)
+    return data
 
 
 class dbAuth(object):
@@ -208,29 +200,6 @@ class dbDrama(object):
             season = "autumn"
         return year, season
 
-    def update(self, website, data):
-        mongo.mongoCol(db_drama_info)
-        for d in data:
-            title = d["title"]
-            url = d["url"]
-            dlurls = d["dlurls"]
-            if d.get("date"):
-                date = d["date"]
-            else:
-                date = "0000"
-            year = self.quarter[0]
-            season = self.quarter[1]
-            query = {
-                "type": website,
-                "url": url,
-                "year": year,
-                "season": season,
-                "url": url,
-            }
-            para = {'$set': {"title": title, "date": date, "dlurls": dlurls}}
-            upsert = True
-            mongo.mongoUpdate(query, para, upsert)
-
     def getData(self, website):
         mongo.mongoCol(db_drama_info)
         query = {
@@ -278,55 +247,10 @@ class dbProgram(object):
 
 
 class dbSTchannel(object):
-    def __init__(self):
-        pass
-
-    def get_token(self):
-        mongo.mongoCol(db_stchannel_token)
-        query = {}
-        result = mongo.mongoFindOne(query)
-        return result
-
-    def refresh_token(self, token):
-        mongo.mongoCol(db_stchannel_token)
-        query = {"token": token}
-        para = {'$set': {"token": token}}
-        upsert = True
-        mongo.mongoUpdate(query, para, upsert)
-
     def top15(self):
         mongo.mongoCol(db_stchannel_info)
         result = mongo.mongoFindLimit(15, sort=True, field="date", desc=True)
         return result
-
-    def updateMovieList(self, new_data):
-        mongo.mongoCol(db_stchannel_info)
-        old_data = mongo.mongoFindLimit(15)
-        diff_data = set.difference(*[{d['murl'] for d in diff} for diff in [new_data, old_data]])
-        update_data = [d for d in new_data if d['murl'] in diff_data]
-        return update_data
-
-    def updateData(self, data):
-        mongo.mongoCol(db_stchannel_info)
-        for d in data:
-            title = d["title"]
-            date = d["date"]
-            murl = d["murl"]
-            purl = d["purl"]
-            query = {
-                "purl": purl,
-            }
-            para = {'$set': {"title": title, "date": date, "murl": murl}}
-            upsert = True
-            mongo.mongoUpdate(query, para, upsert)
-
-    def updateMoviePath(self, purl, path):
-        mongo.mongoCol(db_stchannel_info)
-        query = {
-            "purl": purl,
-        }
-        para = {'$set': {"path": path}}
-        mongo.mongoUpdate(query, para)
 
 
 class dbRikaMsg(object):
@@ -383,16 +307,3 @@ class dbRikaMsg(object):
             result = mongo.mongoAggregate(agr)
         result = list(result)
         return result
-
-    def checkInfo(self, tid):
-        mongo.mongoCol(db_rika_info)
-        query = {
-            "tid": tid
-        }
-        query = mongo.mongoCount(query)
-        if query == 0:
-            return True
-
-    def update(self, query):
-        mongo.mongoCol(db_rika_info)
-        mongo.mongoInsert(query)

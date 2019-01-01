@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2019-01-01 10:34:35
+# @modify date 2019-01-01 18:04:07
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -10,14 +10,9 @@ import re
 import sys
 import time
 from multiprocessing.dummy import Pool
+from lib import mongoCron
 
 import requests
-
-curPath = os.path.abspath(os.path.dirname(__file__))
-rootPath = os.path.split(curPath)[0]
-sys.path.append(rootPath)
-
-from modules import mongoSet
 
 
 class fixsub(object):
@@ -139,10 +134,10 @@ class fixsub(object):
         b_rule = re.compile(
             r'<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>')
         for title, url in fixsub_infos.items():
-            # print("FIXSUB Get [{}] Urls".format(title))
             fix_dict = {}
             info_list = []
             response = self.__request(url)
+            # print("FIXSUB Get [{}] Urls".format(title))
             fixsub_single = response.text
             b_m_e_url = b_m_e_rule.findall(fixsub_single)
             info_list.append(title)
@@ -238,8 +233,8 @@ class tvbtsub(object):
             tvbt_dict["date"] = tvbt_uptime
             tvbt_dict["url"] = tvbt_url
             tvbt_dict["title"] = tvbt_title
-            # print("TVBT Get [{}] Urls".format(tvbt_title))
             response = self.__request(tvbt_url)
+            # print("TVBT Get [{}] Urls".format(tvbt_title))
             tvbt_single_index = response.text.encode(
                 "ISO-8859-1").decode("utf-8")
             tvbt_single_info1 = re.findall(tvbt_dl_rule1, tvbt_single_index, re.S | re.M)
@@ -318,12 +313,13 @@ class subpig_rbl(object):
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
-        # print("SUBPIG Get [{}] Urls".format(infos["title"]))
+        time.sleep(2)
         subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?提取码.*?([0-9a-zA-Z]+).*?</p>'
         murl = infos["url"]
         response = self.__request(murl)
         subpig_main = response.text
         subpig_durls = re.findall(subpig_drule, subpig_main, re.S | re.M)
+        # print("SUBPIG Get [{}] Urls".format(infos["title"]))
         if not subpig_durls:
             subpig_drule = r'>.*?(http[s]?://pan.baidu.com.*?).*?([0-9a-zA-Z]+).*?<'
             subpig_durls = re.findall(subpig_drule, subpig_main, re.S | re.M)
@@ -337,7 +333,9 @@ class subpig_rbl(object):
         return infos
 
 
-def tvbt_process(name, db):
+def tvbt_process(name):
+    db_client = mongoCron.dbCreator()
+    db = mongoCron.dbDrama(db_client)
     print("Run {} [{}]...".format(name, os.getpid()))
     t = tvbtsub()
     tvbt_update_info = t.tvbtIndexInfo()
@@ -346,7 +344,9 @@ def tvbt_process(name, db):
     print("{} [{}] done".format(name, os.getpid()))
 
 
-def subpig_process(name, db):
+def subpig_process(name):
+    db_client = mongoCron.dbCreator()
+    db = mongoCron.dbDrama(db_client)
     print("Run {} [{}]...".format(name, os.getpid()))
     p = subpig_rbl()
     subpig_update_info = p.subpigIndexInfo()
@@ -361,7 +361,9 @@ def subpig_process(name, db):
     print("{} [{}] done".format(name, os.getpid()))
 
 
-def fixsub_process(name, db):
+def fixsub_process(name):
+    db_client = mongoCron.dbCreator()
+    db = mongoCron.dbDrama(db_client)
     print("Run {} [{}]...".format(name, os.getpid()))
     pages = 1
     f = fixsub()
@@ -376,9 +378,9 @@ def fixsub_process(name, db):
 
 def main():
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    mongoSet.updateTime("drama", times)
 
-    db = mongoSet.dbDrama()
+    db_client = mongoCron.dbCreator()
+    mongoCron.updateTime(db_client, "drama", times)
 
     pool = multiprocessing.Pool(processes=3)
     tasks = {
@@ -388,7 +390,7 @@ def main():
     }
     print("Main process [{}] start".format(os.getpid()))
     for name, func in tasks.items():
-        pool.apply_async(func, args=(name, db,))
+        pool.apply_async(func, args=(name,))
     print("Waiting for all subprocesses done...")
     pool.close()
     pool.join()

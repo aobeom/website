@@ -1,11 +1,12 @@
 # @author AoBeom
 # @create date 2018-07-27 20:56:17
-# @modify date 2018-12-30 16:15:36
+# @modify date 2019-01-01 18:04:02
 # @desc [rika msg]
 import json
 import os
 import sys
 import time
+from lib import mongoCron
 
 import requests
 
@@ -14,9 +15,10 @@ rootPath = os.path.split(curPath)[0]
 sys.path.append(rootPath)
 
 from modules.config import get_rika_conf
-from modules import mongoSet
 
-db = mongoSet.dbRikaMsg()
+
+db_client = mongoCron.dbCreator()
+db = mongoCron.dbRikaMsg(db_client)
 
 
 class rikaMsg(object):

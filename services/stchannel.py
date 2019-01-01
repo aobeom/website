@@ -1,25 +1,18 @@
 # coding:utf-8
 # @author AoBeom
 # @create date 2018-09-09 22:13:40
-# @modify date 2018-12-31 10:57:38
+# @modify date 2019-01-01 18:03:53
 # @desc [description]
 import datetime
 import json
-import os
-import sys
 import time
 
 import requests
 
-from lib import dlcore
+from lib import dlcore, mongoCron
 
-curPath = os.path.abspath(os.path.dirname(__file__))
-rootPath = os.path.split(curPath)[0]
-sys.path.append(rootPath)
-
-from modules import mongoSet
-
-db = mongoSet.dbSTchannel()
+db_client = mongoCron.dbCreator()
+db = mongoCron.dbSTchannel(db_client)
 
 
 class stMovies(object):
@@ -92,7 +85,7 @@ class stMovies(object):
 
 def main():
     times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    mongoSet.updateTime("stchannel", times)
+    mongoCron.updateTime(db_client, "stchannel", times)
 
     st = stMovies()
     st_info = st.stMovieInfos()
