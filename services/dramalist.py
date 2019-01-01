@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author AoBeom
 # @create date 2017-12-22 09:45:54
-# @modify date 2018-12-30 16:15:48
+# @modify date 2019-01-01 10:34:35
 # @desc [字幕组更新信息]
 import json
 import multiprocessing
@@ -313,7 +313,7 @@ class subpig_rbl(object):
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
-        subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?([0-9a-zA-Z]+).*?</p>'
+        subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?提取码.*?([0-9a-zA-Z]+).*?</p>'
         murl = infos["url"]
         response = self.__request(murl)
         subpig_main = response.text

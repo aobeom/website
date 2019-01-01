@@ -1,6 +1,6 @@
 # @author AoBeom
 # @create date 2018-12-30 18:38:17
-# @modify date 2018-12-30 18:38:17
+# @modify date 2019-01-01 10:34:29
 # @desc [mongo]
 import os
 import sys
@@ -18,6 +18,7 @@ from modules.mongoMode import mongoMode
 mongo = mongoMode()
 
 db_users = "users"
+db_user_token = "user_token"
 db_updatetime = "crond_time"
 db_media_info = "media_info"
 db_live_info = "live_info"
@@ -47,6 +48,7 @@ class dbCrond(object):
 
 class dbAuth(object):
     def __init__(self):
+        self.__setLiveTTL(604800)
         self.password = None
 
     def register(self, username, password):
@@ -69,12 +71,16 @@ class dbAuth(object):
         hash_pwd = mongo.mongoFindOne(query)["password"]
         pwd_check = self.__verify_password(password, hash_pwd)
         if pwd_check:
-            token = self.__generate_token(username, password)
+            mongo.mongoCol(db_user_token)
             query = {
                 "username": username,
             }
-            para = {'$set': {"token": token}}
-            mongo.mongoUpdate(query, para)
+            db_token = mongo.mongoFindOne(query)
+            if db_token:
+                token = db_token["token"]
+            else:
+                token = self.__generate_token(username, password)
+                self.__updateToken(username, token)
             return token
         else:
             return False
@@ -89,7 +95,7 @@ class dbAuth(object):
         return True
 
     def checkToken(self, token):
-        mongo.mongoCol(db_users)
+        mongo.mongoCol(db_user_token)
         query = {
             "token": token,
         }
@@ -99,6 +105,21 @@ class dbAuth(object):
             return username
         else:
             return False
+
+    def __updateToken(self, username, token):
+        mongo.mongoCol(db_user_token)
+        query = {
+            "username": username,
+        }
+        para = {'$set': {"token": token, "created_at": datetime.datetime.utcnow()}}
+        upsert = True
+        mongo.mongoUpdate(query, para, upsert)
+
+    def __setLiveTTL(self, expire):
+        mongo.mongoCol(db_user_token)
+        index_check = mongo.mongoIndexInfo()
+        if not index_check.get("created_at_1"):
+            mongo.mongoIndex("created_at", expire)
 
     def __hash_password(self, pwd):
         password = md5_crypt.hash(pwd)
