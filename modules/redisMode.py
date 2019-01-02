@@ -21,6 +21,10 @@ class redisMode(object):
         redisconf = get_redis_conf()
         redis_host = redisconf["redis_host"]
         redis_port = redisconf["redis_port"]
+        if redis_host == "":
+            redis_host = "127.0.0.1"
+        if redis_port == "":
+            redis_port = "6379"
         self.conn = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 
     def __status(self):
