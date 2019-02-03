@@ -230,7 +230,7 @@ class picdown(object):
 
     # 检查输入url有效性
     def urlCheck(self, url):
-        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/.*)')
+        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/.*|.*hustlepress\.co\.jp)')
         if host_rule.match(url):
             http_code = self.__urlInvalid(url)
             if http_code == 200:
@@ -316,6 +316,13 @@ class picdown(object):
                 pics = i.instaPicUrl(url)
             elif "tokyopopline" in site:
                 img_i_rule = '//figure[@class="gallery-item"]/div/a'
+                rule = {
+                    "mode": "direct",
+                    "i_rule": img_i_rule
+                }
+                pics = self.picRules(url, **rule)
+            elif "hustlepress" in site:
+                img_i_rule = '//div[@class="post_content entry-content"]/div/a'
                 rule = {
                     "mode": "direct",
                     "i_rule": img_i_rule
