@@ -5,7 +5,7 @@ from flask_pymongo import PyMongo
 from flask_httpauth import HTTPTokenAuth
 from flask_restful import Api
 
-from flask_cors import CORS
+# from flask_cors import CORS
 
 
 conf = get_mongo_conf()
@@ -39,4 +39,4 @@ authen = HTTPTokenAuth(scheme='Bearer')
 api = Api(app, catch_all_404s=True)
 mongo = PyMongo(app, connect=False)
 
-CORS(app, supports_credentials=True)
+# CORS(app, supports_credentials=True)

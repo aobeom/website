@@ -70,15 +70,28 @@ class Media(Resource):
                     if urldict:
                         sitename = urldict["type"]
                         siteurl = urldict["data"]
+                        siteurl_check = siteurl.split("?")
+                        siteurl = siteurl_check[0]
+                        if len(siteurl_check) == 2:
+                            if siteurl_check[1] == "update":
+                                updateFlag = True
+                            else:
+                                updateFlag = False
+                        else:
+                            updateFlag = False
                         data = Medias.getData(siteurl)
-                        if data:
+                        if data and updateFlag is False:
                             imgurls = data["source"]
                             return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls, cache="HIT")
-                        else:
+                        elif updateFlag is True or data is None:
+                            if updateFlag:
+                                cache = "UPDATE"
+                            else:
+                                cache = "MISS"
                             imgurls = p.picRouter(urldict)
                             if imgurls:
                                 Medias.update(target, sitename, siteurl, imgurls)
-                                return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls)
+                                return handler(0, "The news has a total of {} pictures".format(len(imgurls)), type=target, entities=imgurls, cache=cache)
                             else:
                                 return handler(1, "This news has no pictures")
                     else:

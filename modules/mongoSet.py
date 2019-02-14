@@ -131,7 +131,7 @@ class dbMedia(object):
     def __init__(self):
         pass
 
-    def update(self, type_, website, url, source):
+    def insert(self, type_, website, url, source):
         mongo.mongoCol(db_media_info)
         query = {
             "type": type_,
@@ -140,6 +140,15 @@ class dbMedia(object):
             "source": source
         }
         mongo.mongoInsert(query)
+
+    def update(self, type_, website, url, source):
+        mongo.mongoCol(db_media_info)
+        query = {
+            "url": url,
+        }
+        para = {'$set': {"type": type_, "website": website, "source": source}}
+        upsert = True
+        mongo.mongoUpdate(query, para, upsert)
 
     def getData(self, url):
         mongo.mongoCol(db_media_info)
