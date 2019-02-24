@@ -23,6 +23,8 @@ class yahooTV(object):
             "q": keyword,
             "Submit.x": 0,
             "Submit.y": 0,
+            "oa": 1,
+            "t": 1,
             "a": code
         }
         response = requests.get(apihost, headers=self.headers, params=params)
