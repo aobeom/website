@@ -135,9 +135,9 @@ class dbRikaMsg(object):
         query = {
             "tid": tid
         }
-        query = self.mongo.mongoCount(query)
+        query = self.mongo.find(query).count()
         if query == 0:
             return True
 
     def update(self, query):
-        self.mongo.mongoInsert(query)
+        self.mongo.insert_one(query)
