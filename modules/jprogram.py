@@ -15,19 +15,19 @@ class yahooTV(object):
         self.host = "https://tv.yahoo.co.jp"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded"
         }
 
     def tvInfos(self, keyword, code=23):
-        apihost = self.host + "/search/?"
+        apihost = self.host + "/search/category/"
         params = {
             "q": keyword,
-            "Submit.x": 0,
-            "Submit.y": 0,
+            "a": code,
             "oa": 1,
-            "t": 1,
-            "a": code
+            "tv": 1,
+            "bsd": 1
         }
-        response = requests.get(apihost, headers=self.headers, params=params)
+        response = requests.post(apihost, headers=self.headers, data=params)
         tv_index = response.text
         tv_url = response.url
         date_time = self.__tvLeftInfo(tv_index)
