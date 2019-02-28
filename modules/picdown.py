@@ -328,6 +328,7 @@ class picdown(object):
                     "i_rule": img_i_rule
                 }
                 pics = self.picRules(url, **rule)
+            pics = [p for p in pics if p]
             return pics
         else:
             return None
