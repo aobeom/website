@@ -1,6 +1,6 @@
 # @author AoBeom
 # @create date 2018-12-30 18:38:09
-# @modify date 2018-12-30 18:38:09
+# @modify date 2019-03-10 11:23:04
 # @desc [mongo]
 from apps import mongo
 from flask_pymongo import DESCENDING, ASCENDING
@@ -13,8 +13,15 @@ class mongoMode(object):
     def mongoCol(self, collection):
         self.col = getattr(mongo.db, collection)
 
-    def mongoFind(self, query={}, projection={'_id': False}):
-        result = self.col.find(query, projection=projection)
+    def mongoFind(self, query={}, sort=False, field="_id", desc=False, projection={'_id': False}):
+        if sort:
+            if desc:
+                order = DESCENDING
+            else:
+                order = ASCENDING
+            result = self.col.find(query, projection=projection).sort(field, order)
+        else:
+            result = self.col.find(query, projection=projection)
         return result
 
     def mongoFindOne(self, query={}, projection={'_id': False}):

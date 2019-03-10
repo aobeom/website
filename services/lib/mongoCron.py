@@ -43,6 +43,13 @@ class dbDrama(object):
         self.quarter = self.__quarter_gen()
         self.mongo = col
 
+    def __unifyTime(website, date):
+        if website == "tvbt":
+            struct_time = time.strptime(date, "%m%d")
+        elif website == "subpig":
+            struct_time = time.strptime(date, "%m/%d")
+        return time.strftime("%m%d", struct_time)
+
     def __quarter_gen(self):
         year_month = time.strftime('%Y-%m', time.localtime(time.time()))
         year = year_month.split("-")[0]
@@ -64,9 +71,9 @@ class dbDrama(object):
             url = d["url"]
             dlurls = d["dlurls"]
             if d.get("date"):
-                date = d["date"]
+                date = self.__unifyTime(website, d["date"])
             else:
-                date = "0000"
+                date = "-"
             year = self.quarter[0]
             season = self.quarter[1]
             query = {

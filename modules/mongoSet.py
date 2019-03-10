@@ -1,6 +1,6 @@
 # @author AoBeom
 # @create date 2018-12-30 18:38:17
-# @modify date 2019-01-01 10:34:29
+# @modify date 2019-03-10 11:23:20
 # @desc [mongo]
 import os
 import sys
@@ -192,31 +192,37 @@ class dbMedia(object):
 
 class dbDrama(object):
     def __init__(self):
-        self.quarter = self.__quarter_gen()
+        self.data_range = self.__quarter_gen()
 
     def __quarter_gen(self):
         year_month = time.strftime('%Y-%m', time.localtime(time.time()))
-        year = year_month.split("-")[0]
         month = year_month.split("-")[-1]
-        season = ""
         if month in ["01", "02", "03"]:
-            season = "winter"
+            start = "0100"
+            end = "0332"
         elif month in ["04", "05", "06"]:
-            season = "spring"
+            start = "0400"
+            end = "0631"
         elif month in ["07", "08", "09"]:
-            season = "summer"
+            start = "0700"
+            end = "0931"
         elif month in ["10", "11", "12"]:
-            season = "autumn"
-        return year, season
+            start = "1000"
+            end = "1232"
+        return start, end
 
     def getData(self, website):
         mongo.mongoCol(db_drama_info)
+        start = self.data_range[0]
+        end = self.data_range[1]
         query = {
             "type": website,
-            "year": self.quarter[0],
-            "season": self.quarter[1]
         }
-        data = mongo.mongoFind(query)
+        if website == "fixsub":
+            data = mongo.mongoFind(query, sort=True, desc=True)
+        else:
+            query["date"] = {"$lt": end, "$gt": start}
+            data = mongo.mongoFind(query, field="date", sort=True, desc=True)
         data = list(data)
         if len(data) != 0:
             return data
