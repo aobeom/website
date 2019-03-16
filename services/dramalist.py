@@ -313,7 +313,6 @@ class subpig_rbl(object):
         return subpig_index_info
 
     def subpigGetUrl(self, infos):
-        time.sleep(2)
         subpig_drule = r'<p>.*?<a href="(http[s]?://pan.baidu.com.*?)".*?>.*?</a>.*?提取码.*?([0-9a-zA-Z]+).*?</p>'
         murl = infos["url"]
         response = self.__request(murl)
@@ -351,7 +350,7 @@ def subpig_process(name):
     p = subpig_rbl()
     subpig_update_info = p.subpigIndexInfo()
     if subpig_update_info:
-        pool = Pool(4)
+        pool = Pool(1)
         subpig_urls = pool.map(p.subpigGetUrl, subpig_update_info)
         pool.close()
         pool.join()
