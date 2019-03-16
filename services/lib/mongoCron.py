@@ -43,11 +43,13 @@ class dbDrama(object):
         self.quarter = self.__quarter_gen()
         self.mongo = col
 
-    def __unifyTime(website, date):
+    def __unifyTime(self, website, date):
         if website == "tvbt":
             struct_time = time.strptime(date, "%m%d")
         elif website == "subpig":
             struct_time = time.strptime(date, "%m/%d")
+        else:
+            struct_time = "-"
         return time.strftime("%m%d", struct_time)
 
     def __quarter_gen(self):
