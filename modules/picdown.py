@@ -207,7 +207,11 @@ class picdown(object):
             "natalie.mu": "https://natalie.mu",
             "mantan-web.jp": "https://mantan-web.jp",
             "thetv.jp": "https://thetv.jp",
-            "tokyopopline.com": "https://tokyopopline.com"
+            "tokyopopline.com": "https://tokyopopline.com",
+            "instagram.com": "https://www.instagram.com",
+            "hustlepress.co.jp": "https://hustlepress.co.jp",
+            "lineblog.me": "https://lineblog.me/",
+            "ameblo": "https://ameblo.jp/"
         }
         self.picExtra = picExtra()
 
@@ -230,7 +234,7 @@ class picdown(object):
 
     # 检查输入url有效性
     def urlCheck(self, url):
-        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/.*|.*hustlepress\.co\.jp)')
+        host_rule = re.compile(r'https?://(.*mdpr\.jp/.*|.*oricon\.co\.jp|.*ameblo\.jp/.*/entry-.*|.*46.com|.*natalie\.mu|.*mantan-web\.jp|.*thetv.jp|.*tokyopopline\.com|.*instagram.com/.*|.*hustlepress\.co\.jp|.*lineblog\.me)')
         if host_rule.match(url):
             http_code = self.__urlInvalid(url)
             if http_code == 200:
@@ -328,6 +332,17 @@ class picdown(object):
                     "i_rule": img_i_rule
                 }
                 pics = self.picRules(url, **rule)
+            elif "lineblog" in site:
+                static_pic = 'https://scdn.line-apps.com/n/line_add_friends/btn/ja.png'
+                img_a_rule = '//div[@class="article-body-inner"]//*/img'
+                rule = {
+                    "mode": "direct",
+                    "i_rule": img_a_rule
+                }
+                pics = self.picRules(url, **rule)
+                if static_pic in pics:
+                    pics.remove(static_pic)
+                pics = [i.replace("/small", "") for i in pics]
             pics = [p for p in pics if p]
             if pics:
                 return pics
