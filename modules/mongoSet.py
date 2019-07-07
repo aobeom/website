@@ -128,9 +128,6 @@ class dbAuth(object):
 
 
 class dbMedia(object):
-    def __init__(self):
-        pass
-
     def insert(self, type_, website, url, source):
         mongo.mongoCol(db_media_info)
         query = {
@@ -191,9 +188,6 @@ class dbMedia(object):
 
 
 class dbDrama(object):
-    def __init__(self):
-        self.data_range = self.__quarter_gen()
-
     def __quarter_gen(self):
         year_month = time.strftime('%Y-%m', time.localtime(time.time()))
         month = year_month.split("-")[-1]
@@ -213,8 +207,9 @@ class dbDrama(object):
 
     def getData(self, website):
         mongo.mongoCol(db_drama_info)
-        start = self.data_range[0]
-        end = self.data_range[1]
+        today = self.__quarter_gen()
+        start = today[0]
+        end = today[1]
         query = {
             "type": website,
         }
