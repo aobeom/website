@@ -194,30 +194,36 @@ class dbDrama(object):
         if month in ["01", "02", "03"]:
             start = "0100"
             end = "0332"
+            season = "winter"
         elif month in ["04", "05", "06"]:
             start = "0400"
             end = "0631"
+            season = "spring"
         elif month in ["07", "08", "09"]:
             start = "0700"
             end = "0931"
+            season = "summer"
         elif month in ["10", "11", "12"]:
             start = "1000"
             end = "1232"
-        return start, end
+            season = "autumn"
+        return start, end, season
 
     def getData(self, website):
         mongo.mongoCol(db_drama_info)
         today = self.__quarter_gen()
         start = today[0]
         end = today[1]
+        season = today[2]
         query = {
             "type": website,
         }
         if website == "fixsub":
+            query["season"] = season
             data = mongo.mongoFind(query, sort=True, desc=True)
         else:
             query["date"] = {"$lt": end, "$gt": start}
-            data = mongo.mongoFind(query, field="date", sort=True, desc=True)
+        data = mongo.mongoFind(query, field="date", sort=True, desc=True)
         data = list(data)
         if len(data) != 0:
             return data
