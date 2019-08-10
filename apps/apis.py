@@ -13,11 +13,6 @@ from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbProgram, dbSTchannel, d
 from modules.config import handler
 from apps import authen, api
 
-# UploadFile API
-# import os
-# from werkzeug import secure_filename
-# from werkzeug.datastructures import FileStorage
-# from modules import hlstream
 
 APIVERSION = "/api/v1"
 redis = redisMode.redisMode()
@@ -248,35 +243,9 @@ class RikaMsg(Resource):
             return handler(1, "No such type, only 0-3 or 100")
 
 
-# class UploadFile(Resource):
-#     decorators = [authen.login_required]
-
-#     def get(self):
-#         playlists = redis.redisKeys("playlist:*")
-#         total = len(playlists)
-#         return handler(0, "Total video", number=total)
-
-#     def post(self):
-#         parser = reqparse.RequestParser()
-#         parser.add_argument('file', type=FileStorage, location='files')
-#         args = parser.parse_args()
-#         file = args['file']
-#         filename = secure_filename(file.filename)
-#         mainpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-#         video = os.path.join(mainpath, "videos", filename)
-#         file.save(video)
-#         h = hlstream.hlsegment()
-#         playlist = h.segment(video, "media")
-#         redis_key = "playlist:{}".format(playlist)
-#         data = handler(0, "Video url", path=playlist)
-#         redis.redisSave(redis_key, data, ex=604800, subkey=True)
-#         return data
-
-
 api.add_resource(Media, APIVERSION + '/media/<target>')
 api.add_resource(Drama, APIVERSION + '/drama/<subname>')
 api.add_resource(DramaTime, APIVERSION + '/drama/time')
 api.add_resource(Program, APIVERSION + '/program')
 api.add_resource(Stchannel, APIVERSION + '/stchannel')
 api.add_resource(RikaMsg, APIVERSION + '/rikamsg')
-# api.add_resource(UploadFile, APIVERSION + '/upload')

@@ -7,26 +7,18 @@ from flask_restful import Api
 
 # from flask_cors import CORS
 
-
 conf = get_mongo_conf()
 dbhost = conf["dbhost"]
 dbport = conf["dbport"]
-# dbuser = conf["dbuser"]
-# dbpasswd = conf["dbpasswd"]
+dbuser = conf["dbuser"]
+dbpasswd = conf["dbpasswd"]
 dbname = conf["dbname"]
-if dbhost == "":
-    dbhost = "127.0.0.1"
-if dbport == "":
-    dbport = "27017"
-if dbname == "":
+
+if dbhost == "" or dbport == "":
     print(" * MongoDB Info: No database selected in mongodb.conf")
     exit()
 
-mongo_info = 'mongodb://{dbhost}:{dbport}/{dbname}'.format(dbhost=dbhost, dbport=dbport, dbname=dbname)
-print(" * MongoDB Info: {}".format(mongo_info))
-
-
-app = Flask(__name__, template_folder="../templates", static_folder='../static',)
+app = Flask(__name__)
 app.config['SECRET_KEY'] = get_key()
 
 # Mongodb

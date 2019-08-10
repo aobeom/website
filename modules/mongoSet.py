@@ -60,22 +60,25 @@ class dbAuth(object):
     def login(self, username, password):
         mongo.mongoCol(db_users)
         query = {"username": username}
-        hash_pwd = mongo.mongoFindOne(query)["password"]
-        pwd_check = self.__verify_password(password, hash_pwd)
-        if pwd_check:
-            mongo.mongoCol(db_user_token)
-            query = {
-                "username": username,
-            }
-            db_token = mongo.mongoFindOne(query)
-            if db_token:
-                token = db_token["token"]
+        hash_pwd_db = mongo.mongoFindOne(query)
+        if hash_pwd_db:
+            hash_pwd = hash_pwd_db['password']
+            pwd_check = self.__verify_password(password, hash_pwd)
+            if pwd_check:
+                mongo.mongoCol(db_user_token)
+                query = {
+                    "username": username,
+                }
+                db_token = mongo.mongoFindOne(query)
+                if db_token:
+                    token = db_token["token"]
+                else:
+                    token = self.__generate_token(username, password)
+                    self.__updateToken(username, token)
+                return token
             else:
-                token = self.__generate_token(username, password)
-                self.__updateToken(username, token)
-            return token
-        else:
-            return False
+                return False
+        return False
 
     def logout(self, username):
         mongo.mongoCol(db_users)

@@ -25,7 +25,7 @@ db_rika_info = "rikaMsg"
 
 
 def dbCreator():
-    db_connect = pymongo.MongoClient("mongodb://{}:{}/".format(dbhost, dbport), maxPoolSize=None)
+    db_connect = pymongo.MongoClient("mongodb://{}:{}/".format(dbhost, dbport), maxPoolSize=None, connect=False)
     db_clinet = db_connect[dbname]
     return db_clinet
 
