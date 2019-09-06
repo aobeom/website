@@ -27,6 +27,7 @@ db_stchannel_info = "st_info"
 db_stchannel_token = "st_token"
 db_program_info = "program_info"
 db_rika_info = "rikaMsg"
+db_radiko_info = "radiko"
 
 
 def updateTimeGet(type_):
@@ -326,3 +327,24 @@ class dbRikaMsg(object):
             result = mongo.mongoAggregate(agr)
         result = list(result)
         return result
+
+
+class dbRadiko():
+    def update(self, name, url):
+        mongo.mongoCol(db_radiko_info)
+        query = {
+            "name": name,
+            "url": url,
+        }
+        mongo.mongoInsert(query)
+
+    def getData(self, name):
+        mongo.mongoCol(db_radiko_info)
+        query = {
+            "name": name,
+        }
+        data = mongo.mongoFindOne(query)
+        if data:
+            return data
+        else:
+            return None

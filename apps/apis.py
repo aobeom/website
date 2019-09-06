@@ -8,8 +8,8 @@ import time
 from flask import request, g
 from flask_restful import reqparse, Resource
 
-from modules import jprogram, picdown, srurl, tweetV, redisMode
-from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbProgram, dbSTchannel, dbRikaMsg, updateTimeGet
+from modules import jprogram, picdown, srurl, tweetV, redisMode, radiko
+from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbProgram, dbSTchannel, dbRikaMsg, updateTimeGet, dbRadiko
 from modules.config import handler
 from apps import authen, api
 
@@ -22,6 +22,7 @@ Dramas = dbDrama()
 STchan = dbSTchannel()
 Programs = dbProgram()
 Rika = dbRikaMsg()
+Radio = dbRadiko()
 Medias.setLiveTTL(600)
 Programs.setTTL(14400)
 
@@ -243,9 +244,61 @@ class RikaMsg(Resource):
             return handler(1, "No such type, only 0-3 or 100")
 
 
+# class UploadFile(Resource):
+#     decorators = [authen.login_required]
+
+#     def get(self):
+#         playlists = redis.redisKeys("playlist:*")
+#         total = len(playlists)
+#         return handler(0, "Total video", number=total)
+
+#     def post(self):
+#         parser = reqparse.RequestParser()
+#         parser.add_argument('file', type=FileStorage, location='files')
+#         args = parser.parse_args()
+#         file = args['file']
+#         filename = secure_filename(file.filename)
+#         mainpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+#         video = os.path.join(mainpath, "videos", filename)
+#         file.save(video)
+#         h = hlstream.hlsegment()
+#         playlist = h.segment(video, "media")
+#         redis_key = "playlist:{}".format(playlist)
+#         data = handler(0, "Video url", path=playlist)
+#         redis.redisSave(redis_key, data, ex=604800, subkey=True)
+#         return data
+
+
+class Radiko(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('station')
+        parser.add_argument('start_at')
+        parser.add_argument('end_at')
+        args = parser.parse_args()
+        station = args['station']
+        start_at = args['start_at']
+        end_at = args['end_at']
+        file_name = 'Radiko.{}.{}.{}.raw.aac'.format(station, start_at, end_at)
+        data = Radio.getData(file_name)
+        if data:
+            return handler(0, "{}".format(station), entities=data)
+        else:
+            file_name = 'Radiko.{}.{}.{}.raw.aac'.format(station, start_at, end_at)
+            data = radiko.get(file_name, station, start_at, end_at)
+            if data:
+                radiko.get(file_name, station, start_at, end_at)
+                Radio.update(file_name, data)
+                return handler(0, "{}".format(station), entities={'name': file_name, 'url': data})
+            else:
+                return handler(1, "No Radio")
+
+
 api.add_resource(Media, APIVERSION + '/media/<target>')
 api.add_resource(Drama, APIVERSION + '/drama/<subname>')
 api.add_resource(DramaTime, APIVERSION + '/drama/time')
 api.add_resource(Program, APIVERSION + '/program')
 api.add_resource(Stchannel, APIVERSION + '/stchannel')
 api.add_resource(RikaMsg, APIVERSION + '/rikamsg')
+api.add_resource(Radiko, APIVERSION + '/radiko')
+# api.add_resource(UploadFile, APIVERSION + '/upload')
