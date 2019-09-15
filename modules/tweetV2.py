@@ -37,7 +37,8 @@ def getVideoURL(status_url):
         return None
     headers = {"Authorization": "Bearer " + token}
     params = {
-        "id": status_id
+        "id": status_id,
+        "tweet_mode": "extended"
     }
     res = requests.get(show_api_url, headers=headers, params=params)
     video_data = json.loads(res.text)
