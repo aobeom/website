@@ -8,7 +8,7 @@ import time
 from flask import request, g
 from flask_restful import reqparse, Resource
 
-from modules import jprogram, picdown, srurl, tweetV, redisMode, radiko
+from modules import jprogram, picdown, srurl, tweetV2, redisMode, radiko
 from modules.mongoSet import dbAuth, dbMedia, dbDrama, dbProgram, dbSTchannel, dbRikaMsg, updateTimeGet, dbRadiko
 from modules.config import handler
 from apps import authen, api
@@ -119,7 +119,7 @@ class Media(Resource):
                         return handler(0, "This is a Twitter Video url", type=target, entities=tweet_vurl, cache="HIT")
                     else:
                         site = "twitter.com"
-                        tweet_vurl = tweetV.getVideoURL(url)
+                        tweet_vurl = tweetV2.getVideoURL(url)
                         if tweet_vurl:
                             Medias.update(target, site, url, tweet_vurl)
                             return handler(0, "This is a Twitter Video url", type=target, entities=tweet_vurl)
