@@ -4,9 +4,10 @@
 # @desc [mongo]
 import os
 import sys
-import time
 import datetime
 import base64
+import json
+import bson
 from passlib.hash import md5_crypt
 
 curPath = os.path.abspath(os.path.dirname(__file__))
@@ -192,43 +193,34 @@ class dbMedia(object):
 
 
 class dbDrama(object):
-    def __quarter_gen(self):
-        year_month = time.strftime('%Y-%m', time.localtime(time.time()))
-        month = year_month.split("-")[-1]
-        if month in ["01", "02", "03"]:
-            start = "0100"
-            end = "0332"
-            season = "winter"
-        elif month in ["04", "05", "06"]:
-            start = "0400"
-            end = "0631"
-            season = "spring"
-        elif month in ["07", "08", "09"]:
-            start = "0700"
-            end = "0931"
-            season = "summer"
-        elif month in ["10", "11", "12"]:
-            start = "1000"
-            end = "1232"
-            season = "autumn"
-        return start, end, season
+    def __data_range(self):
+        year = datetime.datetime.now().year
+        month = datetime.datetime.now().month
+        mint = "{}-{}-00".format(year, month)
+        maxt = "{}-{}-31".format(year, month)
+        return mint, maxt
+
+    def __handlersp(self, data):
+        if isinstance(data, datetime.datetime):
+            return data.isoformat()
+        elif isinstance(data, bson.objectid.ObjectId):
+            return str(data)
+        else:
+            raise TypeError(data)
 
     def getData(self, website):
         mongo.mongoCol(db_drama_info)
-        today = self.__quarter_gen()
-        start = today[0]
-        end = today[1]
-        season = today[2]
+        start, end = self.__data_range()
+
         query = {
             "type": website,
         }
         if website == "fixsub":
-            query["season"] = season
             data = mongo.mongoFind(query, sort=True, desc=True)
         else:
             query["date"] = {"$lt": end, "$gt": start}
         data = mongo.mongoFind(query, field="date", sort=True, desc=True)
-        data = list(data)
+        data = [json.loads(json.dumps(_, default=self.__handlersp)) for _ in data]
         if len(data) != 0:
             return data
         else:
