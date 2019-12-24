@@ -319,12 +319,13 @@ class picdown(object):
                 i = instapic()
                 pics = i.instaPicUrl(url)
             elif "tokyopopline" in site:
-                img_i_rule = '//dl[@class="gallery-item"]/dt/a'
+                img_i_rule = '//dl[@class="gallery-item"]/dt/a/img'
                 rule = {
                     "mode": "direct",
                     "i_rule": img_i_rule
                 }
                 pics = self.picRules(url, **rule)
+                pics = [_.split("-")[0] + ".jpg" for _ in pics]
             elif "hustlepress" in site:
                 img_i_rule = '//div[@class="post_content entry-content"]/div/a'
                 rule = {
