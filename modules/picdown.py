@@ -297,9 +297,10 @@ class picdown(object):
                 #     "i_rule": img_i_rule
                 # }
                 # pics = self.picRules(url, self.host[site], **rule)
-                aid = url.split("/")[-1]
-                mdpr = mdprAPI()
-                pics = mdpr.getURLs(aid)
+                url_api = "https://srfg2fodvh.execute-api.ap-northeast-1.amazonaws.com/prod/mdpr?url=" + url
+                rurl = url_api.replace("?update", "")
+                res = requests.get(rurl)
+                pics = json.loads(res.text)
             elif "oricon" in site:
                 url = self.picExtra.oriconImgCenter(url, self.host[site])
                 img_a_rule = '//div[@class="photo_thumbs"]//a'
