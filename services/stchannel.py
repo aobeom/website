@@ -102,10 +102,13 @@ def main():
         print("Update [{}]".format(update_num))
         for u in update_data:
             hls = dlcore.HLSVideo()
-            playlist = u["murl"]
-            purl = u["purl"]
-            keyvideo = hls.hlsInfo(playlist)
-            media_path = hls.hlsDL(keyvideo)
+            try:
+                playlist = u["murl"]
+                purl = u["purl"]
+                keyvideo = hls.hlsInfo(playlist)
+                media_path = hls.hlsDL(keyvideo)
+            except BaseException:
+                media_path = u["murl"]
             db.updateMoviePath(purl, media_path)
             time.sleep(3)
     else:

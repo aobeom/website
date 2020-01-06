@@ -196,6 +196,8 @@ class dbDrama(object):
     def __data_range(self):
         year = datetime.datetime.now().year
         month = datetime.datetime.now().month
+        if month < 10:
+            month = str(month).zfill(2)
         mint = "{}-{}-00".format(year, month)
         maxt = "{}-{}-31".format(year, month)
         return mint, maxt
