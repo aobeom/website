@@ -25,6 +25,7 @@ app.config['SECRET_KEY'] = get_key()
 app.config.update(
     MONGO_URI='mongodb://{dbhost}:{dbport}/{dbname}'.format(
         dbhost=dbhost, dbport=dbport, dbname=dbname),
+    MONGO_CONNECT=False
 )
 
 authen = HTTPTokenAuth(scheme='Bearer')
